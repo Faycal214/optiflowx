@@ -1,5 +1,5 @@
 scikit-optimize
-numpy 
+numpy
 pandas
 math
 random

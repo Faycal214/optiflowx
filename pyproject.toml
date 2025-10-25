@@ -3,7 +3,15 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "optiflow"
-version = "0.0.1"
+name = "optiflowx"
+version = "0.0.3"
 requires-python = ">=3.10"
-dependencies = ["numpy", "scikit-learn", "tqdm"]
+description = "A modular optimization and machine learning workflow framework for automatic model selection, hyperparameter tuning, and performance benchmarking across diverse datasets."
+readme = "README.md"
+authors = [{ name = "Billel", email = "faycal213.dz@gmail.com" }]
+dependencies = ["numpy", "scikit-learn", "tqdm", "optuna", "scikit-optimize", "xgboost"]
+
+[project.urls]
+Homepage = "https://github.com/Faycal214/optiflowx"
+Repository = "https://github.com/Faycal214/optiflowx"
+Issues = "https://github.com/Faycal214/optiflowx/issues"
