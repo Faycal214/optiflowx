@@ -1,6 +1,6 @@
 """
 Example script to test multiple optimizers with a RandomForest model.
-Make sure optiflow is installed in editable mode:
+Make sure optiflowx is installed in editable mode:
     pip install -e .
 
 Then run:
@@ -8,13 +8,13 @@ Then run:
 """
 
 from sklearn.datasets import make_classification
-from optiflow.optimizers.genetic import GeneticOptimizer
-from optiflow.optimizers.pso import PSOOptimizer
-from optiflow.optimizers.bayesian import BayesianOptimizer
-from optiflow.optimizers.tpe import TPEOptimizer
-from optiflow.optimizers.random_search import RandomSearchOptimizer
-from optiflow.optimizers.simulated_annealing import SimulatedAnnealingOptimizer
-from optiflow.models.configs.random_forest_config import RandomForestConfig
+from optiflowx.optimizers.genetic import GeneticOptimizer
+from optiflowx.optimizers.pso import PSOOptimizer
+from optiflowx.optimizers.bayesian import BayesianOptimizer
+from optiflowx.optimizers.tpe import TPEOptimizer
+from optiflowx.optimizers.random_search import RandomSearchOptimizer
+from optiflowx.optimizers.simulated_annealing import SimulatedAnnealingOptimizer
+from optiflowx.models.configs.random_forest_config import RandomForestConfig
 
 
 # 1. Generate sample dataset
@@ -38,12 +38,16 @@ optimizers = [
     ("bayesian", BayesianOptimizer, {"n_initial_points": 5}),
     ("tpe", TPEOptimizer, {"population_size": 10}),
     ("random_search", RandomSearchOptimizer, {"n_samples": 20}),
-    ("simulated_annealing", SimulatedAnnealingOptimizer, {
-        "population_size": 10,
-        "initial_temp": 1.0,
-        "cooling_rate": 0.9,
-        "mutation_rate": 0.3,
-    }),
+    (
+        "simulated_annealing",
+        SimulatedAnnealingOptimizer,
+        {
+            "population_size": 10,
+            "initial_temp": 1.0,
+            "cooling_rate": 0.9,
+            "mutation_rate": 0.3,
+        },
+    ),
 ]
 
 # 4. Run each optimizer and print results
@@ -55,7 +59,7 @@ for opt_name, opt_class, opt_params in optimizers:
         model_class=model_class,
         X=X,
         y=y,
-        **opt_params
+        **opt_params,
     )
 
     best_params, best_score = optimizer.run(max_iters=5)
