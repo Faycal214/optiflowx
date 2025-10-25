@@ -36,6 +36,22 @@ Conventional methods such as grid or random search are inefficient when dealing 
 
 ---
 
+## ⚗️ Installation
+
+```bash
+pip install optiflowx
+```
+
+or from source:
+
+```bash
+git clone https://github.com/Faycal214/optiflowx.git
+cd optiflowx
+pip install -e .
+```
+
+---
+
 ## 🧠 Example Usage
 
 ```python
@@ -98,19 +114,7 @@ for opt_name, opt_class, opt_params in optimizers:
     print(f"Result for {opt_name} → score={best_score:.4f}, params={best_params}")
 ```
 
-## ⚗️ Installation
-
-```bash
-pip install optiflowx
-```
-
-or from source:
-
-```bash
-git clone https://github.com/Faycal214/optiflowx.git
-cd optiflowx
-pip install -e .
-```
+---
 
 ## 🧪 Testing
 
@@ -118,6 +122,8 @@ pip install -e .
 ```bash
 pytest -v --maxfail=1 --disable-warnings
 ```
+
+---
 
 ## 📚 Citation
 
