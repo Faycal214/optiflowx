@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "optiflowx"
-version = "0.0.3"
+version = "0.0.4"
 requires-python = ">=3.10"
 description = "A modular optimization and machine learning workflow framework for automatic model selection, hyperparameter tuning, and performance benchmarking across diverse datasets."
 readme = "README.md"
