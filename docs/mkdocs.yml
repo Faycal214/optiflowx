@@ -1,0 +1,8 @@
+site_name: OptiFlowX Documentation
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Examples: examples.md
+  - API Reference: api.md

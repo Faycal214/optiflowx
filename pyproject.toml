@@ -10,6 +10,18 @@ description = "A modular optimization and machine learning workflow framework fo
 readme = "README.md"
 authors = [{ name = "Billel", email = "faycal213.dz@gmail.com" }]
 dependencies = ["numpy", "scikit-learn", "tqdm", "optuna", "scikit-optimize", "xgboost"]
+keywords = [
+  "hyperparameter optimization",
+  "AutoML",
+  "combinatorial optimization",
+  "machine learning",
+  "genetic algorithm",
+  "particle swarm optimization",
+  "bayesian optimization",
+  "tpe",
+  "simulated annealing"
+]
+
 
 [project.urls]
 Homepage = "https://github.com/Faycal214/optiflowx"
