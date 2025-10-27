@@ -36,6 +36,11 @@ Conventional methods such as grid or random search are inefficient when dealing 
 
 ---
 
+## Documentation
+Full docs available at: [https://faycal214.github.io/optiflowx/](https://Faycal214.github.io/optiflowx/)
+
+---
+
 ## ⚗️ Installation
 
 ```bash
