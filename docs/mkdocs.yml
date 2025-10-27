@@ -1,8 +1,23 @@
-site_name: OptiFlowX Documentation
+site_name: OptiFlowX
+site_url: https://yourusername.github.io/optiflowx/
+repo_url: https://github.com/yourusername/optiflowx
 theme:
   name: material
+  features:
+    - navigation.expand
+    - navigation.instant
+    - search.highlight
+    - content.code.copy
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - Examples: examples.md
   - API Reference: api.md
+  - Algorithms: algorithms.md
+  - Contributing: contributing.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python: {}
