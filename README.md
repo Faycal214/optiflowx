@@ -6,15 +6,15 @@
 [![Build Status](https://github.com/Faycal214/optiflowx/actions/workflows/test.yml/badge.svg)](https://github.com/Faycal214/optiflowx/actions)
 
 
-**OptiFlowX** is an open-source framework for **hyperparameter optimization** using **combinatorial and metaheuristic algorithms**.  
+**OptiFlowX** is an open-source framework for **hyperparameter optimization** using **combinatorial and metaheuristic algorithms**.
 It enables systematic exploration of search spaces for machine learning models using advanced stochastic and hybrid optimization techniques.
 
 ---
 
 ## 🔍 Overview
 
-Machine learning models rely on carefully tuned hyperparameters.  
-Conventional methods such as grid or random search are inefficient when dealing with discrete, mixed, or high-dimensional spaces.  
+Machine learning models rely on carefully tuned hyperparameters.
+Conventional methods such as grid or random search are inefficient when dealing with discrete, mixed, or high-dimensional spaces.
 
 **OptiFlowX** provides a modular ecosystem that leverages **combinatorial optimization** and **metaheuristics** (evolutionary, swarm-based, and probabilistic methods) to efficiently discover optimal configurations.
 
@@ -22,8 +22,8 @@ Conventional methods such as grid or random search are inefficient when dealing 
 
 ## ⚙️ Key Features
 
-- Unified interface for multiple optimization algorithms.  
-- Works with discrete, categorical, and continuous parameter spaces.  
+- Unified interface for multiple optimization algorithms.
+- Works with discrete, categorical, and continuous parameter spaces.
 - Includes multiple strategies:
   - Genetic Algorithm (GA)
   - Particle Swarm Optimization (PSO)
@@ -31,7 +31,7 @@ Conventional methods such as grid or random search are inefficient when dealing 
   - Tree-structured Parzen Estimator (TPE)
   - Random Search
   - Simulated Annealing
-- Scalable, parallel execution support.  
+- Scalable, parallel execution support.
 - Compatible with any ML framework (scikit-learn, PyTorch, TensorFlow, etc.).
 
 ---
@@ -135,4 +135,3 @@ pytest -v --maxfail=1 --disable-warnings
   url = {https://github.com/Faycal214/optiflowx}
 }
 ```
-
