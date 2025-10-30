@@ -316,9 +316,57 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#randomforest-tuning-using-multiple-optimizers" class="md-nav__link">
+  <a href="#example-1-automatic-setup-auto-search-space-metric" class="md-nav__link">
     <span class="md-ellipsis">
-      RandomForest tuning using multiple optimizers
+      Example 1 — Automatic Setup (Auto-Search Space + Metric)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example 1 — Automatic Setup (Auto-Search Space + Metric)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      How it works
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-2-custom-search-space-and-metric" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 2 — Custom Search Space and Metric
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example 2 — Custom Search Space and Metric">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-3-deep-learning-with-pytorch" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 3 — Deep Learning with PyTorch
     </span>
   </a>
   
@@ -425,9 +473,57 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#randomforest-tuning-using-multiple-optimizers" class="md-nav__link">
+  <a href="#example-1-automatic-setup-auto-search-space-metric" class="md-nav__link">
     <span class="md-ellipsis">
-      RandomForest tuning using multiple optimizers
+      Example 1 — Automatic Setup (Auto-Search Space + Metric)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example 1 — Automatic Setup (Auto-Search Space + Metric)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      How it works
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-2-custom-search-space-and-metric" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 2 — Custom Search Space and Metric
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Example 2 — Custom Search Space and Metric">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-3-deep-learning-with-pytorch" class="md-nav__link">
+    <span class="md-ellipsis">
+      Example 3 — Deep Learning with PyTorch
     </span>
   </a>
   
@@ -452,61 +548,143 @@
   
 
 
-<h1 id="examples">Examples</h1>
-<h2 id="randomforest-tuning-using-multiple-optimizers">RandomForest tuning using multiple optimizers</h2>
-<p>```python
-from sklearn.datasets import make_classification
-from optiflowx.optimizers.genetic import GeneticOptimizer
-from optiflowx.optimizers.pso import PSOOptimizer
-from optiflowx.optimizers.bayesian import BayesianOptimizer
-from optiflowx.optimizers.tpe import TPEOptimizer
-from optiflowx.optimizers.random_search import RandomSearchOptimizer
-from optiflowx.optimizers.simulated_annealing import SimulatedAnnealingOptimizer
-from optiflowx.models.configs.random_forest_config import RandomForestConfig</p>
-<h1 id="1-generate-sample-dataset">1. Generate sample dataset</h1>
-<p>X, y = make_classification(
-    n_samples=100,
-    n_features=10,
-    n_informative=8,
-    n_redundant=2,
-    random_state=42,
-)</p>
-<h1 id="2-load-model-configuration-and-search-space">2. Load model configuration and search space</h1>
-<p>cfg = RandomForestConfig()
+<h1 id="examples">🧪 Examples</h1>
+<p>This section demonstrates how to use <strong>OptiFlowX</strong> for hyperparameter optimization across different use cases.</p>
+<p>We show :</p>
+<ol>
+<li><strong>Automatic setup</strong> — the library builds the search space and metric automatically.</li>
+<li><strong>Custom setup</strong> — the user defines their own search space and metric.</li>
+<li><strong>Deep learning setup</strong> — using PyTorch models inside OptiFlowX.</li>
+</ol>
+<hr />
+<h2 id="example-1-automatic-setup-auto-search-space-metric">Example 1 — Automatic Setup (Auto-Search Space + Metric)</h2>
+<p>OptiFlowX can automatically infer the parameter search space, model configuration, and default metric from the model type.</p>
+<pre><code class="language-python">from optiflowx.optimizers.bayesian import BayesianOptimizer
+from optiflowx.models.configs.random_forest_config import RandomForestConfig
+from sklearn.ensemble import RandomForestClassifier
+
+# Load dataset
+from sklearn.datasets import load_iris
+X, y = load_iris(return_X_y=True)
+
+# Load model configuration and search space
+cfg = RandomForestConfig()
 search_space = cfg.build_search_space()
-model_class = cfg.get_wrapper().model_class</p>
-<h1 id="3-define-optimizers-to-test">3. Define optimizers to test</h1>
-<p>optimizers = [
-    ("pso", PSOOptimizer, {"n_particles": 10, "w": 0.7, "c1": 1.4, "c2": 1.4}),
-    ("genetic", GeneticOptimizer, {"population": 10, "mutation_prob": 0.3}),
-    ("bayesian", BayesianOptimizer, {"n_initial_points": 5}),
-    ("tpe", TPEOptimizer, {"population_size": 10}),
-    ("random_search", RandomSearchOptimizer, {"n_samples": 20}),
-    (
-        "simulated_annealing",
-        SimulatedAnnealingOptimizer,
-        {
-            "population_size": 10,
-            "initial_temp": 1.0,
-            "cooling_rate": 0.9,
-            "mutation_rate": 0.3,
-        },
-    ),
-]</p>
-<h1 id="4-run-each-optimizer-and-print-results">4. Run each optimizer and print results</h1>
-<p>for opt_name, opt_class, opt_params in optimizers:
-    print(f"\n{'='<em>30}\nTesting optimizer: {opt_name}\n{'='</em>30}")
-    optimizer = opt_class(
+model_class = cfg.get_wrapper().model_class
+
+# AutoOptimizer chooses sensible defaults based on model_class
+optimizer = opt_class(
         search_space=search_space,
-        metric="accuracy",
-        model_class=model_class,
+        metric=&quot;accuracy&quot;,
+        model_class=model_class, # model_class = RandomForestClassifier
         X=X,
         y=y,
         **opt_params,
-    )</p>
-<pre><code>best_params, best_score = optimizer.run(max_iters=5)
-print(f"Result for {opt_name} → score={best_score:.4f}, params={best_params}")
+    )
+
+best_params, best_score = optimizer.run(max_iters=10)
+
+print(&quot;Best Parameters:&quot;, best_params)
+print(&quot;Best Score:&quot;, best_score)
 </code></pre>
+<h3 id="how-it-works">How it works</h3>
+<ul>
+<li>
+<p><code>model_class</code> loads <code>RandomForestClassifier</code>.</p>
+</li>
+<li>
+<p><code>metric</code> sets the default metric to accuracy.</p>
+</li>
+<li>
+<p>Search space is auto-generated from known model hyperparameters using <code>cfg.build_search_space()</code> from <code>RandomForestConfig()</code>.</p>
+</li>
+</ul>
+<hr />
+<h2 id="example-2-custom-search-space-and-metric">Example 2 — Custom Search Space and Metric</h2>
+<p>For full control, you can define your own search space and evaluation metric.
+This allows adapting OptiFlowX to any scikit-learn compatible model.</p>
+<pre><code class="language-python">from optiflowx.optimizers.genetic import GeneticOptimizer
+from optiflowx.core.search_space import SearchSpace
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score
+from sklearn.datasets import load_iris
+
+# Load dataset
+X, y = load_iris(return_X_y=True)
+
+# Split the data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= 0.2, random_state= 42)
+
+# Import the model
+model = RandomForestClassifier()
+
+# Custom metric
+def my_metric():
+    return f1_score(y_true, y_pred)
+
+# Costum Search space
+search_space = SearchSpace()
+
+# Complete the Search space with any hyperparameter
+# Each one of the .add() method must contain :
+# 1. hyperparameter name
+# 2. type : [&quot;discrete&quot;, &quot;continuos&quot;, &quot;categorical&quot;]
+# 3. range of values
+search_space.add(&quot;n_estimators&quot;, &quot;discrete&quot;, [20, 100])
+search_space.add(&quot;max_depth&quot;, &quot;discrete&quot;, [2, 20])
+search_space.add(&quot;min_samples_split&quot;, &quot;discrete&quot;, [2, 10])
+search_space.add(&quot;min_samples_leaf&quot;, &quot;discrete&quot;, [1, 5])
+search_space.add(&quot;bootstrap&quot;, &quot;categorical&quot;, [True, False])
+search_space.add(&quot;max_features&quot;, &quot;categorical&quot;, [&quot;sqrt&quot;, &quot;log2&quot;, None])
+
+# Show the parameters
+print(search_space.parameters)
+
+# We can sample a solution condidate of hyperparameters
+sample = serach_space.sample()
+print(sample)
+
+# Create the optimizer
+optimizer = GeneticOptimizer(
+    search_space=search_space,
+    metric=my_metric(),
+    model_class=RandomForestClassifier,
+    X=X_train,
+    y=y_train,
+    population=10,
+    mutation_prob=0.3
+)
+
+# Get the final results
+best_params, best_score = optimizer.run(max_iters=5)
+print(&quot;OptiFlowX best:&quot;, best_score)
+
+# Display the optimal parameters
+print(best_params)
+
+# Train the model with the final results
+model = RandomForestClassifier(**best_params)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+print(&quot;Accuracy:&quot;, accuracy_score(y_test, y_pred))
+</code></pre>
+<h3 id="key-points">Key points</h3>
+<ul>
+<li>
+<p>User defines a custom metric (<code>f1_score</code> in this case).</p>
+</li>
+<li>
+<p>Works with any scikit-learn model, not only pre-defined configs.</p>
+</li>
+<li>
+<p>Same <code>.run()</code> interface for all optimizers.</p>
+</li>
+</ul>
+<hr />
+<h2 id="example-3-deep-learning-with-pytorch">Example 3 — Deep Learning with PyTorch</h2>
+<p>OptiFlowX also supports PyTorch models by wrapping them in a <code>TorchModelConfig</code>.
+The optimizer explores learning rates, batch sizes, and architectures.</p>
 
 
 
