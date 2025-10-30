@@ -1,62 +1,143 @@
-# Examples
+# 🧪 Examples
 
-## RandomForest tuning using multiple optimizers
+This section demonstrates how to use **OptiFlowX** for hyperparameter optimization across different use cases.
+
+We show :
+
+1. **Automatic setup** — the library builds the search space and metric automatically.
+2. **Custom setup** — the user defines their own search space and metric.
+3. **Deep learning setup** — using PyTorch models inside OptiFlowX.
+
+---
+
+## Example 1 — Automatic Setup (Auto-Search Space + Metric)
+
+OptiFlowX can automatically infer the parameter search space, model configuration, and default metric from the model type.
 
 ```python
-from sklearn.datasets import make_classification
-from optiflowx.optimizers.genetic import GeneticOptimizer
-from optiflowx.optimizers.pso import PSOOptimizer
 from optiflowx.optimizers.bayesian import BayesianOptimizer
-from optiflowx.optimizers.tpe import TPEOptimizer
-from optiflowx.optimizers.random_search import RandomSearchOptimizer
-from optiflowx.optimizers.simulated_annealing import SimulatedAnnealingOptimizer
 from optiflowx.models.configs.random_forest_config import RandomForestConfig
+from sklearn.ensemble import RandomForestClassifier
 
+# Load dataset
+from sklearn.datasets import load_iris
+X, y = load_iris(return_X_y=True)
 
-# 1. Generate sample dataset
-X, y = make_classification(
-    n_samples=100,
-    n_features=10,
-    n_informative=8,
-    n_redundant=2,
-    random_state=42,
-)
-
-# 2. Load model configuration and search space
+# Load model configuration and search space
 cfg = RandomForestConfig()
 search_space = cfg.build_search_space()
 model_class = cfg.get_wrapper().model_class
 
-# 3. Define optimizers to test
-optimizers = [
-    ("pso", PSOOptimizer, {"n_particles": 10, "w": 0.7, "c1": 1.4, "c2": 1.4}),
-    ("genetic", GeneticOptimizer, {"population": 10, "mutation_prob": 0.3}),
-    ("bayesian", BayesianOptimizer, {"n_initial_points": 5}),
-    ("tpe", TPEOptimizer, {"population_size": 10}),
-    ("random_search", RandomSearchOptimizer, {"n_samples": 20}),
-    (
-        "simulated_annealing",
-        SimulatedAnnealingOptimizer,
-        {
-            "population_size": 10,
-            "initial_temp": 1.0,
-            "cooling_rate": 0.9,
-            "mutation_rate": 0.3,
-        },
-    ),
-]
-
-# 4. Run each optimizer and print results
-for opt_name, opt_class, opt_params in optimizers:
-    print(f"\n{'='*30}\nTesting optimizer: {opt_name}\n{'='*30}")
-    optimizer = opt_class(
+# AutoOptimizer chooses sensible defaults based on model_class
+optimizer = opt_class(
         search_space=search_space,
         metric="accuracy",
-        model_class=model_class,
+        model_class=model_class, # model_class = RandomForestClassifier
         X=X,
         y=y,
         **opt_params,
     )
 
-    best_params, best_score = optimizer.run(max_iters=5)
-    print(f"Result for {opt_name} → score={best_score:.4f}, params={best_params}")
+best_params, best_score = optimizer.run(max_iters=10)
+
+print("Best Parameters:", best_params)
+print("Best Score:", best_score)
+```
+
+### How it works
+
+* `model_class` loads `RandomForestClassifier`.
+
+* `metric` sets the default metric to accuracy.
+
+* Search space is auto-generated from known model hyperparameters using `cfg.build_search_space()` from `RandomForestConfig()`.
+
+---
+
+## Example 2 — Custom Search Space and Metric
+
+For full control, you can define your own search space and evaluation metric.
+This allows adapting OptiFlowX to any scikit-learn compatible model.
+
+```python
+from optiflowx.optimizers.genetic import GeneticOptimizer
+from optiflowx.core.search_space import SearchSpace
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score
+from sklearn.datasets import load_iris
+
+# Load dataset
+X, y = load_iris(return_X_y=True)
+
+# Split the data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= 0.2, random_state= 42)
+
+# Import the model
+model = RandomForestClassifier()
+
+# Custom metric
+def my_metric():
+    return f1_score(y_true, y_pred)
+
+# Costum Search space
+search_space = SearchSpace()
+
+# Complete the Search space with any hyperparameter
+# Each one of the .add() method must contain :
+# 1. hyperparameter name
+# 2. type : ["discrete", "continuos", "categorical"]
+# 3. range of values
+search_space.add("n_estimators", "discrete", [20, 100])
+search_space.add("max_depth", "discrete", [2, 20])
+search_space.add("min_samples_split", "discrete", [2, 10])
+search_space.add("min_samples_leaf", "discrete", [1, 5])
+search_space.add("bootstrap", "categorical", [True, False])
+search_space.add("max_features", "categorical", ["sqrt", "log2", None])
+
+# Show the parameters
+print(search_space.parameters)
+
+# We can sample a solution condidate of hyperparameters
+sample = serach_space.sample()
+print(sample)
+
+# Create the optimizer
+optimizer = GeneticOptimizer(
+    search_space=search_space,
+    metric=my_metric(),
+    model_class=RandomForestClassifier,
+    X=X_train,
+    y=y_train,
+    population=10,
+    mutation_prob=0.3
+)
+
+# Get the final results
+best_params, best_score = optimizer.run(max_iters=5)
+print("OptiFlowX best:", best_score)
+
+# Display the optimal parameters
+print(best_params)
+
+# Train the model with the final results
+model = RandomForestClassifier(**best_params)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+```
+
+### Key points
+
+* User defines a custom metric (`f1_score` in this case).
+
+* Works with any scikit-learn model, not only pre-defined configs.
+
+* Same `.run()` interface for all optimizers.
+
+---
+
+## Example 3 — Deep Learning with PyTorch
+
+OptiFlowX also supports PyTorch models by wrapping them in a `TorchModelConfig`.
+The optimizer explores learning rates, batch sizes, and architectures.
