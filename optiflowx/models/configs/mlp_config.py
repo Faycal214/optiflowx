@@ -1,4 +1,4 @@
-from sklearn.neural_network import MLPClassifier
+from sklearn.neural_network import MLPClassifier, MLPRegressor
 from optiflowx.core.search_space import SearchSpace
 from optiflowx.core.model_wrapper import ModelWrapper
 
@@ -35,10 +35,14 @@ class MLPConfig:
         return s
 
     @staticmethod
-    def get_wrapper():
-        """Return model wrapper for MLPClassifier.
+    def get_wrapper(task_type: str = "classification"):
+        """Return model wrapper for MLP classifier or regressor.
+
+        Args:
+            task_type (str): "classification" or "regression".
 
         Returns:
-            ModelWrapper: Wrapper for the neural network classifier.
+            ModelWrapper: Wrapper for the neural network estimator.
         """
-        return ModelWrapper(MLPClassifier)
+        model_cls = MLPClassifier if task_type == "classification" else MLPRegressor
+        return ModelWrapper(model_cls)

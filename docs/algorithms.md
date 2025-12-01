@@ -422,3 +422,118 @@ For each combination of hyperparameters in defined grid:
         best_params = current combination
 Return best_params (and best_score)
 ```
+
+## Grey Wolf Optimization (GWO)
+
+**Grey Wolf Optimization** (GWO) is a nature-inspired metaheuristic algorithm that mimics the leadership hierarchy and hunting behavior of [grey wolves](https://en.wikipedia.org/wiki/Grey_wolf) in the wild. It was introduced by Seyedali Mirjalili in 2014 as a [swarm intelligence](https://en.wikipedia.org/wiki/Swarm_intelligence)-based technique for solving optimization problems. The algorithm is designed based on the social dominance structure of grey wolves, where the pack is led by an alpha, followed by beta and delta wolves, while omegas hold the lowest rank. This leadership hierarchy plays a crucial role in guiding the search for optimal solutions by balancing exploration and exploitation. The alpha wolves guide the hunt, while the beta and delta wolves assist in refining the movement and decision-making process.
+
+In GWO, optimization is performed through three main steps: encircling prey, hunting, and attacking or diverging towards new solutions. Encircling is the process where wolves adjust their positions relative to the best solutions found so far. Hunting involves the collective effort of alpha, beta, and delta wolves, which estimate the prey’s location and guide the pack toward optimal solutions. Finally, the attack phase focuses on intensifying the search by reducing the distance between wolves and the best-known solution, ensuring convergence. If the solution space needs further exploration, the wolves diverge, helping prevent premature convergence to local optima.
+
+One of the significant advantages of GWO is its simplicity and ability to handle complex optimization problems with fewer control parameters than other metaheuristic algorithms like genetic algorithms or particle swarm optimization. Its efficiency in finding global optima makes it suitable for a wide range of applications, including power system optimization, feature selection in machine learning, and structural engineering. Additionally, its ability to balance exploration and exploitation helps maintain diversity in the search process, reducing the likelihood of getting stuck in local minima.
+
+In power system applications, GWO has been widely used for optimizing network configurations, enhancing resilience, and reducing operational costs. For instance, in resilient distribution network design, GWO helps allocate feeder routing, substation facilities, and reinforcement strategies to mitigate the impact of physical attacks or natural disasters. By considering both economic and technical constraints, the algorithm finds an optimal trade-off between resilience and cost-effectiveness. Its adaptability to large-scale problems makes it particularly useful in complex power grid scenarios where multiple variables must be optimized simultaneously.
+
+Despite its advantages, GWO has some limitations, such as its reliance on the initial population and the potential for slow convergence in high-dimensional spaces. To improve its performance, researchers have proposed hybrid approaches that integrate GWO with other optimization techniques, such as fuzzy logic, artificial neural networks, or differential evolution. These modifications aim to enhance solution accuracy, speed, and adaptability in dynamic environments. Overall, GWO remains a powerful and flexible optimization tool with broad applications in engineering, machine learning, and power system resilience.
+
+### Article : [Grey Wolf Optimization PDF](https://www.researchgate.net/publication/318185247_Grey_Wolf_Optimization_GWO_Algorithm)
+
+---
+
+## Ant colony optimization (ACO)
+
+In computer science and operations research, the **ant colony optimization algorithm (ACO)** is a probabilistic technique for solving computational problems that can be reduced to finding good paths through graphs. Artificial ants represent multi-agent methods inspired by the behavior of real ants. The pheromone-based communication of biological ants is often the predominant paradigm used. Combinations of artificial ants and local search algorithms have become a preferred method for numerous optimization tasks involving some sort of graph, e.g., vehicle routing and internet routing. As an example, ant colony optimization is a class of optimization algorithms modeled on the actions of an ant colony. Artificial 'ants' (e.g. simulation agents) locate optimal solutions by moving through a parameter space representing all possible solutions. Real ants lay down pheromones to direct each other to resources while exploring their environment. The simulated 'ants' similarly record their positions and the quality of their solutions, so that in later simulation iterations more ants locate better solutions. One variation on this approach is the bees algorithm, which is more analogous to the foraging patterns of the honey bee, another social insect. This algorithm is a member of the ant colony algorithms family, in swarm intelligence methods, and it constitutes some metaheuristic optimizations. Initially proposed by Marco Dorigo in 1992 in his PhD thesis, the first algorithm was aiming to search for an optimal path in a graph, based based on the behavior of ants seeking a path between their colony and a source of food. The original idea has since diversified to solve a wider class of numerical problems, and as a result, several problems have emerged, drawing on various aspects of the behavior of ants. From a broader perspective, ACO performs a model-based search and shares some similarities with estimation of distribution algorithms.
+
+### Overview
+
+In the natural world, ants of some species (initially) wander randomly, and upon finding food return to their colony while laying down pheromone trails. If other ants find such a path, they are likely to stop travelling at random and instead follow the trail, returning and reinforcing it if they eventually find food (see Ant communication). Over time, however, the pheromone trail starts to evaporate, thus reducing its attractive strength. The more time it takes for an ant to travel down the path and back again, the more time the pheromones have to evaporate. A short path, by comparison, is marched over more frequently, and thus the pheromone density becomes higher on shorter paths than longer ones. Pheromone evaporation also has the advantage of avoiding the convergence to a locally optimal solution. If there were no evaporation at all, the paths chosen by the first ants would tend to be excessively attractive to the following ones. In that case, the exploration of the solution space would be constrained. The influence of pheromone evaporation in real ant systems is unclear, but it is very important in artificial systems. The overall result is that when one ant finds a good (i.e., short) path from the colony to a food source, other ants are more likely to follow that path, and positive feedback eventually leads to many ants following a single path. The idea of the ant colony algorithm is to mimic this behavior with "simulated ants" walking around the graph representing the problem to be solved.
+
+### Ambient networks of intelligent objects
+
+New concepts are required since "intelligence" is no longer centralized but can be found throughout all minuscule objects. Anthropocentric concepts have been known to lead to the production of IT systems in which data processing, control units and calculating power are centralized. These centralized units have continually increased their performance and can be compared to the human brain. The model of the brain has become the ultimate vision of computers. Ambient networks of intelligent objects and, sooner or later, a new generation of information systems that are even more diffused and based on nanotechnology, will profoundly change this concept. Small devices that can be compared to insects do not possess a high intelligence on their own. Indeed, their intelligence can be classed as fairly limited. It is, for example, impossible to integrate a high performance calculator with the power to solve any kind of mathematical problem into a biochip that is implanted into the human body or integrated in an intelligent tag designed to trace commercial articles. However, once those objects are interconnected they develop a form of intelligence that can be compared to a colony of ants or bees. In the case of certain problems, this type of intelligence can be superior to the reasoning of a centralized system similar to the brain.
+
+Nature offers several examples of how minuscule organisms, if they all follow the same basic rule, can create a form of collective intelligence on the macroscopic level. Colonies of social insects perfectly illustrate this model which greatly differs from human societies. This model is based on the cooperation of independent units with simple and unpredictable behavior. They move through their surrounding area to carry out certain tasks and only possess a very limited amount of information to do so. A colony of ants, for example, represents numerous qualities that can also be applied to a network of ambient objects. Colonies of ants have a very high capacity to adapt themselves to changes in the environment, as well as great strength in dealing with situations where one individual fails to carry out a given task. This kind of flexibility would also be very useful for mobile networks of objects which are perpetually developing. Parcels of information that move from a computer to a digital object behave in the same way as ants would do. They move through the network and pass from one node to the next with the objective of arriving at their final destination as quickly as possible.
+
+### Artificial pheromone system
+
+Pheromone-based communication is one of the most effective ways of communication which is widely observed in nature. Pheromone is used by social insects such as bees, ants and termites; both for inter-agent and agent-swarm communications. Due to its feasibility, artificial pheromones have been adopted in multi-robot and swarm robotic systems. Pheromone-based communication was implemented by different means such as chemical or physical (RFID tags, light, sound) ways. However, those implementations were not able to replicate all the aspects of pheromones as seen in nature. Using projected light was presented in a 2007 IEEE paper by Garnier, Simon, et al. as an experimental setup to study pheromone-based communication with micro autonomous robots. Another study presented a system in which pheromones were implemented via a horizontal LCD screen on which the robots moved, with the robots having downward facing light sensors to register the patterns beneath them.
+
+### Algorithm and formula
+
+In the ant colony optimization algorithms, an artificial ant is a simple computational agent that searches for good solutions to a given optimization problem. To apply an ant colony algorithm, the optimization problem needs to be converted into the problem of finding the shortest path on a weighted graph. In the first step of each iteration, each ant stochastically constructs a solution, i.e. the order in which the edges in the graph should be followed. In the second step, the paths found by the different ants are compared. The last step consists of updating the pheromone levels on each edge.
+
+```text
+procedure ACO_MetaHeuristic is
+    while not terminated do
+        generateSolutions()
+        daemonActions()
+        pheromoneUpdate()
+    repeat
+end procedure
+```
+
+### Edge selection
+
+Each ant needs to construct a solution to move through the graph. To select the next edge in its tour, an ant will consider the length of each edge available from its current position, as well as the corresponding pheromone level. At each step of the algorithm, each ant moves from a state x {\displaystyle x} to state y {\displaystyle y}, corresponding to a more complete intermediate solution. Thus, each ant k {\displaystyle k} computes a set A k ( x ) {\displaystyle A_{k}(x)} of feasible expansions to its current state in each iteration, and moves to one of these in probability.
+
+For ant k {\displaystyle k}, the probability p x y k {\displaystyle p_{xy}^{k}} of moving from state x {\displaystyle x} to state y {\displaystyle y} depends on the combination of two values, the attractiveness η x y {\displaystyle \eta_{xy}} of the move, as computed by some heuristic indicating the a priori desirability of that move and the trail level τ x y {\displaystyle \tau _{xy}} of the move, indicating how proficient it has been in the past to make that particular move. The trail level represents a posteriori indication of the desirability of that move.
+
+In general, the k {\displaystyle k}th ant moves from state x {\displaystyle x} to state y {\displaystyle y} with probability
+
+p_{xy}^{k} = ((τ_xy^α)(η_xy^β)) / ( Σ_{z ∈ allowed_y} (τ_xz^α)(η_xz^β) )
+
+where τ x y is the amount of pheromone deposited for transition from state x to y, α ≥ 0 controls the influence of τ x y, η x y is the desirability of the move (typically 1 / d_xy), and β ≥ 1 controls the influence of η x y.
+
+### Pheromone update
+
+Trails are usually updated when all ants have completed their solution, increasing or decreasing trail levels depending on "good" or "bad" solutions. A global rule:
+
+τ_xy ← (1 − ρ) τ_xy + Σ_k Δτ_xy^k
+
+where ρ is the evaporation coefficient, and Δτ_xy^k is typically:
+
+Δτ_xy^k = { Q / L_k if ant k uses edge xy
+0 otherwise }
+
+### Common extensions
+
+#### Ant system (AS)
+
+The first ACO algorithm, corresponding to the one above.
+
+#### Ant colony system (ACS)
+
+Modifies AS in three aspects:
+
+- Biased edge selection toward exploitation.
+- Local pheromone updates during solution construction.
+- Only the best ant updates trails globally.
+
+#### Elitist ant system
+
+Global best solution deposits pheromone each iteration.
+
+#### Max-min ant system (MMAS)
+
+Controls max/min pheromone per trail, restricts deposition to the best ant, reinitializes trails at stagnation.
+
+#### Rank-based ant system (ASrank)
+
+Solutions ranked by length; best few update pheromone with weighted contributions.
+
+#### Parallel ant colony optimization (PACO)
+
+Partitions ants into groups with communication strategies.
+
+#### Continuous orthogonal ant colony (COAC)
+
+Uses orthogonal design and adaptive radius for strong global search.
+
+#### Recursive ant colony optimization
+
+Divides domain recursively into subdomains, promoting best solutions.
+
+### Convergence
+
+For some versions of the algorithm, it is possible to prove that it is convergent (i.e., it is able to find the global optimum in finite time). The first evidence of convergence for an ant colony algorithm was made in 2000, the graph-based ant system algorithm, and later on for the ACS and MMAS algorithms. Like most metaheuristics, it is very difficult to estimate the theoretical speed of convergence. A performance analysis of a continuous ant colony algorithm with respect to its various parameters (edge selection strategy, distance measure metric, and pheromone evaporation rate) showed that its performance and rate of convergence are sensitive to the chosen parameter values, and especially to the value of the pheromone evaporation rate. In 2004, Zlochin and his colleagues showed that ACO-type algorithms are closely related to stochastic gradient descent, Cross-entropy method and estimation of distribution algorithm. They proposed an umbrella term "Model-based search" to describe this class of metaheuristics.
+
+### Article : [Ant Colony Optimization: Artificial Ants as a Computational Intelligence Technique PDF](https://web.archive.org/web/20120222061542/http://iridia.ulb.ac.be/IridiaTrSeries/IridiaTr2006-023r001.pdf)

@@ -13,6 +13,7 @@ from optiflowx.models.configs.mlp_config import MLPConfig
 from optiflowx.models.configs.decision_tree_config import DecisionTreeConfig
 from optiflowx.models.configs.knn_config import KNNConfig
 from optiflowx.models.configs.logistic_regression_config import LogisticRegressionConfig
+from optiflowx.models.configs.custom_model_config import CustomModelConfig
 
 # add imports only for config files that actually exist
 
@@ -24,6 +25,7 @@ MODEL_REGISTRY = {
     "decision_tree": DecisionTreeConfig,
     "knn": KNNConfig,
     "logistic_regression": LogisticRegressionConfig,
+    "custom_model": CustomModelConfig,
 }
 
 

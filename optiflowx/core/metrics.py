@@ -1,22 +1,45 @@
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 import inspect
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    precision_score,
+    recall_score,
+    mean_squared_error,
+    mean_absolute_error,
+    r2_score,
+)
+
 
 METRICS = {
-    "accuracy": lambda y_true, y_pred: accuracy_score(y_true, y_pred),
-    "f1": lambda y_true, y_pred: f1_score(y_true, y_pred, average="macro"),
-    "precision": lambda y_true, y_pred: precision_score(
-        y_true, y_pred, average="macro"
+    # Classification (higher is better)
+    "accuracy": lambda y_true, y_pred: float(accuracy_score(y_true, y_pred)),
+    "f1": lambda y_true, y_pred: float(
+        f1_score(y_true, y_pred, average="macro")
     ),
-    "recall": lambda y_true, y_pred: recall_score(y_true, y_pred, average="macro"),
+    "precision": lambda y_true, y_pred: float(
+        precision_score(y_true, y_pred, average="macro")
+    ),
+    "recall": lambda y_true, y_pred: float(
+        recall_score(y_true, y_pred, average="macro")
+    ),
+    # Regression: by convention we return values where higher is better.
+    # For error-based metrics we negate the value so the optimizer can still maximize.
+    "mse": lambda y_true, y_pred: -float(mean_squared_error(y_true, y_pred)),
+    "rmse": lambda y_true, y_pred: -float(
+        mean_squared_error(y_true, y_pred, squared=False)
+    ),
+    "mae": lambda y_true, y_pred: -float(mean_absolute_error(y_true, y_pred)),
+    "r2": lambda y_true, y_pred: float(r2_score(y_true, y_pred)),
 }
 
 
 def get_metric(metric):
     """Return a metric function for model evaluation.
 
-    This function validates and retrieves a metric callable used to evaluate
-    model predictions. It supports both predefined metric names (e.g., "accuracy")
-    and user-defined functions that accept `(y_true, y_pred)` as arguments.
+    Supports predefined metric names and user-provided callables that accept
+    `(y_true, y_pred)` and return a numeric score. For regression error metrics
+    (MSE/MAE/RMSE) the returned value is negated so the optimization framework
+    can consistently maximize the score.
 
     Args:
         metric (str | Callable): Metric name or a custom callable function.

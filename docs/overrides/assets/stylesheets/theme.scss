@@ -1,0 +1,99 @@
+// OptiFlowX custom Material theme overrides (SCSS)
+// Dark tech / neon aesthetic
+$neon-cyan: #00e5ff;
+$electric-violet: #9b59ff;
+$accent-blue: #00aaff;
+$bg-dark: #0b0f14;
+$card-bg: rgba(255,255,255,0.04);
+$glass-border: rgba(255,255,255,0.06);
+
+// Root variables for convenience
+:root {
+  --ofx-bg: #{$bg-dark};
+  --ofx-accent-1: #{$neon-cyan};
+  --ofx-accent-2: #{$electric-violet};
+  --ofx-accent-3: #{$accent-blue};
+  --ofx-card: #{$card-bg};
+  --ofx-glow: 0 8px 40px rgba(0, 229, 255, 0.06);
+}
+
+/* Page background + base text */
+body {
+  background: linear-gradient(180deg, mix(#0b0f14, #071018, 20%), #05060a 80%);
+  color: #e6eef6;
+  transition: background-color 250ms ease, color 200ms ease;
+}
+
+/* Header with subtle animated gradient */
+.md-header {
+  background: linear-gradient(90deg, rgba(var(--ofx-accent-1), 0.06), rgba(var(--ofx-accent-2), 0.04));
+}
+
+.md-header nav.md-nav__title {
+  background: linear-gradient(270deg, var(--ofx-accent-1), var(--ofx-accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: headerShift 8s infinite linear;
+}
+
+@keyframes headerShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Cards / panels */
+.md-card, .md-content, .md-page {
+  background: var(--ofx-card);
+  border-radius: 12px;
+  border: 1px solid $glass-border;
+  box-shadow: var(--ofx-glow);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.md-card:hover, .md-content:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 50px rgba(0,0,0,0.45), 0 6px 24px rgba(0,165,255,0.06);
+  border-color: rgba(0,229,255,0.12);
+}
+
+/* Links and buttons glow */
+a, .md-button {
+  color: var(--ofx-accent-1);
+  text-decoration: none;
+  transition: color 200ms ease, text-shadow 200ms ease;
+}
+
+a:hover, .md-button:hover {
+  color: var(--ofx-accent-3);
+  text-shadow: 0 0 8px rgba(0,229,255,0.18);
+}
+
+/* Code blocks and inline code */
+code, pre, .md-typeset code {
+  background: rgba(10,12,16,0.6);
+  color: #e8f6ff;
+  border-radius: 6px;
+  padding: 0.1rem 0.35rem;
+}
+
+/* Table header accent */
+table thead tr th {
+  background: linear-gradient(90deg, rgba($neon-cyan, 0.06), rgba($electric-violet, 0.04));
+}
+
+/* Small helper for neon badges */
+.ofx-badge {
+  display: inline-block;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(0,229,255,0.06);
+  color: var(--ofx-accent-1);
+  font-weight: 600;
+}
+
+/* Footer adjustments */
+.md-footer { opacity: 0.9; color: rgba(230,238,246,0.8); }
+
+/* Utility: make accent colors work in rgba() contexts */
+// Note: Some advanced Sass helpers could be added for dynamic glows.

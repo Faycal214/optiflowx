@@ -1,4 +1,4 @@
-from sklearn.svm import SVC
+from sklearn.svm import SVC, SVR
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from optiflowx.core.search_space import SearchSpace
@@ -15,6 +15,11 @@ def build_svc_pipeline(**params):
         Pipeline: A scikit-learn pipeline with StandardScaler and SVC.
     """
     return Pipeline([("scaler", StandardScaler()), ("svc", SVC(**params))])
+
+
+def build_svr_pipeline(**params):
+    """Build an SVR pipeline with standard scaling for regression."""
+    return Pipeline([("scaler", StandardScaler()), ("svr", SVR(**params))])
 
 
 class SVCConfig:
@@ -37,10 +42,13 @@ class SVCConfig:
         return s
 
     @staticmethod
-    def get_wrapper():
-        """Return model wrapper for SVC pipeline.
+    def get_wrapper(task_type: str = "classification"):
+        """Return model wrapper for SVC/SVR pipeline based on task type.
+
+        Args:
+            task_type (str): "classification" or "regression".
 
         Returns:
             ModelWrapper: Wrapper integrating preprocessing and model creation.
         """
-        return ModelWrapper(build_svc_pipeline)
+        return ModelWrapper(build_svc_pipeline if task_type == "classification" else build_svr_pipeline)

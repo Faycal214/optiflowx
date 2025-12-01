@@ -73,6 +73,10 @@ cd optiflowx
 pip install -e .
 ```
 
+Note: The documentation site uses a custom dark neon theme. To preview locally,
+compile the SCSS with `docs/overrides/build_theme.sh` (requires `sass`) and then
+run `mkdocs serve`.
+
 ## 🧭 Example Usage
 
 ```python

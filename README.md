@@ -12,11 +12,23 @@ It enables systematic exploration of search spaces for machine learning models u
 ---
 
 ## 🔍 Overview
+Machine learning models rely on carefully tuned hyperparameters. Conventional methods
+such as grid or simple random search become inefficient for discrete, mixed or
+high-dimensional search spaces.
 
-Machine learning models rely on carefully tuned hyperparameters.
-Conventional methods such as grid or random search are inefficient when dealing with discrete, mixed, or high-dimensional spaces.
+**OptiFlowX** is a modular framework for hyperparameter and configuration
+optimization that brings together combinatorial and metaheuristic algorithms
+so you can search complex spaces with a consistent, extensible API.
 
-**OptiFlowX** provides a modular ecosystem that leverages **combinatorial optimization** and **metaheuristics** (evolutionary, swarm-based, and probabilistic methods) to efficiently discover optimal configurations.
+Key capabilities include:
+
+- Flexible support for classification and regression tasks via a `task_type`
+    parameter.
+- First-class support for user-provided `custom_metric(y_true, y_pred)` callables
+    (the framework will use them for cross-validation and accept them in
+    parallel workers, with a `dill` fallback for non-pickleable callables).
+- Unified scoring interface: built-in metrics (accuracy, f1, mse, rmse, mae,
+    r2) are normalized so optimizers can always maximize a single numeric score.
 
 ---
 
@@ -34,6 +46,15 @@ Conventional methods such as grid or random search are inefficient when dealing 
 - Scalable, parallel execution support.
 - Compatible with any ML framework (scikit-learn, PyTorch, TensorFlow, etc.).
 
+Additional highlights:
+
+- Custom metric support: pass a callable `def my_metric(y_true, y_pred) -> float`
+    and the engine will use it for evaluation (supports multiprocessing via
+    a serialization fallback).
+- Regression-ready: built-in regression metrics (`mse`, `rmse`, `mae`, `r2`)
+    are provided and normalized so the optimizer maximizes performance.
+- Consistent return format: optimizers return `(best_params, best_score)` so
+    results are easy to consume programmatically.
 ---
 
 ## ⚗️ Installation
@@ -55,63 +76,66 @@ pip install -e .
 ## 🧠 Example Usage
 
 ```python
-from sklearn.datasets import make_classification
+from sklearn.datasets import make_classification, make_regression
 from optiflowx.optimizers.genetic import GeneticOptimizer
 from optiflowx.optimizers.pso import PSOOptimizer
-from optiflowx.optimizers.bayesian import BayesianOptimizer
-from optiflowx.optimizers.tpe import TPEOptimizer
-from optiflowx.optimizers.random_search import RandomSearchOptimizer
-from optiflowx.optimizers.simulated_annealing import SimulatedAnnealingOptimizer
 from optiflowx.models.configs.random_forest_config import RandomForestConfig
 
 
-# 1. Generate sample dataset
-X, y = make_classification(
-    n_samples=100,
-    n_features=10,
-    n_informative=8,
-    n_redundant=2,
-    random_state=42,
-)
-
-# 2. Load model configuration and search space
+# Example 1 — classification with a built-in metric
+X, y = make_classification(n_samples=200, n_features=12, random_state=0)
 cfg = RandomForestConfig()
 search_space = cfg.build_search_space()
-model_class = cfg.get_wrapper().model_class
+model_wrapper = cfg.get_wrapper(task_type="classification")
 
-# 3. Define optimizers to test
-optimizers = [
-    ("pso", PSOOptimizer, {"n_particles": 10, "w": 0.7, "c1": 1.4, "c2": 1.4}),
-    ("genetic", GeneticOptimizer, {"population": 10, "mutation_prob": 0.3}),
-    ("bayesian", BayesianOptimizer, {"n_initial_points": 5}),
-    ("tpe", TPEOptimizer, {"population_size": 10}),
-    ("random_search", RandomSearchOptimizer, {"n_samples": 20}),
-    (
-        "simulated_annealing",
-        SimulatedAnnealingOptimizer,
-        {
-            "population_size": 10,
-            "initial_temp": 1.0,
-            "cooling_rate": 0.9,
-            "mutation_rate": 0.3,
-        },
-    ),
-]
+opt = PSOOptimizer(
+    search_space=search_space,
+    metric="accuracy",
+    model_class=model_wrapper.model_class,
+    X=X,
+    y=y,
+    n_particles=12,
+)
+best_params, best_score = opt.run(max_iters=5)
+print("Classification result:", best_score, best_params)
 
-# 4. Run each optimizer and print results
-for opt_name, opt_class, opt_params in optimizers:
-    print(f"\n{'='*30}\nTesting optimizer: {opt_name}\n{'='*30}")
-    optimizer = opt_class(
-        search_space=search_space,
-        metric="accuracy",
-        model_class=model_class,
-        X=X,
-        y=y,
-        **opt_params,
-    )
 
-    best_params, best_score = optimizer.run(max_iters=5)
-    print(f"Result for {opt_name} → score={best_score:.4f}, params={best_params}")
+# Example 2 — regression with built-in metric
+Xr, yr = make_regression(n_samples=200, n_features=8, noise=0.1, random_state=1)
+cfg = RandomForestConfig()
+reg_wrapper = cfg.get_wrapper(task_type="regression")
+
+optr = GeneticOptimizer(
+    search_space=search_space,
+    metric="mse",  # mse is negated internally so higher is better
+    model_class=reg_wrapper.model_class,
+    X=Xr,
+    y=yr,
+    population=20,
+)
+best_params_r, best_score_r = optr.run(max_iters=5)
+print("Regression result:", best_score_r, best_params_r)
+
+
+# Example 3 — custom metric callable
+def my_custom_metric(y_true, y_pred):
+    """User-defined metric: return any float (higher is better)."""
+    # e.g., negative mean absolute error (so higher is better)
+    from sklearn.metrics import mean_absolute_error
+
+    return -float(mean_absolute_error(y_true, y_pred))
+
+opt_custom = PSOOptimizer(
+    search_space=search_space,
+    metric="accuracy",
+    custom_metric=my_custom_metric,
+    model_class=model_wrapper.model_class,
+    X=X,
+    y=y,
+    n_particles=8,
+)
+best_params_c, best_score_c = opt_custom.run(max_iters=4)
+print("Custom metric result:", best_score_c, best_params_c)
 ```
 
 ---
@@ -123,15 +147,116 @@ for opt_name, opt_class, opt_params in optimizers:
 pytest -v --maxfail=1 --disable-warnings
 ```
 
+## 🧩 Optional dependency: `dill`
+
+If you plan to pass non-top-level (non-pickleable) `custom_metric` callables
+to optimizers while using multiprocessing, the project can optionally use
+`dill` to serialize those callables. If `dill` is not installed, custom
+metrics must be pickleable (e.g., top-level functions).
+
+Install `dill` in your environment with:
+
+```bash
+pip install dill
+```
+
+The framework will automatically attempt to use `dill` when necessary; if it
+is not present and a non-pickleable callable is provided, an error will be
+raised with guidance to install `dill` or provide a pickleable metric.
+
 ---
 
 ## 📚 Citation
 
+# OptiFlowX
+
+[![PyPI version](https://img.shields.io/pypi/v/optiflowx.svg)](https://pypi.org/project/optiflowx/)
+[![Python versions](https://img.shields.io/pypi/pyversions/optiflowx.svg)](https://pypi.org/project/optiflowx/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+OptiFlowX — model-agnostic hyperparameter optimization for classification and regression.
+
+OptiFlowX provides a lightweight, extensible toolkit to run population-based, Bayesian,
+and metaheuristic optimizers over arbitrary search spaces. It is model-agnostic (works
+with scikit-learn models or user-provided model wrappers) and accepts any evaluation
+metric (classification or regression) including user callables.
+
+Author: Alikacem Faycal.
+
+Key highlights:
+
+- **Model-agnostic**: works with scikit-learn models or custom model wrappers.
+- **All metrics supported**: pass a string metric or a callable `custom_metric(y_true, y_pred)`.
+- **Multiple optimizers**: population-based (GA, PSO, ACO, GWO), Bayesian (GP), TPE,
+    Random Search, and Simulated Annealing.
+- **Unified scoring**: regression error metrics are normalized so optimizers maximize a
+    single `higher-is-better` score.
+- **Parallel-ready**: evaluations can run in parallel; the engine serializes custom
+    callables (with `dill` fallback when needed).
+
+Quick install:
+
 ```bash
+pip install optiflowx
+```
+
+From source:
+
+```bash
+git clone https://github.com/Faycal214/optiflowx.git
+cd optiflowx
+pip install -e .
+```
+
+Short example (classification):
+
+```python
+from sklearn.datasets import make_classification
+from optiflowx.optimizers.pso import PSOOptimizer
+from optiflowx.models.configs.random_forest_config import RandomForestConfig
+
+X, y = make_classification(n_samples=200, n_features=12, random_state=0)
+cfg = RandomForestConfig()
+search_space = cfg.build_search_space()
+model_wrapper = cfg.get_wrapper(task_type="classification")
+
+opt = PSOOptimizer(
+        search_space=search_space,
+        metric="accuracy",
+        model_class=model_wrapper.model_class,
+        X=X,
+        y=y,
+        n_particles=12,
+)
+best_params, best_score = opt.run(max_iters=5)
+print(best_score, best_params)
+```
+
+Fast CI/testing hint
+--------------------
+When running examples or CI you can set `EXAMPLES_FAST_MODE=1` and `EXAMPLES_MAX_ITERS=1`
+to run a minimal quick pass.
+
+Testing
+-------
+
+```bash
+pytest -q
+```
+
+Publishing
+----------
+I provide a GitHub Actions workflow that can publish releases to PyPI when you push
+a `v*` tag and set `PYPI_API_TOKEN` in repo secrets. See `.github/workflows/publish-pypi.yml`.
+
+Citation
+--------
+
+```
 @software{optiflowx,
-  author = {Faycal, Billel},
-  title = {OptiFlowX: Combinatorial Hyperparameter Optimization Framework},
-  year = {2025},
-  url = {https://github.com/Faycal214/optiflowx}
+    author = {Faycal, Alikacem},
+    title = {OptiFlowX: Combinatorial Hyperparameter Optimization Framework},
+    year = {2025},
+    url = {https://github.com/Faycal214/optiflowx}
 }
 ```

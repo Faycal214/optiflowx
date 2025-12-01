@@ -43,3 +43,12 @@ best_params, best_score = optimizer.run(max_iters=5)
 print("Best score:", best_score)
 print("Best params:", best_params)
 ```
+
+Quick test runs and CI: set environment variables to speed up examples during testing:
+
+```bash
+export EXAMPLES_FAST_MODE=1
+export EXAMPLES_MAX_ITERS=1
+```
+
+This will make example scripts run a minimal fast pass (useful for CI).

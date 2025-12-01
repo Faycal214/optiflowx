@@ -1,4 +1,6 @@
 import numpy as np
+from optiflowx.core.metrics import get_metric
+import logging
 
 
 class PSOOptimizer:
@@ -61,6 +63,8 @@ class PSOOptimizer:
         c2=1.4,
         velocity_threshold=1e-3,
         stagnation_limit=10,
+        custom_metric=None,
+        task_type: str = "classification",
     ):
         """Initializes the PSO optimizer.
 
@@ -76,9 +80,13 @@ class PSOOptimizer:
             c2 (float, optional): Social coefficient. Defaults to 1.4.
             velocity_threshold (float, optional): Stopping threshold. Defaults to 1e-3.
             stagnation_limit (int, optional): Early stop limit. Defaults to 10.
+            custom_metric (callable or str, optional): Custom metric for evaluation. Defaults to None.
+            task_type (str, optional): Type of task (e.g., "classification"). Defaults to "classification".
         """
         self.search_space = search_space
         self.metric = metric
+        self.custom_metric = custom_metric
+        self.task_type = task_type
         self.model_class = model_class
         self.X = X
         self.y = y
@@ -95,6 +103,7 @@ class PSOOptimizer:
         self._no_improve_count = 0
         self.iteration = 0
         self.best_params = None
+        self.wrapper = None
 
     def initialize_population(self):
         """Initializes particles with random positions and zero velocities."""
@@ -159,15 +168,17 @@ class PSOOptimizer:
         for particle in self.particles:
             params = self._decode_position(particle.position)
             try:
-                model = self.model_class(**params)
-                model.fit(self.X, self.y)
-                preds = model.predict(self.X)
-                if callable(self.metric):
-                    score = self.metric(self.y, preds)
+                if getattr(self, "wrapper", None) is not None:
+                    score, model = self.wrapper.train_and_score(
+                        params, self.X, self.y, scoring=self.metric, custom_metric=self.custom_metric, task_type=self.task_type
+                    )
+                    score = float(score)
                 else:
-                    from sklearn.metrics import get_scorer
-
-                    score = get_scorer(self.metric)(model, self.X, self.y)
+                    metric_fn = get_metric(self.custom_metric or self.metric)
+                    model = self.model_class(**params)
+                    model.fit(self.X, self.y)
+                    preds = model.predict(self.X)
+                    score = float(metric_fn(self.y, preds))
             except Exception:
                 score = float("-inf")
             if score > particle.best_score:
@@ -198,26 +209,20 @@ class PSOOptimizer:
         for particle in self.particles:
             params = self._decode_position(particle.position)
             try:
-                model = self.model_class(**params)
-                model.fit(self.X, self.y)
-                preds = model.predict(self.X)
-                if callable(self.metric):
-                    score = self.metric(self.y, preds)
+                if getattr(self, "wrapper", None) is not None:
+                    score, model = self.wrapper.train_and_score(
+                        params, self.X, self.y, scoring=self.metric, custom_metric=self.custom_metric, task_type=self.task_type
+                    )
+                    score = float(score)
                 else:
-                    from sklearn.metrics import get_scorer
-
-                    score = get_scorer(self.metric)(model, self.X, self.y)
+                    score = float(get_metric(self.custom_metric or self.metric)(self.y, self.model_class(**params).fit(self.X, self.y).predict(self.X)))
             except Exception:
                 score = float("-inf")
             if score > best_score:
                 best_score = score
                 best_params = params
-        if best_params is not None:
-            print(f"Result for PSO: score={best_score:.4f}, params={best_params}")
-            return best_params, best_score
-        else:
-            print("Result for PSO: score=-inf, params={}")
-            return {}, float("-inf")
+        # Do not print score and params per iteration for PSO
+        return best_params if best_params is not None else {}, best_score if best_params is not None else float("-inf")
 
     def get_best_params(self):
         """Returns the best decoded parameter configuration found so far.
@@ -247,21 +252,23 @@ class PSOOptimizer:
         for i in range(max_iters):
             self.evaluate_particles()
 
-            # Identify current best performer
+            # Identify current best performer using unified metric resolution
             best_score = float("-inf")
             best_params = None
             for particle in self.particles:
                 params = self._decode_position(particle.position)
                 try:
-                    model = self.model_class(**params)
-                    model.fit(self.X, self.y)
-                    preds = model.predict(self.X)
-                    if callable(self.metric):
-                        score = self.metric(self.y, preds)
+                    if getattr(self, "wrapper", None) is not None:
+                        score, model = self.wrapper.train_and_score(
+                            params, self.X, self.y, scoring=self.metric, custom_metric=self.custom_metric, task_type=self.task_type
+                        )
+                        score = float(score)
                     else:
-                        from sklearn.metrics import get_scorer
-
-                        score = get_scorer(self.metric)(model, self.X, self.y)
+                        metric_fn = get_metric(self.custom_metric or self.metric)
+                        model = self.model_class(**params)
+                        model.fit(self.X, self.y)
+                        preds = model.predict(self.X)
+                        score = float(metric_fn(self.y, preds))
                 except Exception:
                     score = float("-inf")
                 if score > best_score:
@@ -279,14 +286,12 @@ class PSOOptimizer:
                 self.best_candidate = Candidate(best_params, best_score)
 
             self.update_particles()
-            print(
-                f"[Engine] Iter {i+1}/{max_iters} | Best={self.best_candidate.score:.4f} | Time={time.time()-start_time:.2f}s\n"
-            )
+            logging.info("[Engine] Iter %d/%d | Best=%.4f | Time=%.2fs", i+1, max_iters, self.best_candidate.score, time.time()-start_time)
             if self._no_improve_count >= self.stagnation_limit:
-                print("[Engine] Stopping early due to stagnation.")
+                logging.info("[Engine] Stopping early due to stagnation.")
                 break
 
-        print(f"[Engine] Optimization finished in {time.time()-start_time:.2f}s")
+        logging.info("[Engine] Optimization finished in %.2fs", time.time()-start_time)
         if self.best_candidate is not None:
             return self.best_candidate.params, self.best_candidate.score
         else:

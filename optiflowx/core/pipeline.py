@@ -1,4 +1,5 @@
 from optiflowx.core.optimization_engine import OptimizationEngine
+import logging
 
 
 class MLPipeline:
@@ -33,7 +34,7 @@ class MLPipeline:
                 - best_params (dict): Best hyperparameters found.
                 - best_score (float): Best evaluation score achieved.
         """
-        print(f"[Pipeline] Starting optimization for model: {self.model_key}")
+        logging.info("[Pipeline] Starting optimization for model: %s", self.model_key)
 
         engine = OptimizationEngine(
             model_key=self.model_key,
@@ -44,8 +45,8 @@ class MLPipeline:
 
         best_model, best_params, best_score = engine.run(max_iters=max_iters)
 
-        print("[Pipeline] Optimization complete.")
-        print(f"[Pipeline] Best score: {best_score:.4f}")
-        print(f"[Pipeline] Best parameters: {best_params}")
+        logging.info("[Pipeline] Optimization complete.")
+        logging.info("[Pipeline] Best score: %.4f", best_score)
+        logging.info("[Pipeline] Best parameters: %s", best_params)
 
         return best_model, best_params, best_score

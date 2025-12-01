@@ -1,4 +1,4 @@
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from optiflowx.core.search_space import SearchSpace
 from optiflowx.core.model_wrapper import ModelWrapper
 
@@ -31,10 +31,14 @@ class DecisionTreeConfig:
         return s
 
     @staticmethod
-    def get_wrapper():
-        """Return a model wrapper for DecisionTreeClassifier.
+    def get_wrapper(task_type: str = "classification"):
+        """Return a model wrapper for Decision Tree.
+
+        Args:
+            task_type (str): "classification" or "regression".
 
         Returns:
-            ModelWrapper: Wrapper providing standardized model interface.
+            ModelWrapper: Wrapper for the appropriate Decision Tree estimator.
         """
-        return ModelWrapper(DecisionTreeClassifier)
+        model_cls = DecisionTreeClassifier if task_type == "classification" else DecisionTreeRegressor
+        return ModelWrapper(model_cls)

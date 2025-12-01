@@ -3,6 +3,7 @@ import json
 from tqdm import tqdm
 from sklearn.model_selection import cross_val_score
 import numpy as np
+import logging
 
 
 def optimize_model(model, param_grid, X, y, cv=5, n_jobs=-1, verbose=True):
@@ -28,7 +29,7 @@ def optimize_model(model, param_grid, X, y, cv=5, n_jobs=-1, verbose=True):
     results = []
     start_time = time.time()
     total_configs = len(param_grid)
-    print(f"Starting optimization on {total_configs} configurations...")
+    logging.info("Starting optimization on %d configurations...", total_configs)
 
     with tqdm(total=total_configs, desc="Optimization Progress") as pbar:
         for i, params in enumerate(param_grid):
@@ -49,14 +50,12 @@ def optimize_model(model, param_grid, X, y, cv=5, n_jobs=-1, verbose=True):
             )
 
             if verbose:
-                print(
-                    f"[{i+1}/{total_configs}] Score: {mean_score:.4f} | Time: {iter_time:.2f}s"
-                )
+                logging.info("[%d/%d] Score: %.4f | Time: %.2fs", i+1, total_configs, mean_score, iter_time)
 
             pbar.update(1)
 
     total_time = time.time() - start_time
-    print(f"\nOptimization complete in {total_time:.2f} seconds.")
+    logging.info("\nOptimization complete in %.2f seconds.", total_time)
 
     best_result = max(results, key=lambda x: x["mean_score"])
     with open("optimization_log.json", "w") as f:
@@ -70,5 +69,5 @@ def optimize_model(model, param_grid, X, y, cv=5, n_jobs=-1, verbose=True):
             indent=4,
         )
 
-    print(f"Best score: {best_result['mean_score']:.4f}")
+    logging.info("Best score: %.4f", best_result["mean_score"])
     return best_result, results

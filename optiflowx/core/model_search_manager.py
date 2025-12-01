@@ -4,6 +4,7 @@ import pkgutil
 from typing import Dict, Any, Tuple
 from optiflowx.models.registry import MODEL_REGISTRY
 from optiflowx.core.optimization_engine import OptimizationEngine
+import logging
 
 
 class ModelSearchManager:
@@ -75,7 +76,7 @@ class ModelSearchManager:
         if model_name not in self.model_configs:
             raise ValueError(f"Unknown model: {model_name}")
 
-        print(f"\n[INFO] Starting optimization for model: {model_name}")
+        logging.info("\n[INFO] Starting optimization for model: %s", model_name)
         engine = OptimizationEngine(
             model_key=model_name,
             optimizer_key=self.strategy,
@@ -89,9 +90,9 @@ class ModelSearchManager:
 
         model, params, score = engine.run(max_iters=max_iters)
         if score is not None:
-            print(f"[DONE] {model_name} best_score={score:.4f}")
+            logging.info("[DONE] %s best_score=%.4f", model_name, score)
         else:
-            print(f"[DONE] {model_name} best_score=None")
+            logging.info("[DONE] %s best_score=None", model_name)
         return {"model": model, "params": params, "score": score}
 
     def search_all(self, dataset: Tuple, max_iters: int = 10):
@@ -111,7 +112,7 @@ class ModelSearchManager:
             results.append(res)
 
         results = sorted(results, key=lambda r: r["score"], reverse=True)
-        print("\n[SUMMARY] Best models:")
+        logging.info("\n[SUMMARY] Best models:")
         for rank, r in enumerate(results, 1):
-            print(f"{rank}. {r['model_name']} -> score={r['score']:.4f}")
+            logging.info("%d. %s -> score=%.4f", rank, r["model_name"], r["score"])
         return results

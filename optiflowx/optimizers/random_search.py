@@ -1,5 +1,7 @@
 # optimizers/random_search.py
 import random
+from optiflowx.core.metrics import get_metric
+import logging
 
 
 class RandomSearchOptimizer:
@@ -46,6 +48,8 @@ class RandomSearchOptimizer:
         n_samples=10000,
         seed=None,
         stagnation_limit=10,
+        custom_metric=None,
+        task_type: str = "classification",
     ):
         """Initialize the Random Search optimizer.
 
@@ -61,7 +65,10 @@ class RandomSearchOptimizer:
         """
         self.search_space = search_space
         self.metric = metric
+        self.custom_metric = custom_metric
+        self.task_type = task_type
         self.model_class = model_class
+        self.wrapper = None
         self.X = X
         self.y = y
         self.n_samples = n_samples
@@ -93,19 +100,23 @@ class RandomSearchOptimizer:
         Args:
             candidates (List[RandomSearchOptimizer.Candidate]): Candidates to evaluate.
         """
+        metric_fn = get_metric(self.custom_metric or self.metric)
         for cand in candidates:
             try:
-                model = self.model_class(**cand.params)
-                model.fit(self.X, self.y)
-                preds = model.predict(self.X)
-                if callable(self.metric):
-                    score = self.metric(self.y, preds)
+                if getattr(self, "wrapper", None) is not None:
+                    score, model = self.wrapper.train_and_score(
+                        cand.params, self.X, self.y, scoring=self.metric, custom_metric=self.custom_metric, task_type=self.task_type
+                    )
+                    cand.score = float(score)
+                    cand.model = model
                 else:
-                    from sklearn.metrics import get_scorer
-
-                    score = get_scorer(self.metric)(model, self.X, self.y)
-                cand.score = score
-                cand.model = model
+                    metric_fn = get_metric(self.custom_metric or self.metric)
+                    model = self.model_class(**cand.params)
+                    model.fit(self.X, self.y)
+                    preds = model.predict(self.X)
+                    score = float(metric_fn(self.y, preds))
+                    cand.score = score
+                    cand.model = model
             except Exception:
                 cand.score = float("-inf")
                 cand.model = None
@@ -144,14 +155,12 @@ class RandomSearchOptimizer:
             candidates = self.generate_candidates()
             self.evaluate_candidates(candidates)
             self.update_state(candidates)
-            print(
-                f"[Engine] Iter {i+1}/{max_iters} | Best={self.best_candidate.score:.4f} | Time={time.time()-start_time:.2f}s"
-            )
+            logging.info("[Engine] Iter %d/%d | Best=%.4f | Time=%.2fs", i+1, max_iters, self.best_candidate.score, time.time()-start_time)
             self.iteration += 1
             if self._no_improve_count >= self.stagnation_limit:
-                print("[Engine] Stopping early due to stagnation.")
+                logging.info("[Engine] Stopping early due to stagnation.")
                 break
-        print(f"[Engine] Optimization finished in {time.time()-start_time:.2f}s")
+        logging.info("[Engine] Optimization finished in %.2fs", time.time()-start_time)
         if self.best_candidate is not None:
             return self.best_candidate.params, self.best_candidate.score
         return None, None

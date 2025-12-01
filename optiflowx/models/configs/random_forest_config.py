@@ -1,4 +1,4 @@
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from optiflowx.core.search_space import SearchSpace
 from optiflowx.core.model_wrapper import ModelWrapper
 import random
@@ -31,16 +31,20 @@ class RandomForestConfig:
         return s
 
     @staticmethod
-    def get_wrapper():
-        """Return a model wrapper for RandomForestClassifier.
+    def get_wrapper(task_type: str = "classification"):
+        """Return a model wrapper for RandomForest.
+
+        Args:
+            task_type (str): "classification" or "regression". Determines which
+                sklearn estimator is wrapped.
 
         Returns:
-            ModelWrapper: Wrapper object integrating RandomForestClassifier with
-            optional preprocessing of hyperparameters.
+            ModelWrapper: Wrapper object integrating RandomForest estimator.
         """
-        return ModelWrapper(
-            RandomForestClassifier, preprocess=RandomForestConfig._preprocess_params
+        model_cls = (
+            RandomForestClassifier if task_type == "classification" else RandomForestRegressor
         )
+        return ModelWrapper(model_cls, preprocess=RandomForestConfig._preprocess_params)
 
     @staticmethod
     def _preprocess_params(params):

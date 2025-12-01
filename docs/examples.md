@@ -141,3 +141,9 @@ print("Accuracy:", accuracy_score(y_test, y_pred))
 
 OptiFlowX also supports PyTorch models by wrapping them in a `TorchModelConfig`.
 The optimizer explores learning rates, batch sizes, and architectures.
+
+Quick notes:
+
+- The repository provides split example scripts in `examples/classification_examples.py`
+    and `examples/regression_examples.py` to make usage clearer.
+- For fast CI or quick checks set `EXAMPLES_FAST_MODE=1` and `EXAMPLES_MAX_ITERS=1`.

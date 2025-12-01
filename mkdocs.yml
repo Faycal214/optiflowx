@@ -3,11 +3,22 @@ site_url: https://faycal214.github.io/optiflowx/
 repo_url: https://github.com/Faycal214/optiflowx
 theme:
   name: material
+  custom_dir: docs/overrides
   features:
     - navigation.expand
     - navigation.instant
     - search.highlight
     - content.code.copy
+  palette:
+    scheme: slate
+    primary: 'indigo'
+    accent: 'cyan'
+  font:
+    text: Roboto
+    code: Roboto Mono
+  language: en
+extra_css:
+  - overrides/assets/stylesheets/theme.css
 nav:
   - Home: index.md
   - Getting Started: getting-started.md

@@ -1,4 +1,4 @@
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from optiflowx.core.search_space import SearchSpace
 from optiflowx.core.model_wrapper import ModelWrapper
 
@@ -29,10 +29,14 @@ class KNNConfig:
         return s
 
     @staticmethod
-    def get_wrapper():
-        """Return model wrapper for KNeighborsClassifier.
+    def get_wrapper(task_type: str = "classification"):
+        """Return model wrapper for KNeighbors (classifier or regressor).
+
+        Args:
+            task_type (str): "classification" or "regression".
 
         Returns:
             ModelWrapper: Wrapper for the KNN model.
         """
-        return ModelWrapper(KNeighborsClassifier)
+        model_cls = KNeighborsClassifier if task_type == "classification" else KNeighborsRegressor
+        return ModelWrapper(model_cls)

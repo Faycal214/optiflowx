@@ -1,4 +1,6 @@
 import optuna
+from optiflowx.core.metrics import get_metric
+import logging
 
 
 class TPEOptimizer:
@@ -53,6 +55,8 @@ class TPEOptimizer:
         y,
         population_size=10,
         stagnation_limit=10,
+        custom_metric=None,
+        task_type: str = "classification",
     ):
         """Initialize the TPE optimizer.
 
@@ -67,7 +71,10 @@ class TPEOptimizer:
         """
         self.search_space = search_space
         self.metric = metric
+        self.custom_metric = custom_metric
+        self.task_type = task_type
         self.model_class = model_class
+        self.wrapper = None
         self.X = X
         self.y = y
         self.population_size = population_size
@@ -141,19 +148,21 @@ class TPEOptimizer:
         Args:
             candidates: List of Candidate objects to evaluate.
         """
+        metric_fn = get_metric(self.custom_metric or self.metric)
         for cand in candidates:
             try:
-                model = self.model_class(**cand.params)
-                model.fit(self.X, self.y)
-                preds = model.predict(self.X)
-                if callable(self.metric):
-                    score = self.metric(self.y, preds)
+                if getattr(self, "wrapper", None) is not None:
+                    score, model = self.wrapper.train_and_score(
+                        cand.params, self.X, self.y, scoring=self.metric, custom_metric=self.custom_metric, task_type=self.task_type
+                    )
+                    cand.score = float(score)
+                    cand.model = model
                 else:
-                    from sklearn.metrics import get_scorer
-
-                    score = get_scorer(self.metric)(model, self.X, self.y)
-                cand.score = score
-                cand.model = model
+                    model = self.model_class(**cand.params)
+                    model.fit(self.X, self.y)
+                    preds = model.predict(self.X)
+                    cand.score = float(metric_fn(self.y, preds))
+                    cand.model = model
             except Exception:
                 cand.score = float("-inf")
                 cand.model = None
@@ -198,14 +207,12 @@ class TPEOptimizer:
             candidates = self.generate_candidates()
             self.evaluate_candidates(candidates)
             self.update_state(candidates)
-            print(
-                f"[Engine] Iter {i+1}/{max_iters} | Best={self.best_candidate.score:.4f} | Time={time.time()-start_time:.2f}s"
-            )
+            logging.info("[Engine] Iter %d/%d | Best=%.4f | Time=%.2fs", i+1, max_iters, self.best_candidate.score, time.time()-start_time)
             self.iteration += 1
             if self._no_improve_count >= self.stagnation_limit:
-                print("[Engine] Stopping early due to stagnation.")
+                logging.info("[Engine] Stopping early due to stagnation.")
                 break
-        print(f"[Engine] Optimization finished in {time.time()-start_time:.2f}s")
+        logging.info("[Engine] Optimization finished in %.2fs", time.time()-start_time)
         if self.best_candidate is not None:
             return self.best_candidate.params, self.best_candidate.score
         return None, None

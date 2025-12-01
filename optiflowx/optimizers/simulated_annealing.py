@@ -1,5 +1,7 @@
 import random
 import math
+from optiflowx.core.metrics import get_metric
+import logging
 
 
 class SimulatedAnnealingOptimizer:
@@ -51,6 +53,8 @@ class SimulatedAnnealingOptimizer:
         cooling_rate=0.9,
         mutation_rate=0.3,
         t_min=1e-3,
+        custom_metric=None,
+        task_type: str = "classification",
     ):
         """Initialize the Simulated Annealing optimizer.
 
@@ -68,6 +72,8 @@ class SimulatedAnnealingOptimizer:
         """
         self.search_space = search_space
         self.metric = metric
+        self.custom_metric = custom_metric
+        self.task_type = task_type
         self.model_class = model_class
         self.X = X
         self.y = y
@@ -80,6 +86,7 @@ class SimulatedAnnealingOptimizer:
         self.scores = {}
         self.iteration = 0
         self.population = []
+        self.wrapper = None
 
     def initialize_population(self):
         """Initialize the population of candidates and reset internal state."""
@@ -93,17 +100,13 @@ class SimulatedAnnealingOptimizer:
 
     def evaluate_population(self):
         """Evaluate the current population by fitting and scoring models."""
+        metric_fn = get_metric(self.custom_metric or self.metric)
         for cand in self.population:
             try:
                 model = self.model_class(**cand.params)
                 model.fit(self.X, self.y)
                 preds = model.predict(self.X)
-                if callable(self.metric):
-                    score = self.metric(self.y, preds)
-                else:
-                    from sklearn.metrics import get_scorer
-
-                    score = get_scorer(self.metric)(model, self.X, self.y)
+                score = float(metric_fn(self.y, preds))
                 cand.score = score
                 cand.model = model
             except Exception:
@@ -128,14 +131,44 @@ class SimulatedAnnealingOptimizer:
             new_candidate = self.Candidate(new_params)
             new_population.append(new_candidate)
 
-        # Acceptance check based on simulated annealing rule
+        # Evaluate new candidates so we can compare scores
+        for new_c in new_population:
+            try:
+                if getattr(self, "wrapper", None) is not None:
+                    score, model = self.wrapper.train_and_score(
+                        new_c.params, self.X, self.y, scoring=self.metric, custom_metric=self.custom_metric, task_type=self.task_type
+                    )
+                    new_c.score = float(score)
+                    new_c.model = model
+                else:
+                    metric_fn = get_metric(self.custom_metric or self.metric)
+                    model = self.model_class(**new_c.params)
+                    model.fit(self.X, self.y)
+                    preds = model.predict(self.X)
+                    new_c.score = float(metric_fn(self.y, preds))
+                    new_c.model = model
+            except Exception:
+                new_c.score = float("-inf")
+                new_c.model = None
+
+        # Acceptance check: accept better solutions; accept worse probabilistically
         for new_c, old_c in zip(new_population, self.population):
-            old_score = self.scores.get(id(old_c), float("inf"))
-            new_score = self.scores.get(id(new_c), old_score)
+            old_score = self.scores.get(id(old_c), float("-inf"))
+            new_score = new_c.score if new_c.score is not None else old_score
             delta = new_score - old_score
-            if delta < 0 or math.exp(-delta / self.temperature) > random.random():
+            # Accept if improved
+            if delta > 0:
                 old_c.params = new_c.params
                 old_c.score = new_score
+            else:
+                # Accept worse solutions with probability exp(delta/temperature)
+                try:
+                    prob = math.exp(delta / max(self.temperature, 1e-8))
+                except OverflowError:
+                    prob = 0.0
+                if random.random() < prob:
+                    old_c.params = new_c.params
+                    old_c.score = new_score
 
         # Cool down temperature
         self.temperature *= self.cooling_rate
@@ -163,9 +196,7 @@ class SimulatedAnnealingOptimizer:
             self.update_state()
             scores = [c.score for c in self.population]
             current_best = max(scores) if scores else float("-inf")
-            print(
-                f"[Engine] Iter {i+1}/{max_iters} | Best={current_best:.4f} | Time={time.time()-start_time:.2f}s"
-            )
+            logging.info("[Engine] Iter %d/%d | Best=%.4f | Time=%.2fs", i+1, max_iters, current_best, time.time()-start_time)
 
             self.iteration += 1
             if current_best > best_score:
@@ -175,12 +206,12 @@ class SimulatedAnnealingOptimizer:
                 self._no_improve_count += 1
 
             if self._no_improve_count >= getattr(self, "stagnation_limit", 10):
-                print("[Engine] Stopping early due to stagnation.")
+                logging.info("[Engine] Stopping early due to stagnation.")
                 break
             if self.temperature < self.t_min:
                 break
 
-        print(f"[Engine] Optimization finished in {time.time()-start_time:.2f}s")
+        logging.info("[Engine] Optimization finished in %.2fs", time.time()-start_time)
         best = max(
             self.population,
             key=lambda c: c.score if c.score is not None else float("-inf"),

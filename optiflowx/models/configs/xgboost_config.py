@@ -1,4 +1,4 @@
-from xgboost import XGBClassifier
+from xgboost import XGBClassifier, XGBRegressor
 from optiflowx.core.search_space import SearchSpace
 from optiflowx.core.model_wrapper import ModelWrapper
 
@@ -28,10 +28,14 @@ class XGBoostConfig:
         return s
 
     @staticmethod
-    def get_wrapper():
-        """Return model wrapper for XGBClassifier.
+    def get_wrapper(task_type: str = "classification"):
+        """Return model wrapper for XGBoost classifier or regressor.
+
+        Args:
+            task_type (str): "classification" or "regression".
 
         Returns:
-            ModelWrapper: Wrapper for the XGBoost model.
+            ModelWrapper: Wrapper for the XGBoost estimator.
         """
-        return ModelWrapper(XGBClassifier)
+        model_cls = XGBClassifier if task_type == "classification" else XGBRegressor
+        return ModelWrapper(model_cls)

@@ -1,10 +1,6 @@
-scikit-optimize
-numpy
-pandas
-math
-random
-pytorch
 scikit-learn
+scikit-optimize
 scipy
 optuna
 xgboost
+numpy

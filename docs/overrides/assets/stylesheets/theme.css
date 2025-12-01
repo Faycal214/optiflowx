@@ -1,0 +1,14 @@
+/* Precompiled theme.css for MkDocs (generated from theme.scss) */
+:root{--ofx-bg:#0b0f14;--ofx-accent-1:#00e5ff;--ofx-accent-2:#9b59ff;--ofx-accent-3:#00aaff;--ofx-card:rgba(255,255,255,0.04);--ofx-glow:0 8px 40px rgba(0,229,255,0.06)}
+body{background:linear-gradient(180deg,#091018 20%,#05060a 80%);color:#e6eef6;transition:background-color 250ms ease,color 200ms ease}
+.md-header{background:linear-gradient(90deg,rgba(0,229,255,0.06),rgba(155,89,255,0.04))}
+.md-header nav.md-nav__title{background:linear-gradient(270deg,#00e5ff,#9b59ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:headerShift 8s infinite linear}
+@keyframes headerShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.md-card,.md-content,.md-page{background:rgba(255,255,255,0.04);border-radius:12px;border:1px solid rgba(255,255,255,0.06);box-shadow:0 8px 40px rgba(0,229,255,0.06);transition:transform 220ms ease,box-shadow 220ms ease,border-color 220ms ease}
+.md-card:hover,.md-content:hover{transform:translateY(-4px);box-shadow:0 14px 50px rgba(0,0,0,0.45),0 6px 24px rgba(0,165,255,0.06);border-color:rgba(0,229,255,0.12)}
+a,.md-button{color:#00e5ff;text-decoration:none;transition:color 200ms ease,text-shadow 200ms ease}
+a:hover,.md-button:hover{color:#00aaff;text-shadow:0 0 8px rgba(0,229,255,0.18)}
+code,pre,.md-typeset code{background:rgba(10,12,16,0.6);color:#e8f6ff;border-radius:6px;padding:0.1rem 0.35rem}
+table thead tr th{background:linear-gradient(90deg,rgba(0,229,255,0.06),rgba(155,89,255,0.04))}
+.ofx-badge{display:inline-block;padding:0.18rem 0.45rem;border-radius:999px;background:rgba(0,229,255,0.06);color:#00e5ff;font-weight:600}
+.md-footer{opacity:.9;color:rgba(230,238,246,0.8)}

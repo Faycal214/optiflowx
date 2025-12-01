@@ -1,4 +1,6 @@
 import random
+from optiflowx.core.metrics import get_metric
+import logging
 
 
 class GeneticOptimizer:
@@ -51,6 +53,8 @@ class GeneticOptimizer:
         mutation_prob=0.2,
         seed=None,
         stagnation_limit=10,
+        custom_metric=None,
+        task_type: str = "classification",
     ):
         """Initializes the genetic optimizer.
 
@@ -69,6 +73,8 @@ class GeneticOptimizer:
         """
         self.search_space = search_space
         self.metric = metric
+        self.custom_metric = custom_metric
+        self.task_type = task_type
         self.model_class = model_class
         self.X = X
         self.y = y
@@ -83,6 +89,7 @@ class GeneticOptimizer:
         self.population = []
         self.best_candidate = None
         self.iteration = 0
+        self.wrapper = None
 
     def initialize_population(self):
         """Initializes the population with random candidates."""
@@ -103,17 +110,20 @@ class GeneticOptimizer:
         """
         for cand in self.population:
             try:
-                model = self.model_class(**cand.params)
-                model.fit(self.X, self.y)
-                preds = model.predict(self.X)
-                if callable(self.metric):
-                    score = self.metric(self.y, preds)
+                if getattr(self, "wrapper", None) is not None:
+                    score, model = self.wrapper.train_and_score(
+                        cand.params, self.X, self.y, scoring=self.metric, custom_metric=self.custom_metric, task_type=self.task_type
+                    )
+                    cand.score = float(score)
+                    cand.model = model
                 else:
-                    from sklearn.metrics import get_scorer
-
-                    score = get_scorer(self.metric)(model, self.X, self.y)
-                cand.score = score
-                cand.model = model
+                    metric_fn = get_metric(self.custom_metric or self.metric)
+                    model = self.model_class(**cand.params)
+                    model.fit(self.X, self.y)
+                    preds = model.predict(self.X)
+                    score = metric_fn(self.y, preds)
+                    cand.score = float(score)
+                    cand.model = model
             except Exception:
                 cand.score = float("-inf")
                 cand.model = None
@@ -159,9 +169,11 @@ class GeneticOptimizer:
             Candidate: A new mutated candidate.
         """
         params = candidate.params.copy()
+        sample_vals = self.search_space.sample()
         for k, v in params.items():
             if self.rng.random() < self.mutation_prob:
-                params[k] = self.search_space.sample()[k]
+                # Use sampled value if available, otherwise keep existing
+                params[k] = sample_vals.get(k, v)
         return self.Candidate(params)
 
     def run(self, max_iters=10):
@@ -210,12 +222,10 @@ class GeneticOptimizer:
             else:
                 self._no_improve_count += 1
 
-            print(
-                f"[Engine] Iter {i+1}/{max_iters} | Best={self.best_candidate.score:.4f} | Time={time.time()-start_time:.2f}s"
-            )
+            logging.info("[Engine] Iter %d/%d | Best=%.4f | Time=%.2fs", i+1, max_iters, self.best_candidate.score, time.time()-start_time)
             if self._no_improve_count >= self.stagnation_limit:
-                print("[Engine] Stopping early due to stagnation.")
+                logging.info("[Engine] Stopping early due to stagnation.")
                 break
 
-        print(f"[Engine] Optimization finished in {time.time()-start_time:.2f}s")
+        logging.info("[Engine] Optimization finished in %.2fs", time.time()-start_time)
         return self.best_candidate.params, self.best_candidate.score

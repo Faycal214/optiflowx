@@ -14,7 +14,10 @@ from optiflowx.optimizers.bayesian import BayesianOptimizer
 from optiflowx.optimizers.tpe import TPEOptimizer
 from optiflowx.optimizers.random_search import RandomSearchOptimizer
 from optiflowx.optimizers.simulated_annealing import SimulatedAnnealingOptimizer
+from optiflowx.optimizers.grey_wolf import GreyWolfOptimizer
+from optiflowx.optimizers.ant_colony import AntColonyOptimizer
 from optiflowx.models.configs.random_forest_config import RandomForestConfig
+from optiflowx.models.configs.custom_model_config import CustomModelConfig
 
 
 # 1. Generate sample dataset
@@ -26,8 +29,11 @@ X, y = make_classification(
     random_state=42,
 )
 
-# 2. Load model configuration and search space
-cfg = RandomForestConfig()
+use_custom = False  # Set to True to use the custom model example
+if use_custom:
+    cfg = CustomModelConfig()
+else:
+    cfg = RandomForestConfig()
 search_space = cfg.build_search_space()
 model_class = cfg.get_wrapper().model_class
 
@@ -48,6 +54,8 @@ optimizers = [
             "mutation_rate": 0.3,
         },
     ),
+    ("grey_wolf", GreyWolfOptimizer, {"population_size": 10, "max_iters": 5}),
+    ("ant_colony", AntColonyOptimizer, {"colony_size": 10, "max_iters": 5, "evaporation_rate": 0.2}),
 ]
 
 # 4. Run each optimizer and print results
@@ -62,5 +70,5 @@ for opt_name, opt_class, opt_params in optimizers:
         **opt_params,
     )
 
-    best_params, best_score = optimizer.run(max_iters=5)
+    best_params, best_score = optimizer.run()
     print(f"Result for {opt_name} → score={best_score:.4f}, params={best_params}")
