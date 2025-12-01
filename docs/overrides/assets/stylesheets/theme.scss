@@ -1,99 +1,239 @@
-// OptiFlowX custom Material theme overrides (SCSS)
-// Dark tech / neon aesthetic
-$neon-cyan: #00e5ff;
-$electric-violet: #9b59ff;
-$accent-blue: #00aaff;
-$bg-dark: #0b0f14;
-$card-bg: rgba(255,255,255,0.04);
-$glass-border: rgba(255,255,255,0.06);
+// OptiFlowX — Dark-tech / Neon AI SCSS theme for MkDocs Material
+// Implements the design rules provided by the user (dark gradient, neon accents,
+// headings, code block styling, nav and TOC styling, buttons/chips, etc.).
 
-// Root variables for convenience
+// ---------------------------
+// Palette (Neon AI)
+// ---------------------------
+$neon-cyan:    #00eaff; // main accent
+$electric-violet: #9b4dff; // secondary accent
+$laser-green:  #4affc0; // success / strings
+$magenta-pink: #ff2ec6; // warnings / special
+$gold-orange:  #ffb347; // numbers / highlights
+
+$bg-top:  #0a0f1a; // top of gradient
+$bg-bottom: #05080f; // bottom of gradient
+$sidebar-bg: #0c131f;
+$card-glass: rgba(255,255,255,0.03);
+$glass-border: rgba(255,255,255,0.05);
+$muted-comment: #6b7280;
+$text-high: #d0d0e0;
+
+// Global transitions
+$fast: 150ms;
+$mid: 220ms;
+
+// ---------------------------
+// CSS variables (exposed to runtime)
+// ---------------------------
 :root {
-  --ofx-bg: #{$bg-dark};
-  --ofx-accent-1: #{$neon-cyan};
-  --ofx-accent-2: #{$electric-violet};
-  --ofx-accent-3: #{$accent-blue};
-  --ofx-card: #{$card-bg};
-  --ofx-glow: 0 8px 40px rgba(0, 229, 255, 0.06);
+  --ofx-bg-top: #{$bg-top};
+  --ofx-bg-bottom: #{$bg-bottom};
+  --ofx-sidebar-bg: #{$sidebar-bg};
+  --ofx-accent-cyan: #{$neon-cyan};
+  --ofx-accent-violet: #{$electric-violet};
+  --ofx-accent-green: #{$laser-green};
+  --ofx-accent-pink: #{$magenta-pink};
+  --ofx-accent-gold: #{$gold-orange};
+  --ofx-card: #{$card-glass};
+  --ofx-glass-border: #{$glass-border};
+  --ofx-text: #{$text-high};
+  --ofx-comment: #{$muted-comment};
 }
 
-/* Page background + base text */
+// ---------------------------
+// Page base
+// ---------------------------
 body {
-  background: linear-gradient(180deg, mix(#0b0f14, #071018, 20%), #05060a 80%);
-  color: #e6eef6;
-  transition: background-color 250ms ease, color 200ms ease;
+  background: linear-gradient(180deg, var(--ofx-bg-top), var(--ofx-bg-bottom));
+  color: var(--ofx-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background $mid ease, color $mid ease;
 }
 
-/* Header with subtle animated gradient */
-.md-header {
-  background: linear-gradient(90deg, rgba(var(--ofx-accent-1), 0.06), rgba(var(--ofx-accent-2), 0.04));
+// Use subtle separators between major sections
+.md-typeset > * + * {
+  border-top: 1px solid rgba(255,255,255,0.02);
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
 }
 
-.md-header nav.md-nav__title {
-  background: linear-gradient(270deg, var(--ofx-accent-1), var(--ofx-accent-2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: headerShift 8s infinite linear;
+// Neon separators (small) between sections
+.ofx-neon-sep {
+  height: 2px;
+  background: linear-gradient(90deg, var(--ofx-accent-cyan), var(--ofx-accent-violet));
+  opacity: 0.08;
+  margin: 1.25rem 0;
 }
 
-@keyframes headerShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+// ---------------------------
+// Headings & Titles
+// ---------------------------
+h1.md-typeset__title, h1 {
+  color: var(--ofx-accent-violet);
+  text-shadow: 0 4px 28px rgba(155,77,255,0.14);
+  transition: color $fast ease, text-shadow $mid ease;
 }
 
-/* Cards / panels */
+h2, .md-typeset h2 {
+  position: relative;
+  color: var(--ofx-text);
+}
+h2::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 3px;
+  margin-top: 0.45rem;
+  background: linear-gradient(90deg, var(--ofx-accent-cyan), rgba(0,0,0,0));
+  border-radius: 6px;
+  opacity: 0.95;
+}
+
+h3, h4, h5 {
+  color: mix(var(--ofx-accent-cyan), var(--ofx-accent-violet), 40%);
+  transition: color $fast ease, text-shadow $fast ease;
+}
+h3:hover, h4:hover, h5:hover {
+  text-shadow: 0 6px 18px rgba(0,234,255,0.06), 0 6px 24px rgba(155,77,255,0.04);
+}
+
+// Small neon underline for section headings
+.md-typeset h2 + .ofx-neon-sep, .md-typeset h3 + .ofx-neon-sep { margin-top: 0.6rem }
+
+// ---------------------------
+// Cards / Panels (glass) — depth and soft shadows
+// ---------------------------
 .md-card, .md-content, .md-page {
   background: var(--ofx-card);
   border-radius: 12px;
-  border: 1px solid $glass-border;
-  box-shadow: var(--ofx-glow);
-  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+  border: 1px solid var(--ofx-glass-border);
+  box-shadow: 0 8px 28px rgba(2,6,23,0.6), 0 2px 12px rgba(0,0,0,0.5);
+  transition: transform $mid ease, box-shadow $mid ease, border-color $mid ease;
+}
+.md-card:hover, .md-content:hover { transform: translateY(-6px); box-shadow: 0 18px 60px rgba(0,0,0,0.6) }
+
+// ---------------------------
+// Navigation sidebar
+// ---------------------------
+.md-nav__primary {
+  background: var(--ofx-sidebar-bg);
+  border-right: 1px solid rgba(255,255,255,0.02);
+}
+.md-nav__item.md-nav__link--active, .md-nav__link--active {
+  color: var(--ofx-accent-cyan) !important;
+  box-shadow: inset 4px 0 14px rgba(0,234,255,0.08);
+  border-left: 3px solid rgba(0,234,255,0.14);
+}
+.md-nav__link:hover { color: var(--ofx-accent-violet); text-shadow: 0 2px 12px rgba(155,77,255,0.06) }
+.md-nav__title { color: var(--ofx-accent-violet); border-bottom: 1px solid rgba(155,77,255,0.04); }
+
+// Right-hand TOC panel
+.md-nav--secondary, .md-nav--toc {
+  background: var(--ofx-sidebar-bg);
+}
+.md-nav--toc .md-nav__link--active { border-left: 3px solid var(--ofx-accent-cyan); padding-left: 0.6rem }
+
+// ---------------------------
+// Buttons, chips, badges
+// ---------------------------
+.md-button--primary, .md-btn, .md-button {
+  background: linear-gradient(90deg, var(--ofx-accent-cyan), mix(var(--ofx-accent-cyan), #ffffff, 12%));
+  color: #041017;
+  box-shadow: 0 8px 30px rgba(0,234,255,0.06);
+  transition: transform $fast ease, box-shadow $fast ease, filter $fast ease;
+}
+.md-button--primary:hover { transform: translateY(-2px); box-shadow: 0 18px 50px rgba(0,234,255,0.1) }
+.badge, .md-chip { background: var(--ofx-accent-violet); color: white }
+
+// Secondary (violet)
+.md-button--secondary { background: linear-gradient(90deg, var(--ofx-accent-violet), darken(var(--ofx-accent-violet), 6%)); color: #fff }
+
+// ---------------------------
+// Inline code
+// ---------------------------
+code, .md-inline-code {
+  background: #141c2b;
+  border: 1px solid var(--ofx-accent-cyan);
+  color: var(--ofx-accent-cyan);
+  padding: 0.08rem 0.32rem;
+  border-radius: 8px;
 }
 
-.md-card:hover, .md-content:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 14px 50px rgba(0,0,0,0.45), 0 6px 24px rgba(0,165,255,0.06);
-  border-color: rgba(0,229,255,0.12);
+// ---------------------------
+// Code blocks (Prism/Highlight)
+// ---------------------------
+.md-typeset pre, pre[class*="language-"] {
+  background: rgba(14,20,31,0.8); /* glass-like */
+  color: #e6eef6;
+  border-radius: 12px;
+  padding: 1rem;
+  overflow: auto;
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.7), 0 2px 14px rgba(0,234,255,0.03);
+  transition: box-shadow $fast ease, transform $fast ease;
+}
+.md-typeset pre:hover { box-shadow: 0 18px 60px rgba(0,0,0,0.75), 0 6px 28px rgba(0,234,255,0.06) }
+
+/* Prism token colors per rule */
+.token.string { color: #4affc0; }
+.token.attr-value { color: #4affc0; }
+.token.number { color: #ffb347; }
+.token.boolean { color: #ffb347; }
+.token.keyword { color: #00eaff; font-weight: 600 }
+.token.operator { color: #00eaff }
+.token.function { color: #9b4dff }
+.token.class-name { color: #9b4dff }
+.token.comment, .token.prolog, .token.doctype, .token.cdata { color: var(--ofx-comment); font-style: italic }
+
+/* subtle glow around code blocks */
+.md-typeset pre::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0; bottom: 0;
+  pointer-events: none;
+  border-radius: 12px;
+  box-shadow: 0 6px 40px rgba(0,234,255,0.02) inset;
 }
 
-/* Links and buttons glow */
-a, .md-button {
-  color: var(--ofx-accent-1);
-  text-decoration: none;
-  transition: color 200ms ease, text-shadow 200ms ease;
+// ---------------------------
+// Links and emphasized text
+// ---------------------------
+a, a code { color: var(--ofx-accent-cyan); text-decoration: none }
+a:hover { color: var(--ofx-accent-violet); text-shadow: 0 6px 28px rgba(155,77,255,0.04) }
+
+em { color: var(--ofx-accent-gold); font-style: normal; font-weight: 600 }
+
+// ---------------------------
+// Lists — clearer differentiation
+// ---------------------------
+ul li::marker { color: var(--ofx-accent-cyan) }
+ol li::marker { color: var(--ofx-accent-gold) }
+
+// ---------------------------
+// Header animated gradient bar (subtle)
+// ---------------------------
+.md-header {
+  position: relative;
+  overflow: visible;
 }
-
-a:hover, .md-button:hover {
-  color: var(--ofx-accent-3);
-  text-shadow: 0 0 8px rgba(0,229,255,0.18);
+.md-header::before {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--ofx-accent-cyan), var(--ofx-accent-violet), var(--ofx-accent-gold));
+  opacity: 0.06;
+  animation: ofx-header-shift 10s linear infinite;
 }
+@keyframes ofx-header-shift { 0% { background-position: 0% } 100% { background-position: 200% } }
 
-/* Code blocks and inline code */
-code, pre, .md-typeset code {
-  background: rgba(10,12,16,0.6);
-  color: #e8f6ff;
-  border-radius: 6px;
-  padding: 0.1rem 0.35rem;
-}
+// ---------------------------
+// Misc utilities
+// ---------------------------
+.ofx-glow { box-shadow: 0 8px 40px rgba(0,234,255,0.06) }
+.ofx-pill { padding: 0.25rem 0.6rem; border-radius: 999px }
 
-/* Table header accent */
-table thead tr th {
-  background: linear-gradient(90deg, rgba($neon-cyan, 0.06), rgba($electric-violet, 0.04));
-}
-
-/* Small helper for neon badges */
-.ofx-badge {
-  display: inline-block;
-  padding: 0.18rem 0.45rem;
-  border-radius: 999px;
-  background: rgba(0,229,255,0.06);
-  color: var(--ofx-accent-1);
-  font-weight: 600;
-}
-
-/* Footer adjustments */
-.md-footer { opacity: 0.9; color: rgba(230,238,246,0.8); }
-
-/* Utility: make accent colors work in rgba() contexts */
-// Note: Some advanced Sass helpers could be added for dynamic glows.
+/* Ensure contrasts for accessibility: strong headings / links */
+.md-typeset h1, .md-typeset h2, .md-typeset h3 { color: var(--ofx-text) }
