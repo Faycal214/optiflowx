@@ -3,50 +3,54 @@
 // headings, code block styling, nav and TOC styling, buttons/chips, etc.).
 
 // ---------------------------
-// Palette (Neon AI)
+// Palette (SCSS variables)
 // ---------------------------
-$neon-cyan:    #00eaff; // main accent
-$electric-violet: #9b4dff; // secondary accent
-$laser-green:  #4affc0; // success / strings
-$magenta-pink: #ff2ec6; // warnings / special
-$gold-orange:  #ffb347; // numbers / highlights
+// Primary palette (defined as SCSS variables to allow color math)
+$ofx-accent-cyan:   #00eaff; // main accent
+$ofx-accent-violet: #9b4dff; // secondary accent
+$ofx-accent-green:  #4affc0; // success / strings
+$ofx-accent-pink:   #ff2ec6; // warnings / special
+$ofx-accent-gold:   #ffb347; // numbers / highlights
 
-$bg-top:  #0a0f1a; // top of gradient
-$bg-bottom: #05080f; // bottom of gradient
-$sidebar-bg: #0c131f;
-$card-glass: rgba(255,255,255,0.03);
-$glass-border: rgba(255,255,255,0.05);
-$muted-comment: #6b7280;
-$text-high: #d0d0e0;
+$ofx-bg-1:          #0a0f1a;
+$ofx-bg-2:          #05080f;
+$sidebar-bg:        #0c131f;
+$card-glass:        rgba(255,255,255,0.03);
+$glass-border:      rgba(255,255,255,0.05);
+$muted-comment:     #6b7280;
+$text-high:         #d0d0e0;
 
 // Global transitions
 $fast: 150ms;
 $mid: 220ms;
 
 // ---------------------------
-// CSS variables (exposed to runtime)
+// Export CSS variables at runtime (final theme export)
+// Use interpolation so values are computed by SCSS first.
 // ---------------------------
 :root {
-  --ofx-bg-top: #{$bg-top};
-  --ofx-bg-bottom: #{$bg-bottom};
-  --ofx-sidebar-bg: #{$sidebar-bg};
-  --ofx-accent-cyan: #{$neon-cyan};
-  --ofx-accent-violet: #{$electric-violet};
-  --ofx-accent-green: #{$laser-green};
-  --ofx-accent-pink: #{$magenta-pink};
-  --ofx-accent-gold: #{$gold-orange};
-  --ofx-card: #{$card-glass};
-  --ofx-glass-border: #{$glass-border};
-  --ofx-text: #{$text-high};
-  --ofx-comment: #{$muted-comment};
+  --ofx-accent-cyan:   #{$ofx-accent-cyan};
+  --ofx-accent-violet: #{$ofx-accent-violet};
+  --ofx-accent-green:  #{$ofx-accent-green};
+  --ofx-accent-pink:   #{$ofx-accent-pink};
+  --ofx-accent-gold:   #{$ofx-accent-gold};
+  --ofx-bg-1:          #{$ofx-bg-1};
+  --ofx-bg-2:          #{$ofx-bg-2};
+  --ofx-sidebar-bg:    #{$sidebar-bg};
+  --ofx-card:          #{$card-glass};
+  --ofx-glass-border:  #{$glass-border};
+  --ofx-text:          #{$text-high};
+  --ofx-comment:       #{$muted-comment};
+  /* precompute a useful mix for runtime use if needed */
+  --ofx-accent-mix:    #{mix($ofx-accent-cyan, $ofx-accent-violet, 40%)};
 }
 
 // ---------------------------
 // Page base
 // ---------------------------
 body {
-  background: linear-gradient(180deg, var(--ofx-bg-top), var(--ofx-bg-bottom));
-  color: var(--ofx-text);
+  background: linear-gradient(180deg, $ofx-bg-1, $ofx-bg-2);
+  color: $text-high;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background $mid ease, color $mid ease;
@@ -62,7 +66,7 @@ body {
 // Neon separators (small) between sections
 .ofx-neon-sep {
   height: 2px;
-  background: linear-gradient(90deg, var(--ofx-accent-cyan), var(--ofx-accent-violet));
+  background: linear-gradient(90deg, $ofx-accent-cyan, $ofx-accent-violet);
   opacity: 0.08;
   margin: 1.25rem 0;
 }
@@ -71,14 +75,14 @@ body {
 // Headings & Titles
 // ---------------------------
 h1.md-typeset__title, h1 {
-  color: var(--ofx-accent-violet);
-  text-shadow: 0 4px 28px rgba(155,77,255,0.14);
+  color: $ofx-accent-violet;
+  text-shadow: 0 4px 28px rgba($ofx-accent-violet,0.14);
   transition: color $fast ease, text-shadow $mid ease;
 }
 
 h2, .md-typeset h2 {
   position: relative;
-  color: var(--ofx-text);
+  color: $text-high;
 }
 h2::after {
   content: '';
@@ -86,17 +90,17 @@ h2::after {
   width: 48px;
   height: 3px;
   margin-top: 0.45rem;
-  background: linear-gradient(90deg, var(--ofx-accent-cyan), rgba(0,0,0,0));
+  background: linear-gradient(90deg, $ofx-accent-cyan, rgba(0,0,0,0));
   border-radius: 6px;
   opacity: 0.95;
 }
 
 h3, h4, h5 {
-  color: mix(var(--ofx-accent-cyan), var(--ofx-accent-violet), 40%);
+  color: mix($ofx-accent-cyan, $ofx-accent-violet, 40%);
   transition: color $fast ease, text-shadow $fast ease;
 }
 h3:hover, h4:hover, h5:hover {
-  text-shadow: 0 6px 18px rgba(0,234,255,0.06), 0 6px 24px rgba(155,77,255,0.04);
+  text-shadow: 0 6px 18px rgba($ofx-accent-cyan,0.06), 0 6px 24px rgba($ofx-accent-violet,0.04);
 }
 
 // Small neon underline for section headings
@@ -106,9 +110,9 @@ h3:hover, h4:hover, h5:hover {
 // Cards / Panels (glass) — depth and soft shadows
 // ---------------------------
 .md-card, .md-content, .md-page {
-  background: var(--ofx-card);
+  background: $card-glass;
   border-radius: 12px;
-  border: 1px solid var(--ofx-glass-border);
+  border: 1px solid $glass-border;
   box-shadow: 0 8px 28px rgba(2,6,23,0.6), 0 2px 12px rgba(0,0,0,0.5);
   transition: transform $mid ease, box-shadow $mid ease, border-color $mid ease;
 }
@@ -118,45 +122,45 @@ h3:hover, h4:hover, h5:hover {
 // Navigation sidebar
 // ---------------------------
 .md-nav__primary {
-  background: var(--ofx-sidebar-bg);
+  background: $sidebar-bg;
   border-right: 1px solid rgba(255,255,255,0.02);
 }
 .md-nav__item.md-nav__link--active, .md-nav__link--active {
-  color: var(--ofx-accent-cyan) !important;
-  box-shadow: inset 4px 0 14px rgba(0,234,255,0.08);
-  border-left: 3px solid rgba(0,234,255,0.14);
+  color: $ofx-accent-cyan !important;
+  box-shadow: inset 4px 0 14px rgba($ofx-accent-cyan,0.08);
+  border-left: 3px solid rgba($ofx-accent-cyan,0.14);
 }
-.md-nav__link:hover { color: var(--ofx-accent-violet); text-shadow: 0 2px 12px rgba(155,77,255,0.06) }
-.md-nav__title { color: var(--ofx-accent-violet); border-bottom: 1px solid rgba(155,77,255,0.04); }
+.md-nav__link:hover { color: $ofx-accent-violet; text-shadow: 0 2px 12px rgba($ofx-accent-violet,0.06) }
+.md-nav__title { color: $ofx-accent-violet; border-bottom: 1px solid rgba($ofx-accent-violet,0.04); }
 
 // Right-hand TOC panel
 .md-nav--secondary, .md-nav--toc {
-  background: var(--ofx-sidebar-bg);
+  background: $sidebar-bg;
 }
-.md-nav--toc .md-nav__link--active { border-left: 3px solid var(--ofx-accent-cyan); padding-left: 0.6rem }
+.md-nav--toc .md-nav__link--active { border-left: 3px solid $ofx-accent-cyan; padding-left: 0.6rem }
 
 // ---------------------------
 // Buttons, chips, badges
 // ---------------------------
 .md-button--primary, .md-btn, .md-button {
-  background: linear-gradient(90deg, var(--ofx-accent-cyan), mix(var(--ofx-accent-cyan), #ffffff, 12%));
+  background: linear-gradient(90deg, $ofx-accent-cyan, mix($ofx-accent-cyan, #ffffff, 12%));
   color: #041017;
-  box-shadow: 0 8px 30px rgba(0,234,255,0.06);
+  box-shadow: 0 8px 30px rgba($ofx-accent-cyan,0.06);
   transition: transform $fast ease, box-shadow $fast ease, filter $fast ease;
 }
-.md-button--primary:hover { transform: translateY(-2px); box-shadow: 0 18px 50px rgba(0,234,255,0.1) }
-.badge, .md-chip { background: var(--ofx-accent-violet); color: white }
+.md-button--primary:hover { transform: translateY(-2px); box-shadow: 0 18px 50px rgba($ofx-accent-cyan,0.1) }
+.badge, .md-chip { background: $ofx-accent-violet; color: white }
 
 // Secondary (violet)
-.md-button--secondary { background: linear-gradient(90deg, var(--ofx-accent-violet), darken(var(--ofx-accent-violet), 6%)); color: #fff }
+.md-button--secondary { background: linear-gradient(90deg, $ofx-accent-violet, darken($ofx-accent-violet, 6%)); color: #fff }
 
 // ---------------------------
 // Inline code
 // ---------------------------
 code, .md-inline-code {
   background: #141c2b;
-  border: 1px solid var(--ofx-accent-cyan);
-  color: var(--ofx-accent-cyan);
+  border: 1px solid $ofx-accent-cyan;
+  color: $ofx-accent-cyan;
   padding: 0.08rem 0.32rem;
   border-radius: 8px;
 }
@@ -171,21 +175,21 @@ code, .md-inline-code {
   padding: 1rem;
   overflow: auto;
   border: 1px solid rgba(255,255,255,0.04);
-  box-shadow: 0 10px 36px rgba(0,0,0,0.7), 0 2px 14px rgba(0,234,255,0.03);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.7), 0 2px 14px rgba($ofx-accent-cyan,0.03);
   transition: box-shadow $fast ease, transform $fast ease;
 }
-.md-typeset pre:hover { box-shadow: 0 18px 60px rgba(0,0,0,0.75), 0 6px 28px rgba(0,234,255,0.06) }
+.md-typeset pre:hover { box-shadow: 0 18px 60px rgba(0,0,0,0.75), 0 6px 28px rgba($ofx-accent-cyan,0.06) }
 
 /* Prism token colors per rule */
-.token.string { color: #4affc0; }
-.token.attr-value { color: #4affc0; }
-.token.number { color: #ffb347; }
-.token.boolean { color: #ffb347; }
-.token.keyword { color: #00eaff; font-weight: 600 }
-.token.operator { color: #00eaff }
-.token.function { color: #9b4dff }
-.token.class-name { color: #9b4dff }
-.token.comment, .token.prolog, .token.doctype, .token.cdata { color: var(--ofx-comment); font-style: italic }
+.token.string { color: $ofx-accent-green; }
+.token.attr-value { color: $ofx-accent-green; }
+.token.number { color: $ofx-accent-gold; }
+.token.boolean { color: $ofx-accent-gold; }
+.token.keyword { color: $ofx-accent-cyan; font-weight: 600 }
+.token.operator { color: $ofx-accent-cyan }
+.token.function { color: $ofx-accent-violet }
+.token.class-name { color: $ofx-accent-violet }
+.token.comment, .token.prolog, .token.doctype, .token.cdata { color: $muted-comment; font-style: italic }
 
 /* subtle glow around code blocks */
 .md-typeset pre::after {
@@ -194,22 +198,22 @@ code, .md-inline-code {
   left: 0; right: 0; top: 0; bottom: 0;
   pointer-events: none;
   border-radius: 12px;
-  box-shadow: 0 6px 40px rgba(0,234,255,0.02) inset;
+  box-shadow: 0 6px 40px rgba($ofx-accent-cyan,0.02) inset;
 }
 
 // ---------------------------
 // Links and emphasized text
 // ---------------------------
-a, a code { color: var(--ofx-accent-cyan); text-decoration: none }
-a:hover { color: var(--ofx-accent-violet); text-shadow: 0 6px 28px rgba(155,77,255,0.04) }
+a, a code { color: $ofx-accent-cyan; text-decoration: none }
+a:hover { color: $ofx-accent-violet; text-shadow: 0 6px 28px rgba($ofx-accent-violet,0.04) }
 
-em { color: var(--ofx-accent-gold); font-style: normal; font-weight: 600 }
+em { color: $ofx-accent-gold; font-style: normal; font-weight: 600 }
 
 // ---------------------------
 // Lists — clearer differentiation
 // ---------------------------
-ul li::marker { color: var(--ofx-accent-cyan) }
-ol li::marker { color: var(--ofx-accent-gold) }
+ul li::marker { color: $ofx-accent-cyan }
+ol li::marker { color: $ofx-accent-gold }
 
 // ---------------------------
 // Header animated gradient bar (subtle)
@@ -223,7 +227,7 @@ ol li::marker { color: var(--ofx-accent-gold) }
   position: absolute;
   left: 0; right: 0; top: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--ofx-accent-cyan), var(--ofx-accent-violet), var(--ofx-accent-gold));
+  background: linear-gradient(90deg, $ofx-accent-cyan, $ofx-accent-violet, $ofx-accent-gold);
   opacity: 0.06;
   animation: ofx-header-shift 10s linear infinite;
 }
@@ -232,8 +236,8 @@ ol li::marker { color: var(--ofx-accent-gold) }
 // ---------------------------
 // Misc utilities
 // ---------------------------
-.ofx-glow { box-shadow: 0 8px 40px rgba(0,234,255,0.06) }
+.ofx-glow { box-shadow: 0 8px 40px rgba($ofx-accent-cyan,0.06) }
 .ofx-pill { padding: 0.25rem 0.6rem; border-radius: 999px }
 
 /* Ensure contrasts for accessibility: strong headings / links */
-.md-typeset h1, .md-typeset h2, .md-typeset h3 { color: var(--ofx-text) }
+.md-typeset h1, .md-typeset h2, .md-typeset h3 { color: $text-high }
