@@ -1,0 +1,102 @@
+/* Custom theme variables and accessibility improvements for OptiFlowX
+   - Provides a custom palette via the [data-md-color-scheme="custom"] selector
+   - Adds improved nav hover/active states, search styling, and typography sizing
+   - Imports Inter and JetBrains Mono from Google Fonts for consistent typography
+*/
+
+/* Import fonts (fallbacks included) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+/* Base typography sizing variables */
+:root {
+  --md-text-font-size: 0.95rem;
+  --md-code-font-size: 0.85rem;
+}
+
+/* Custom color scheme named "custom" */
+[data-md-color-scheme="custom"] {
+  --md-primary-fg-color: #1976d2; /* primary (blue) */
+  --md-accent-fg-color:  #ff9800; /* accent (orange) */
+
+  /* Semantic colors */
+  --md-success-color: #4caf50;
+  --md-warning-color: #fb8c00;
+  --md-danger-color:  #f44336;
+  --md-info-color:    #29b6f6;
+
+  /* Ensure accessible neutral color tokens override */
+  --md-default-fg-color: #1f2937; /* dark text on light */
+  --md-default-bg-color: #ffffff;
+}
+
+/* Improved nav hover and active states (works on dark and light palettes) */
+.md-nav__link:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.md-nav__link--active {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* Improve search input visibility */
+.md-search__input {
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* Highlight active search result (use accent color) */
+.md-search-result__item--active {
+  background-color: var(--md-accent-fg-color, #ff9800);
+  color: #fff;
+}
+
+/* Code font sizing */
+.md-typeset code, .md-typeset pre {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+  font-size: var(--md-code-font-size);
+}
+
+/* Global text font */
+.md-typeset, .md-nav__title, .md-nav__link, .md-footer {
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  font-size: var(--md-text-font-size);
+}
+
+/* Ensure code block contrast — adjust background for accessibility if needed */
+.md-typeset pre, pre[class*="language-"] {
+  background-color: rgba(14, 20, 31, 0.92) !important; /* deep glass to ensure contrast */
+  color: #e6eef6 !important;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+/* Admonition colors: map to semantic tokens */
+.md-typeset .admonition.note { background-color: rgba(41,182,246,0.06); border-left: 4px solid var(--md-info-color); }
+.md-typeset .admonition.tip  { background-color: rgba(76,175,80,0.05);  border-left: 4px solid var(--md-success-color); }
+.md-typeset .admonition.warning { background-color: rgba(251,140,0,0.05); border-left: 4px solid var(--md-warning-color); }
+.md-typeset .admonition.danger { background-color: rgba(244,67,54,0.05); border-left: 4px solid var(--md-danger-color); }
+
+/* Improve tables readability */
+.md-typeset table thead th { background-color: rgba(255,255,255,0.03); color: inherit; }
+.md-typeset table tbody td { background-color: rgba(255,255,255,0.01); }
+
+/* Mobile-friendly nav hover (ensure no layout break) */
+@media (max-width: 900px) {
+  .md-nav__link:hover { background-color: transparent; }
+}
+
+/* Minor helper: make sure images and embeds scale */
+.md-typeset img, .md-typeset iframe { max-width: 100%; height: auto; }
+
+/* Accessibility: ensure links have focus outline */
+a:focus, .md-nav__link:focus {
+  outline: 3px solid rgba(25, 118, 210, 0.18);
+  outline-offset: 3px;
+}
+
+/* Optional: small tweaks to ensure search box doesn't overflow on mobile */
+@media (max-width: 600px) {
+  .md-search__input { width: 100%; box-sizing: border-box; }
+}

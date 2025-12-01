@@ -9,16 +9,40 @@ theme:
     - navigation.instant
     - search.highlight
     - content.code.copy
+  # Light / Dark / Custom palettes and auto-detection
   palette:
-    scheme: slate
-    primary: 'indigo'
-    accent: 'cyan'
+    # Auto-detect: prefer user's system setting (media queries applied)
+    - scheme: default
+      media: "(prefers-color-scheme: light)"
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+      primary: blue
+      accent: deep orange
+
+    - scheme: slate
+      media: "(prefers-color-scheme: dark)"
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+      primary: green
+      accent: deep purple
+
+    # Make custom scheme available in the palette list
+    - scheme: custom
+      primary: custom
+      accent: custom
+
+  # Typography (fonts) — use Inter for text and JetBrains Mono for code
   font:
-    text: Roboto
-    code: Roboto Mono
+    text: "Inter"
+    code: "JetBrains Mono"
   language: en
+
+  # Allow Material to include our custom palette override
 extra_css:
   - overrides/assets/stylesheets/theme.css
+  - assets/stylesheets/custom-theme.css
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
@@ -26,6 +50,7 @@ nav:
   - API Reference: api.md
   - Algorithms: algorithms.md
   - Contributing: contributing.md
+  - Design System: design-system.md
 
 plugins:
   - search
