@@ -1,6 +1,11 @@
-from xgboost import XGBClassifier, XGBRegressor
 from optiflowx.core.search_space import SearchSpace
 from optiflowx.core.model_wrapper import ModelWrapper
+try:
+    from xgboost import XGBClassifier, XGBRegressor
+except ImportError as e:
+    raise ImportError(
+        "xgboost is not installed. Install with: pip install optiflowx[xgboost]"
+    ) from e
 
 
 class XGBoostConfig:

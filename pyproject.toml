@@ -10,13 +10,7 @@ description = "A modular optimization and machine learning workflow framework fo
 readme = "README.md"
 authors = [{ name = "Alikacem Faycal", email = "faycal213.dz@gmail.com" }]
 license = "MIT"
-
-dependencies = [
-    "numpy",
-    "scikit-learn",
-    "tqdm"
-]
-
+dependencies = ["numpy", "scikit-learn", "tqdm", "optuna", "scikit-optimize"]
 keywords = [
   "hyperparameter optimization",
   "AutoML",
@@ -70,7 +64,7 @@ docs = [
 packages = ["optiflowx"]
 
 [tool.pytest.ini_options]
-addopts = "-q --disable-warnings --maxfail=1"
+addopts = "-q --disable-warnings --maxfail=1 -m 'not xgboost'"
 testpaths = ["tests"]
 
 [tool.coverage.run]
