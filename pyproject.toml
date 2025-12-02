@@ -1,12 +1,12 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "optiflowx"
 version = "0.0.5"
 requires-python = ">=3.10"
-description = "A modular optimization and machine learning workflow framework for automatic model selection, hyperparameter tuning, and performance benchmarking across diverse datasets."
+description = "A modular optimization and machine learning workflow framework for hyperparameter tuning and performance benchmarking across diverse datasets."
 readme = "README.md"
 authors = [{ name = "Alikacem Faycal", email = "faycal213.dz@gmail.com" }]
 dependencies = ["numpy", "scikit-learn", "tqdm", "optuna", "scikit-optimize", "xgboost"]
@@ -23,9 +23,13 @@ keywords = [
   "ant colony optimization",
   "grey wolf optimization"
 ]
-
+license = "MIT"
 
 [project.urls]
 Homepage = "https://github.com/Faycal214/optiflowx"
 Repository = "https://github.com/Faycal214/optiflowx"
 Issues = "https://github.com/Faycal214/optiflowx/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests", "docs", "examples"]
