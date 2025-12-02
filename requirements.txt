@@ -4,3 +4,5 @@ scipy
 optuna
 xgboost
 numpy
+pytest>=7.0
+
