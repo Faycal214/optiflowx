@@ -19,8 +19,8 @@ keywords = [
   "particle swarm optimization",
   "bayesian optimization",
   "tpe",
-  "simulated annealing"
-  "ant colony optimization"
+  "simulated annealing",
+  "ant colony optimization",
   "grey wolf optimization"
 ]
 
