@@ -101,27 +101,65 @@ class ParallelExecutor:
         Returns:
             List[Candidate]: List of evaluated candidates with updated `score` and `model`.
         """
+
         # Prepare custom_metric for safe transmission to worker processes.
         # If the callable is not pickleable, try dill as a fallback.
         metric_obj = custom_metric
+
         if callable(custom_metric):
+            serialization_success = False
+
+            # Try pickle first
             try:
                 pickle.dumps(custom_metric)
                 metric_obj = custom_metric
+                serialization_success = True
             except Exception:
-                if dill is not None:
-                    metric_obj = {"__serialized__": True, "data": dill.dumps(custom_metric), "use_dill": True}
-                else:
-                    # Last resort: attempt pickle and allow worker to fail with clear message
-                    try:
-                        metric_obj = {"__serialized__": True, "data": pickle.dumps(custom_metric), "use_dill": False}
-                    except Exception:
-                        raise RuntimeError(
-                            "Provided custom_metric is not pickleable and dill is not available."
-                        )
+                pass
+
+            # Try dill if pickle failed
+            if not serialization_success and dill is not None:
+                try:
+                    metric_obj = {
+                        "__serialized__": True,
+                        "data": dill.dumps(custom_metric),
+                        "use_dill": True,
+                    }
+                    serialization_success = True
+                except Exception:
+                    pass
+
+            # Last resort: still not serializable
+            if not serialization_success:
+                # If only one worker → fallback to sequential evaluation
+                if self.num_workers == 1:
+                    results = []
+                    for cand in candidates:
+                        try:
+                            score, model = wrapper.train_and_score(
+                                cand.params,
+                                X,
+                                y,
+                                scoring=scoring,
+                                custom_metric=custom_metric,
+                                task_type=task_type,
+                            )
+                            cand.score = score
+                            cand.model = model
+                        except Exception:
+                            cand.score = float("-inf")
+                            cand.model = None
+                        results.append(cand)
+                    return results
+
+                # Otherwise raise clear error
+                raise RuntimeError(
+                    "Provided custom_metric is not pickleable and dill is not available."
+                )
 
         args = [
-            (cand, wrapper, X, y, scoring, metric_obj, task_type) for cand in candidates
+            (cand, wrapper, X, y, scoring, metric_obj, task_type)
+            for cand in candidates
         ]
         with Pool(self.num_workers) as p:
             results = p.map(_eval_candidate_worker, args)
