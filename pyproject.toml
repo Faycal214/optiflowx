@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
 
 [project]
 name = "optiflowx"
@@ -9,7 +9,14 @@ requires-python = ">=3.10"
 description = "A modular optimization and machine learning workflow framework for hyperparameter tuning and performance benchmarking across diverse datasets."
 readme = "README.md"
 authors = [{ name = "Alikacem Faycal", email = "faycal213.dz@gmail.com" }]
-dependencies = ["numpy", "scikit-learn", "tqdm", "optuna", "scikit-optimize", "xgboost"]
+license = "MIT"
+
+dependencies = [
+    "numpy",
+    "scikit-learn",
+    "tqdm"
+]
+
 keywords = [
   "hyperparameter optimization",
   "AutoML",
@@ -23,13 +30,67 @@ keywords = [
   "ant colony optimization",
   "grey wolf optimization"
 ]
-license = "MIT"
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
 
 [project.urls]
 Homepage = "https://github.com/Faycal214/optiflowx"
 Repository = "https://github.com/Faycal214/optiflowx"
 Issues = "https://github.com/Faycal214/optiflowx/issues"
 
-[tool.setuptools.packages.find]
-where = ["."]
-exclude = ["tests", "docs", "examples"]
+[project.optional-dependencies]
+optuna = ["optuna>=3.0"]
+skopt = ["scikit-optimize>=0.9"]
+xgboost = ["xgboost>=2.0"]
+
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=24.0",
+    "ruff>=0.5.0",
+    "mypy>=1.5",
+    "build",
+    "twine",
+]
+
+docs = [
+    "mkdocs",
+    "mkdocs-material",
+]
+
+# Hatch project configuration
+[tool.hatch.build.targets.wheel]
+packages = ["optiflowx"]
+
+[tool.pytest.ini_options]
+addopts = "-q --disable-warnings --maxfail=1"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["optiflowx"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+
+[tool.ruff]
+line-length = 88
+select = ["E", "F", "W"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_configs = true
+strict = true

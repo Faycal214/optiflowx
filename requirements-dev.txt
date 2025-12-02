@@ -1,0 +1,24 @@
+-r requirements.txt
+
+# Testing
+pytest
+pytest-cov
+
+# Linting / Style
+black
+ruff
+isort
+mypy
+
+# Building / Publishing
+build
+twine
+
+# Docs
+mkdocs
+mkdocs-material
+mkdocstrings
+mkdocstrings-python
+
+# Type checking for optional deps
+types-PyYAML
