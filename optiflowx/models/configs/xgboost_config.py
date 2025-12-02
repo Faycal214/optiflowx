@@ -1,21 +1,15 @@
 from optiflowx.core.search_space import SearchSpace
 from optiflowx.core.model_wrapper import ModelWrapper
-try:
-    from xgboost import XGBClassifier, XGBRegressor
-except ImportError as e:
-    raise ImportError(
-        "xgboost is not installed. Install with: pip install optiflowx[xgboost]"
-    ) from e
 
 
 class XGBoostConfig:
-    """Configuration for XGBoost classifier."""
+    """Configuration for XGBoost classifier/regressor."""
 
     name = "xgboost"
 
     @staticmethod
     def build_search_space():
-        """Define the hyperparameter search space for XGBClassifier.
+        """Define the hyperparameter search space for XGBClassifier/XGBRegressor.
 
         Returns:
             SearchSpace: Search space with structural and regularization parameters.
@@ -42,5 +36,12 @@ class XGBoostConfig:
         Returns:
             ModelWrapper: Wrapper for the XGBoost estimator.
         """
+        try:
+            from xgboost import XGBClassifier, XGBRegressor
+        except ImportError as e:
+            raise ImportError(
+                "xgboost is not installed. Install with: pip install optiflowx[xgboost]"
+            ) from e
+
         model_cls = XGBClassifier if task_type == "classification" else XGBRegressor
         return ModelWrapper(model_cls)
