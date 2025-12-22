@@ -137,13 +137,63 @@ print("Accuracy:", accuracy_score(y_test, y_pred))
 
 ---
 
-## Example 3 — Deep Learning with PyTorch
+# Examples
 
-OptiFlowX also supports PyTorch models by wrapping them in a `TorchModelConfig`.
-The optimizer explores learning rates, batch sizes, and architectures.
+The `examples/` folder contains runnable scripts and short guides demonstrating common workflows. Examples are split by task (classification / regression) and by metric type (sklearn vs custom metric).
 
-Quick notes:
+Each example is intentionally small and executable; they demonstrate how to:
 
-- The repository provides split example scripts in `examples/classification_examples.py`
-    and `examples/regression_examples.py` to make usage clearer.
-- For fast CI or quick checks set `EXAMPLES_FAST_MODE=1` and `EXAMPLES_MAX_ITERS=1`.
+- Use built-in model configs (`RandomForestConfig`, `SVCConfig`, etc.)
+- Provide a custom `SearchSpace` and `custom_metric` callable
+- Run an optimizer (GA, PSO, Bayesian) and fit the final model
+
+Run examples locally:
+
+```bash
+python examples/classification_examples.py
+python examples/regression_examples.py
+```
+
+Example 1 — Automatic setup
+
+Use a model config to build the search space and wrapper automatically:
+
+```python
+from optiflowx.models.configs.random_forest_config import RandomForestConfig
+from optiflowx.optimizers.bayesian import BayesianOptimizer
+
+cfg = RandomForestConfig()
+wrapper = cfg.get_wrapper(task_type="classification")
+opt = BayesianOptimizer(search_space=cfg.build_search_space(), metric="accuracy", model_class=wrapper.model_class, X=X, y=y)
+best_params, best_score = opt.run(max_iters=10)
+```
+
+Example 2 — Custom search space and metric
+
+Define a `SearchSpace` and a `custom_metric` callable to integrate bespoke scoring logic:
+
+```python
+from optiflowx.core.search_space import SearchSpace
+from optiflowx.optimizers.genetic import GeneticOptimizer
+
+space = SearchSpace()
+space.add("n_estimators", "discrete", [20, 200])
+space.add("max_depth", "discrete", [2, 20])
+
+def my_metric(y_true, y_pred):
+    # return a higher-is-better numeric score
+    from sklearn.metrics import f1_score
+    return float(f1_score(y_true, y_pred, average='macro'))
+
+opt = GeneticOptimizer(search_space=space, custom_metric=my_metric, model_class=MyClassifier, X=X_train, y=y_train, population=12)
+best_params, best_score = opt.run(max_iters=8)
+```
+
+Example 3 — Deep learning with PyTorch
+
+Wrap PyTorch models in a `ModelConfig` (see `examples/` for a pattern). Tuning typically explores learning rate, batch size and architecture choices — ensure your config's `get_wrapper()` handles device placement and training loops.
+
+Notes
+
+- For CI-friendly quick runs set `EXAMPLES_FAST_MODE=1` and `EXAMPLES_MAX_ITERS=3`.
+- If your `custom_metric` is a nested function or closure, install `dill` to enable multiprocessing serialization.

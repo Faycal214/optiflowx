@@ -1,17 +1,14 @@
-# Welcome to MkDocs
+# Documentation notes
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+This folder contains auxiliary mkdocs files. The main documentation pages are located under `docs/` (top-level) and are listed in `mkdocs.yml`.
 
-## Commands
+Common commands:
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+```bash
+mkdocs serve   # Run a local documentation server with live reload
+mkdocs build   # Build the static site into the "site/" folder
+```
 
-## Project layout
+To preview style changes, update CSS in `docs/assets/stylesheets/custom-theme.css` and run `mkdocs serve`.
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+If you want to extend the docs with API-generated content, configure `mkdocstrings` in `mkdocs.yml` and add docstring-compatible modules under `optiflowx/`.
