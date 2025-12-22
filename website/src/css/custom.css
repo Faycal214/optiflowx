@@ -1,0 +1,186 @@
+/* website/src/css/custom.css
+   OptiFlowX Docusaurus custom styles
+   Dark-first, muted indigo accent, accessibility focused
+   CHANGE ME: adjust variables below to change global accents and tokens
+*/
+
+:root {
+  --ifx-accent: #51627a; /* CHANGE ME: muted indigo */
+  --ifx-accent-2: #6b7088;
+  --ifx-bg: #0b0f12;
+  --ifx-surface: #0f1416;
+  --ifx-fg: #dbe7ee; /* text on dark */
+  --ifx-fg-dark: #1f2933; /* text on light */
+  --ifx-muted: #7a8390;
+  --ifx-content-width: 1100px;
+  --ifx-line-height: 1.65;
+  --ifx-radius: 10px;
+  --ifx-code-radius: 10px;
+  --ifx-code-padding: 1rem;
+}
+
+/* ---------------------
+   Theme mode selectors
+   Docusaurus toggles .theme-dark/.theme-light on <html>
+   ---------------------*/
+
+.theme-dark {
+  --ifx-bg: #0b0f12;
+  --ifx-surface: #0f1416;
+  --ifx-fg: #dbe7ee;
+  --ifx-muted: #a6b0bd;
+}
+
+.theme-light {
+  --ifx-bg: #f5f7f8;
+  --ifx-surface: #ffffff;
+  --ifx-fg: #1f2933;
+  --ifx-muted: #6b7280;
+}
+
+/* ---------------------
+   Base layout & typography
+   ---------------------*/
+html, body {
+  background: var(--ifx-bg);
+  color: var(--ifx-fg);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  line-height: var(--ifx-line-height);
+}
+
+.main-wrapper {
+  max-width: var(--ifx-content-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.markdown {
+  font-size: 0.96rem;
+}
+
+/* Headings */
+.markdown h1 { font-size: 2.1rem; font-weight: 600; margin-bottom: .4rem; }
+.markdown h2 { font-size: 1.6rem; font-weight: 600; margin-top: 1.1rem; margin-bottom: .45rem; }
+.markdown h3 { font-size: 1.25rem; margin-top: .9rem; margin-bottom: .35rem; }
+
+/* Subtle underline for h2 */
+.markdown h2::after {
+  content: "";
+  display: block;
+  width: 48px; height: 3px; margin-top: .45rem;
+  background: linear-gradient(90deg, var(--ifx-accent), color-mix(in srgb, var(--ifx-accent) 40%, transparent 60%));
+  border-radius: 6px; opacity: 0.95;
+}
+
+/* ---------------------
+   Top bar / header
+   ---------------------*/
+.navbar {
+  background: rgba(15,18,20,0.95);
+  border-bottom: 1px solid color-mix(in srgb, var(--ifx-fg) 4%, transparent 96%);
+  box-shadow: 0 2px 6px rgba(2,6,12,0.45);
+}
+
+.navbar__title { color: var(--ifx-fg); font-weight: 600; }
+.navbar__items { color: color-mix(in srgb, var(--ifx-fg) 84%, transparent 16%); }
+
+/* ---------------------
+   Sidebar (left) — soft background, thin left accent for active
+   ---------------------*/
+.sidebar {
+  background: color-mix(in srgb, var(--ifx-bg) 92%, var(--ifx-fg) 2%);
+  border-right: 1px solid color-mix(in srgb, var(--ifx-fg) 4%, transparent 96%);
+}
+
+/* Docusaurus link active class is .menu__link--active */
+.menu__link--active {
+  color: var(--ifx-accent) !important;
+  background: transparent !important;
+  border-left: 3px solid var(--ifx-accent);
+  padding-left: calc(var(--ifx-padding, 12px) - 3px);
+}
+
+.menu__link { transition: color .14s ease; }
+.menu__link:hover { color: var(--ifx-accent-2); }
+
+/* Sidebar collapse transitions handled by Docusaurus JS — ensure no box highlight */
+.menu__list-item { transition: padding .16s ease, color .16s ease; }
+
+/* ---------------------
+   Right TOC
+   ---------------------*/
+.table-of-contents {
+  position: sticky; top: 84px; max-height: calc(100vh - 120px); padding-left: .5rem; margin-left: .5rem;
+}
+
+/* ---------------------
+   Cards & surfaces
+   ---------------------*/
+.card, .theme-doc-markdown .admonition, .theme-doc-markdown .table {
+  background: var(--ifx-surface);
+  border-radius: var(--ifx-radius);
+  border: 1px solid color-mix(in srgb, var(--ifx-fg) 4%, transparent 96%);
+  box-shadow: 0 6px 18px rgba(2,6,12,0.06);
+}
+
+/* ---------------------
+   Code blocks & inline code
+   ---------------------*/
+.token, pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace; }
+
+/* Inline code */
+.code-inline, .markdown code:not(pre code) {
+  background: color-mix(in srgb, var(--ifx-surface) 92%, rgba(0,0,0,0.04) 8%);
+  padding: .06rem .32rem; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--ifx-fg) 6%, transparent 94%);
+}
+
+/* Block code */
+.theme-dark pre, .theme-light pre {
+  border-radius: var(--ifx-code-radius);
+  padding: var(--ifx-code-padding);
+  border: 1px solid color-mix(in srgb, var(--ifx-fg) 6%, transparent 94%);
+  background: color-mix(in srgb, var(--ifx-surface) 92%, rgba(0,0,0,0.04) 8%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.01);
+}
+
+/* Make sure dark-mode code is slightly darker */
+.theme-dark pre { background: rgba(12,16,20,0.72); color: var(--ifx-fg); border: 1px solid rgba(255,255,255,0.03); }
+
+/* Copy button provided by Docusaurus; ensure small and unobtrusive */
+.docusaurus-highlight .copy-button { background: transparent; color: var(--ifx-fg); border-radius: 6px; }
+
+/* ---------------------
+   Admonitions (callouts)
+   ---------------------*/
+.admonition {
+  border-left: 4px solid color-mix(in srgb, var(--ifx-accent) 28%, transparent 72%);
+  padding: .7rem .9rem; margin: .9rem 0; border-radius: 8px; background: color-mix(in srgb, var(--ifx-surface) 96%, var(--ifx-accent) 0%);
+}
+.admonition .admonition-title { font-weight: 600; }
+
+/* ---------------------
+   Floating compact toggle (top-right)
+   ---------------------*/
+.ofx-toggle {
+  position: fixed; top: 14px; right: 16px; z-index: 1200; display: inline-flex; gap: .5rem; align-items: center;
+  padding: .36rem .6rem; border-radius: 999px; background: rgba(255,255,255,0.03); color: var(--ifx-fg); backdrop-filter: blur(6px);
+  border: 1px solid color-mix(in srgb, var(--ifx-fg) 6%, transparent 94%); box-shadow: 0 4px 18px rgba(2,6,12,0.28); cursor: pointer;
+}
+.ofx-toggle:focus { outline: 3px solid color-mix(in srgb, var(--ifx-accent) 14%, transparent 86%); outline-offset: 3px; }
+.ofx-toggle .label { font-size: .86rem; }
+@media (max-width: 520px) { .ofx-toggle .label { display: none; } .ofx-toggle { right: 10px; top: 10px; } }
+
+/* ---------------------
+   Accessibility helpers
+   ---------------------*/
+:focus { outline: none; }
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--ifx-accent) 14%, transparent 86%); outline-offset: 3px; }
+
+/* ---------------------
+   Responsive
+   ---------------------*/
+@media (max-width: 900px) {
+  .table-of-contents { display: none; }
+}
+
+/* end of custom.css */
