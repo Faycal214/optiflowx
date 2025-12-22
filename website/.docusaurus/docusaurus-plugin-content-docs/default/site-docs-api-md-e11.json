@@ -1,0 +1,24 @@
+{
+  "unversionedId": "api",
+  "id": "api",
+  "title": "API Reference",
+  "description": "This page highlights the core public API and recommended usage patterns. For full, live API docs consult the docstrings and the optiflowx package modules.",
+  "source": "@site/../docs/api.md",
+  "sourceDirName": ".",
+  "slug": "/api",
+  "permalink": "/api",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/api.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Algorithms in OptiFlowX",
+    "permalink": "/algorithms"
+  },
+  "next": {
+    "title": "Contributing to OptiFlowX",
+    "permalink": "/contributing"
+  }
+}

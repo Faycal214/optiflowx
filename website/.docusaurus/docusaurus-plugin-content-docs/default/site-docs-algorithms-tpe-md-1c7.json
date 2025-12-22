@@ -1,0 +1,26 @@
+{
+  "unversionedId": "algorithms/tpe",
+  "id": "algorithms/tpe",
+  "title": "tpe",
+  "description": "Tree-structured Parzen Estimator (TPE)",
+  "source": "@site/../docs/algorithms/tpe.md",
+  "sourceDirName": "algorithms",
+  "slug": "/algorithms/tpe",
+  "permalink": "/algorithms/tpe",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/tpe.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "sidebar_label": "Tree-structured Parzen Estimator (TPE)"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Simulated Annealing (SA)",
+    "permalink": "/algorithms/simulated_annealing"
+  },
+  "next": {
+    "title": "Algorithms in OptiFlowX",
+    "permalink": "/algorithms"
+  }
+}

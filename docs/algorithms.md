@@ -1,78 +1,13 @@
 # Algorithms in OptiFlowX
-
-## Genetic Algorithm (GA)
-
-In computer science and operations research, a **genetic algorithm (GA)** is a metaheuristic inspired by the process of natural selection that belongs to the larger class of evolutionary algorithms (EA). Genetic algorithms are commonly used to generate high-quality solutions to optimization and search problems via biologically inspired operators such as selection, crossover, and mutation. Some examples of GA applications include optimizing decision trees for better performance, solving sudoku puzzles, hyperparameter optimization, and causal inference.
-
-### Optimization problems
-
-In a genetic algorithm, a [population](https://en.wikipedia.org/wiki/Population) of [candidate solutions](https://en.wikipedia.org/wiki/Candidate_solution) (called individuals, creatures, organisms, or phenotypes) to an optimization problem is evolved toward better solutions. Each candidate solution has a set of properties (its [chromosomes](https://en.wikipedia.org/wiki/Chromosome) or [genotype](https://en.wikipedia.org/wiki/Genotype)) which can be mutated and altered; traditionally, solutions are represented in binary as strings of 0s and 1s, but other encodings are also possible.
-
-The evolution usually starts from a population of randomly generated individuals, and is an iterative process, with the population in each iteration called a generation. In each generation, the [fitness](https://en.wikipedia.org/wiki/Fitness_(biology)) of every individual in the population is evaluated; the fitness is usually the value of the [objective function](https://en.wikipedia.org/wiki/Objective_function) in the optimization problem being solved. The more fit individuals are stochastically selected from the current population, and each individual's genome is modified (recombined and possibly randomly mutated) to form a new generation. The new generation of candidate solutions is then used in the next iteration of the algorithm. Commonly, the algorithm terminates when either a maximum number of generations has been produced, or a satisfactory fitness level has been reached for the population.
-
-A typical genetic algorithm requires:
-
-* A [genetic representation](https://en.wikipedia.org/wiki/Genetic_representation) of the solution domain,
-* A [fitness function](https://en.wikipedia.org/wiki/Fitness_function) to evaluate the solution domain.
-
-A standard representation of each candidate solution is as an array of bits (also called bit set or bit string). Arrays of other types and structures can be used in essentially the same way. The main property that makes these genetic representations convenient is that their parts are easily aligned due to their fixed size, which facilitates simple [crossover](https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)) operations. Variable length representations may also be used, but crossover implementation is more complex in this case. Tree-like representations are explored in genetic programming and graph-form representations are explored in evolutionary programming; a mix of both linear chromosomes and trees is explored in gene expression programming.
-
-Once the genetic representation and the fitness function are defined, a GA proceeds to initialize a population of solutions and then to improve it through repetitive application of the mutation, crossover, inversion and selection operators.
-
-### Initialization
-
-The population size depends on the nature of the problem, but typically contains hundreds or thousands of possible solutions. Often, the initial population is generated randomly, allowing the entire range of possible solutions (the [search space](https://en.wikipedia.org/wiki/Feasible_region)). Occasionally, the solutions may be "seeded" in areas where optimal solutions are likely to be found or the distribution of the sampling probability tuned to focus in those areas of greater interest.
-
-### Selection
-
-Main article: [Selection (genetic algorithm)](https://en.wikipedia.org/wiki/Selection_(genetic_algorithm))
-
-During each successive generation, a portion of the existing population is selected to reproduce for a new generation. Individual solutions are selected through a fitness-based process, where fitter solutions (as measured by a fitness function) are typically more likely to be selected. Certain selection methods rate the fitness of each solution and preferentially select the best solutions. Other methods rate only a random sample of the population, as the former process may be very time-consuming.
-
-The fitness function is defined over the genetic representation and measures the quality of the represented solution. The fitness function is always problem-dependent. For instance, in the knapsack problem one wants to maximize the total value of objects that can be put in a knapsack of some fixed capacity. A representation of a solution might be an array of bits, where each bit represents a different object, and the value of the bit (0 or 1) represents whether or not the object is in the knapsack. Not every such representation is valid, as the size of objects may exceed the capacity of the knapsack. The fitness of the solution is the sum of values of all objects in the knapsack if the representation is valid, or 0 otherwise.
-
-### Genetic operators
-
-Main articles: [Crossover (genetic algorithm)](https://en.wikipedia.org/wiki/Crossover_(genetic_algorithm)) and [Mutation (genetic algorithm)](https://en.wikipedia.org/wiki/Mutation_(genetic_algorithm)).
-
-The next step is to generate a second generation population of solutions from those selected, through a combination of genetic operators: crossover (also called recombination), and mutation.
-
-For each new solution to be produced, a pair of "parent" solutions is selected for breeding from the pool selected previously. By producing a "child" solution using the above methods of crossover and mutation, a new solution is created which typically shares many of the characteristics of its "parents". New parents are selected for each new child, and the process continues until a new population of solutions of appropriate size is generated. Although reproduction methods that are based on the use of two parents are more "biology inspired", some research suggests that more than two "parents" generate higher quality chromosomes.
-
-These processes ultimately result in the next generation population of chromosomes that is different from the initial generation. Generally, the average fitness will have increased by this procedure for the population, since only the best organisms from the first generation are selected for breeding, along with a small proportion of less fit solutions. These less fit solutions ensure genetic diversity within the genetic pool of the parents and therefore ensure the genetic diversity of the subsequent generation of children.
-
-It is worth tuning parameters such as the mutation probability, crossover probability and population size to find reasonable settings for the problem's complexity class being worked on. A very small mutation rate may lead to [genetic drift](https://en.wikipedia.org/wiki/Genetic_drift) (which is non-ergodic in nature). A recombination rate that is too high may lead to premature convergence of the genetic algorithm. A mutation rate that is too high may lead to loss of good solutions, unless elitist selection is employed. An adequate population size ensures sufficient genetic diversity for the problem at hand, but can lead to a waste of computational resources if set to a value larger than required.
-
-### Termination
-
-This generational process is repeated until a termination condition has been reached. Common terminating conditions are:
-
-* A solution is found that satisfies minimum criteria
-* Fixed number of generations reached
-* Allocated budget (computation time/money) reached
-* The highest ranking solution's fitness is reaching or has reached a plateau such that successive iterations no longer produce better results
-* Manual inspection
-* Combinations of the above
-
-### Pseudo Code
-
-```text
-Initialize population P with N random candidate solutions
-Evaluate fitness f(x) for each x in P
-For generation = 1 to G:
-    Select parent solutions from P (higher-fitness more likely)
-    Apply crossover (with probability p_c) to parents to produce offspring
-    Apply mutation (with probability p_m) to offspring
-    Evaluate fitness of all offspring
-    Form new population P by (for example) selecting the top N candidates from parents ∪ offspring
-Output the best solution(s) found (highest fitness)
-```
-
+---
+sidebar_label: Algorithms (index)
 ---
 
-## Particle Swarm Optimization (PSO)
+# Algorithms
 
-In [computational science](https://en.wikipedia.org/wiki/Computational_science), **particle swarm optimization (PSO)** is a computational method that optimizes a problem by iteratively trying to improve a candidate solution with regard to a given measure of quality. It solves a problem by having a population of candidate solutions, here dubbed [particles](https://en.wikipedia.org/wiki/Point_particle), and moving these particles around in the search-space according to simple mathematical formulae over the particle's [position](https://en.wikipedia.org/wiki/Position_(vector)) and [velocity](https://en.wikipedia.org/wiki/Velocity). Each particle's movement is influenced by its local best known position, but is also guided toward the best known positions in the search-space, which are updated as better positions are found by other particles. This is expected to move the swarm toward the best solutions.
+This page has been refactored into focused subpages under `docs/algorithms/` for each optimizer (GA, PSO, SA, Bayesian, TPE, Random Search, Grid Search, GWO, ACO). See the Algorithms index or the sidebar to navigate.
+
+You can find the split pages in `docs/algorithms/` (one file per algorithm) — all original content is preserved and reorganized for readability.
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/e/ec/ParticleSwarmArrowsAnimation.gif" alt="drawing" width="500"/>
 

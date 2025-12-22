@@ -1,0 +1,24 @@
+{
+  "unversionedId": "getting-started",
+  "id": "getting-started",
+  "title": "Getting Started",
+  "description": "This page shows how to install OptiFlowX and run a quick example locally. The project is designed to be lightweight and easy to extend.",
+  "source": "@site/../docs/getting-started.md",
+  "sourceDirName": ".",
+  "slug": "/getting-started",
+  "permalink": "/getting-started",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/getting-started.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Custom metrics and regression examples",
+    "permalink": "/examples_custom_metric"
+  },
+  "next": {
+    "title": "index",
+    "permalink": "/"
+  }
+}

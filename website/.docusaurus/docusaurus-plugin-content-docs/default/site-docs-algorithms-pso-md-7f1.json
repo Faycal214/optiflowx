@@ -1,0 +1,26 @@
+{
+  "unversionedId": "algorithms/pso",
+  "id": "algorithms/pso",
+  "title": "pso",
+  "description": "Particle Swarm Optimization (PSO)",
+  "source": "@site/../docs/algorithms/pso.md",
+  "sourceDirName": "algorithms",
+  "slug": "/algorithms/pso",
+  "permalink": "/algorithms/pso",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/pso.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "sidebar_label": "Particle Swarm Optimization (PSO)"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Grid Search",
+    "permalink": "/algorithms/grid_search"
+  },
+  "next": {
+    "title": "Random Search",
+    "permalink": "/algorithms/random_search"
+  }
+}

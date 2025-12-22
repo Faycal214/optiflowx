@@ -28,29 +28,23 @@ module.exports = {
   ],
   themeConfig: {
     navbar: {
-      title: 'OptiFlowX',
-      logo: {
-        alt: 'OptiFlowX mark',
-        src: 'static/img/opti-mark.svg',
-      },
+      title: 'OptiFlowX',         // keep simple text title or remove title if preferred
+      // remove or comment out any `logo` entry so no image mark is shown
       items: [
-        {
-          href: 'https://github.com/Faycal214/optiflowx',
-          label: 'GitHub',
-          position: 'right',
-        },
+        {to: '/', label: 'Docs', position: 'left'},
+        {href: 'https://github.com/your-org/optiflowx', label: 'GitHub', position: 'right'}
       ],
     },
     colorMode: {
       defaultMode: 'dark',
-      disableSwitch: false,
-      respectPrefersColorScheme: true,
+      disableSwitch: true,
+      respectPrefersColorScheme: false
     },
     prism: {
-      theme: require('prism-react-renderer/themes/vsDark'),
-      darkTheme: require('prism-react-renderer/themes/dracula'),
-      additionalLanguages: ['python'],
+      // use a dark base; we will override tokens via CSS for richer colors
+      theme: require('prism-react-renderer/themes/dracula'),
+      darkTheme: require('prism-react-renderer/themes/dracula')
     },
+    // ensure no clientModules reference pointing to a theme toggle component
   },
-  clientModules: [require.resolve('./src/clientModules.js')],
 };

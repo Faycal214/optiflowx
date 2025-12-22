@@ -1,0 +1,26 @@
+{
+  "unversionedId": "algorithms/grid_search",
+  "id": "algorithms/grid_search",
+  "title": "grid_search",
+  "description": "Grid Search",
+  "source": "@site/../docs/algorithms/grid_search.md",
+  "sourceDirName": "algorithms",
+  "slug": "/algorithms/grid_search",
+  "permalink": "/algorithms/grid_search",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/grid_search.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "sidebar_label": "Grid Search"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Grey Wolf Optimization (GWO)",
+    "permalink": "/algorithms/grey_wolf"
+  },
+  "next": {
+    "title": "Particle Swarm Optimization (PSO)",
+    "permalink": "/algorithms/pso"
+  }
+}

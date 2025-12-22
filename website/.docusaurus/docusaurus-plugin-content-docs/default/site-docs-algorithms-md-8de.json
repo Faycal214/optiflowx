@@ -1,0 +1,24 @@
+{
+  "unversionedId": "algorithms",
+  "id": "algorithms",
+  "title": "Algorithms in OptiFlowX",
+  "description": "---",
+  "source": "@site/../docs/algorithms.md",
+  "sourceDirName": ".",
+  "slug": "/algorithms",
+  "permalink": "/algorithms",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Tree-structured Parzen Estimator (TPE)",
+    "permalink": "/algorithms/tpe"
+  },
+  "next": {
+    "title": "API Reference",
+    "permalink": "/api"
+  }
+}

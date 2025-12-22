@@ -1,0 +1,22 @@
+{
+  "unversionedId": "algorithms/index",
+  "id": "algorithms/index",
+  "title": "Algorithms",
+  "description": "This section provides focused, technical pages for each optimizer implemented in OptiFlowX. Use the links below to jump to a specific algorithm. Content has been reorganized for readability — full original wording preserved and split into shorter, scannable pages.",
+  "source": "@site/../docs/algorithms/index.md",
+  "sourceDirName": "algorithms",
+  "slug": "/algorithms/",
+  "permalink": "/algorithms/",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "sidebar_label": "Algorithms"
+  },
+  "sidebar": "docsSidebar",
+  "next": {
+    "title": "Ant Colony Optimization (ACO)",
+    "permalink": "/algorithms/ant_colony"
+  }
+}

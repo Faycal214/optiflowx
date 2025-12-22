@@ -1,0 +1,26 @@
+{
+  "unversionedId": "algorithms/genetic",
+  "id": "algorithms/genetic",
+  "title": "genetic",
+  "description": "Genetic Algorithm (GA)",
+  "source": "@site/../docs/algorithms/genetic.md",
+  "sourceDirName": "algorithms",
+  "slug": "/algorithms/genetic",
+  "permalink": "/algorithms/genetic",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/genetic.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "sidebar_label": "Genetic Algorithm (GA)"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Bayesian Optimization",
+    "permalink": "/algorithms/bayesian"
+  },
+  "next": {
+    "title": "Grey Wolf Optimization (GWO)",
+    "permalink": "/algorithms/grey_wolf"
+  }
+}

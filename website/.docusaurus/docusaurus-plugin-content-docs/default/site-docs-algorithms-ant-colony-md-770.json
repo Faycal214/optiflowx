@@ -1,0 +1,26 @@
+{
+  "unversionedId": "algorithms/ant_colony",
+  "id": "algorithms/ant_colony",
+  "title": "ant_colony",
+  "description": "Ant Colony Optimization (ACO)",
+  "source": "@site/../docs/algorithms/ant_colony.md",
+  "sourceDirName": "algorithms",
+  "slug": "/algorithms/ant_colony",
+  "permalink": "/algorithms/ant_colony",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/ant_colony.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "sidebar_label": "Ant Colony Optimization (ACO)"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Algorithms",
+    "permalink": "/algorithms/"
+  },
+  "next": {
+    "title": "Bayesian Optimization",
+    "permalink": "/algorithms/bayesian"
+  }
+}

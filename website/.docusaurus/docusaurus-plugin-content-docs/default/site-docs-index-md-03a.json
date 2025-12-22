@@ -1,0 +1,20 @@
+{
+  "unversionedId": "index",
+  "id": "index",
+  "title": "index",
+  "description": "🧠 Supported Algorithms",
+  "source": "@site/../docs/index.md",
+  "sourceDirName": ".",
+  "slug": "/",
+  "permalink": "/",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Getting Started",
+    "permalink": "/getting-started"
+  }
+}

@@ -1,0 +1,200 @@
+---
+sidebar_label: Algorithms
+---
+
+import AlgorithmCard from '@site/src/components/AlgorithmCard';
+
+# Algorithms in OptiFlowX
+
+This page presents a concise, scannable catalogue of algorithms. Each entry includes a one-line summary, badges, pros/cons, and a small runnable example.
+
+<AlgorithmCard
+  name="Genetic Algorithm (GA)"
+  badges={["evolutionary", "population"]}
+  short="Population-based evolutionary search using selection, crossover and mutation. Good for discrete and combinatorial search."
+  complexity="O(population * generations * eval_cost)"
+  params={{population: '50-500', generations: '50-1000'}}
+  exampleCode={`# pseudo example
+from optiflowx.optimizers import Genetic
+opt = Genetic(population=100, generations=200)
+opt.run()`}
+  pros={["Robust search", "Good for combinatorial spaces"]}
+  cons={["Many hyperparams", "Can be compute-heavy"]}
+/>
+
+<AlgorithmCard
+  name="Particle Swarm Optimization (PSO)"
+  badges={["swarm", "continuous"]}
+  short="Swarm-based optimizer using velocity & position updates; simple and parallelizable."
+  complexity="O(particles * iterations)"
+  params={{particles: '20-200', inertia: '0.5-0.9'}}
+  exampleCode={`from optiflowx.optimizers import PSO
+opt = PSO(particles=60)
+opt.run()`}
+  pros={["Easy to implement", "Parallel-friendly"]}
+  cons={["May converge prematurely"]}
+/>
+
+<AlgorithmCard
+  name="Simulated Annealing (SA)"
+  badges={["metaheuristic"]}
+  short="Single-solution iterative search with probabilistic uphill moves to escape local minima."
+  complexity="Depends on iterations"
+  params={{temp_schedule: 'exponential', iterations: '100-10000'}}
+  exampleCode={`from optiflowx.optimizers import SimulatedAnnealing
+opt = SimulatedAnnealing(iterations=2000)
+opt.run()`}
+  pros={["Simple", "Works with noisy objectives"]}
+  cons={["May require careful cooling schedule"]}
+/>
+
+<AlgorithmCard
+  name="Bayesian Optimization"
+  badges={["model-based", "surrogate"]}
+  short="Model-based hyperparameter optimizer for expensive evaluations (GP or surrogate models)."
+  complexity="depends on surrogate"
+  params={{n_initial: '10-50', n_iter: '20-200'}}
+  exampleCode={`from optiflowx.optimizers import Bayesian
+opt = Bayesian(n_iter=50)
+opt.run()`}
+  pros={["Sample-efficient", "Good for expensive evals"]}
+  cons={["Surrogate modeling overhead"]}
+/>
+
+<AlgorithmCard
+  name="Tree-structured Parzen Estimator (TPE)"
+  badges={["bayesian", "tpe"]}
+  short="An alternate SMBO approach that models P(x|y) via KDEs; effective for complex search spaces."
+  complexity="depends on KDE modeling"
+  params={{gamma: '0.2-0.3', n_startup: '10-50'}}
+  exampleCode={`from optiflowx.optimizers import TPE
+opt = TPE(n_iter=80)
+opt.run()`}
+  pros={["Flexible", "Handles conditional spaces well"]}
+  cons={["KDE overhead for very large trials"]}
+/>
+
+<AlgorithmCard
+  name="Random Search"
+  badges={["baseline", "parallel"]}
+  short="Random sampling baseline; surprisingly effective for many problems and trivially parallel."
+  complexity="O(trials)"
+  params={{trials: '50-1000'}}
+  exampleCode={`from optiflowx.optimizers import RandomSearch
+opt = RandomSearch(trials=200)
+opt.run()`}
+  pros={["Simple", "Embarrassingly parallel"]}
+  cons={["Inefficient for high-dim spaces"]}
+/>
+
+<!-- TODO: add additional algorithms or tune cards further -->
+---
+sidebar_label: Algorithms
+---
+
+import AlgorithmCard from '@site/src/components/AlgorithmCard';
+
+# Algorithms in OptiFlowX
+
+This page presents a concise, scannable catalogue of algorithms. Each entry includes a one-line summary, badges, pros/cons, and a small runnable example.
+
+<AlgorithmCard
+  name="Genetic Algorithm (GA)"
+  badges={['evolutionary','metaheuristic']}
+  short="Population-based evolutionary optimizer using selection, crossover and mutation."
+  complexity="O(population * generations)"
+  params={{population: '50-500', generations: '50-1000'}}
+  exampleCode={`from optiflowx.optimizers import Genetic
+ga = Genetic(population=100, generations=200)
+ga.search()`}
+  pros={['Good global search', 'Handles mixed spaces']}
+  cons={['May require many evaluations', 'Stochastic results']}
+/
+>
+
+<AlgorithmCard
+  name="Particle Swarm Optimization (PSO)"
+  badges={['swarm','metaheuristic']}
+  short="Swarm-based optimizer where particles share best-known positions." 
+  complexity="O(swarm_size * iterations)"
+  params={{swarm_size: '20-200'}}
+  exampleCode={`from optiflowx.optimizers import PSO
+pso = PSO(swarm_size=50)
+pso.run()`}
+  pros={['Simple to implement', 'Parallelizable']}
+  cons={['May converge prematurely']}
+/
+>
+
+<AlgorithmCard
+  name="Simulated Annealing (SA)"
+  badges={['stochastic','single-solution']}
+  short="Single-solution metaheuristic that probabilistically accepts worse states." 
+  complexity="Depends on schedule"
+  params={{temp_schedule: 'exp/linear', iterations: '100-10000'}}
+  exampleCode={`from optiflowx.optimizers import SimulatedAnnealing
+sa = SimulatedAnnealing(iterations=1000)
+sa.optimize()`}
+  pros={['Escapes local minima', 'Low memory usage']}
+  cons={['Requires careful cooling schedule']}
+/
+>
+
+<AlgorithmCard
+  name="Bayesian Optimization"
+  badges={['bayesian','surrogate']}
+  short="Model-based optimizer for expensive black-box functions." 
+  complexity="Depends on surrogate model"
+  params={{n_iter: '20-200'}}
+  exampleCode={`from optiflowx.optimizers import BayesianOptimizer
+bo = BayesianOptimizer(n_iter=50)
+bo.search()`}
+  pros={['Sample-efficient', 'Good for costly evaluations']}
+  cons={['Surrogate introduces modeling assumptions']}
+/
+>
+
+<AlgorithmCard
+  name="Tree-structured Parzen Estimator (TPE)"
+  badges={['tpe','smbo']}
+  short="SMBO variant using density estimators for proposing hyperparams." 
+  complexity="Depends on KDE modeling"
+  params={{n_startup: '10-50'}}
+  exampleCode={`from optiflowx.optimizers import TPE
+tpe = TPE(n_trials=100)
+tpe.run()`}
+  pros={['Handles conditional spaces well', 'Efficient']}
+  cons={['KDE tuning can matter']}
+/
+>
+
+<AlgorithmCard
+  name="Random Search"
+  badges={['baseline','parallel']}
+  short="Simple random sampling over the hyperparameter space." 
+  complexity="O(trials)"
+  params={{trials: '50-1000'}}
+  exampleCode={`from optiflowx.optimizers import RandomSearch
+rs = RandomSearch(trials=200)
+rs.search()`}
+  pros={['Very parallelizable', 'Strong baseline']}
+  cons={['Inefficient for high-dimensional spaces']}
+/
+>
+
+<AlgorithmCard
+  name="Grid Search"
+  badges={['exhaustive','baseline']}
+  short="Exhaustive sweep across a manually defined grid of hyperparameters." 
+  complexity="Exponential in grid size"
+  params={{grid_size: 'small-to-medium'}}
+  exampleCode={`from sklearn.model_selection import GridSearchCV
+# Use with OptiFlowX wrappers as needed`}
+  pros={['Deterministic', 'Simple to reason about']}
+  cons={['Scales poorly with dimensions']}
+/
+>
+
+<!-- TODO: Add remaining algorithm entries by parsing original docs or manual conversion -->
+
+```

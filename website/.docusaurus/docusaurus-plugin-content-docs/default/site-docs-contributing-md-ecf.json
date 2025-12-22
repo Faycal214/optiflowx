@@ -1,0 +1,24 @@
+{
+  "unversionedId": "contributing",
+  "id": "contributing",
+  "title": "Contributing to OptiFlowX",
+  "description": "Thanks for your interest in contributing! This document describes how to propose changes, add new optimizers, run tests, and keep the documentation up to date.",
+  "source": "@site/../docs/contributing.md",
+  "sourceDirName": ".",
+  "slug": "/contributing",
+  "permalink": "/contributing",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/contributing.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "API Reference",
+    "permalink": "/api"
+  },
+  "next": {
+    "title": "Design System",
+    "permalink": "/design-system"
+  }
+}
