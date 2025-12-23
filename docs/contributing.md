@@ -49,11 +49,21 @@ class MyOptimizer:
 ## Documentation
 
 - Update or add docs under `docs/` when you introduce new features.
-- Preview locally using MkDocs Material:
+- The documentation site is built with Docusaurus and lives in the `website/` folder.
+
+To preview the documentation locally (from the repository root):
 
 ```bash
-pip install mkdocs mkdocs-material
-mkdocs serve
+cd website
+npm install
+npm run start
+```
+
+To build a production-ready static site:
+
+```bash
+cd website
+npm run build
 ```
 
 ## Tests
