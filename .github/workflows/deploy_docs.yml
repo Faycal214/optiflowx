@@ -20,10 +20,11 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install dependencies
+      - name: Install dependencies (allow legacy peer deps)
         run: |
           cd website
-          npm ci
+          # Some Docusaurus deps expect older React peer deps; allow legacy resolution
+          npm ci --legacy-peer-deps
 
       - name: Build Docusaurus site
         run: |
