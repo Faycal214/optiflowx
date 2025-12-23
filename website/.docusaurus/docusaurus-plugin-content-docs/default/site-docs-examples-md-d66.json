@@ -1,0 +1,24 @@
+{
+  "unversionedId": "examples",
+  "id": "examples",
+  "title": "🧪 Examples",
+  "description": "This section demonstrates how to use OptiFlowX for hyperparameter optimization across different use cases.",
+  "source": "@site/../docs/examples.md",
+  "sourceDirName": ".",
+  "slug": "/examples",
+  "permalink": "/examples",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/examples.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Ant Colony Optimization",
+    "permalink": "/algorithms/ant-colony-optimization"
+  },
+  "next": {
+    "title": "API Reference",
+    "permalink": "/api"
+  }
+}

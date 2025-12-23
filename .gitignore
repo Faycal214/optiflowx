@@ -6,3 +6,12 @@ dist/
 build/
 site/
 site/
+
+
+# Docusaurus / website build artifacts
+website/.docusaurus/
+website/build/
+website/node_modules/
+website/.cache/
+website/.parcel-cache/
+website/.next/

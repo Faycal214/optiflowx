@@ -17,25 +17,25 @@ Primary and semantic colors used across the site.
 
 Primary
 
-<div style="display:flex;gap:12px;align-items:center;">
-  <div style="width:140px;height:48px;background:var(--md-primary-fg-color);border-radius:6px;"></div>
+<div style={{display:'flex',gap:'12px',alignItems:'center'}}>
+  <div style={{width:'140px',height:'48px',background:'var(--md-primary-fg-color)',borderRadius:'6px'}}></div>
   <div>Primary: <code>var(--md-primary-fg-color)</code></div>
 </div>
 
 Accent
 
-<div style="display:flex;gap:12px;align-items:center;margin-top:0.6rem;">
-  <div style="width:140px;height:48px;background:var(--md-accent-fg-color);border-radius:6px;"></div>
+<div style={{display:'flex',gap:'12px',alignItems:'center',marginTop:'0.6rem'}}>
+  <div style={{width:'140px',height:'48px',background:'var(--md-accent-fg-color)',borderRadius:'6px'}}></div>
   <div>Accent: <code>var(--md-accent-fg-color)</code></div>
 </div>
 
 Semantic
 
-<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:0.6rem;">
-  <div style="width:120px;height:40px;background:var(--md-success-color);border-radius:6px;">&nbsp;</div>
-  <div style="width:120px;height:40px;background:var(--md-warning-color);border-radius:6px;">&nbsp;</div>
-  <div style="width:120px;height:40px;background:var(--md-danger-color);border-radius:6px;">&nbsp;</div>
-  <div style="width:120px;height:40px;background:var(--md-info-color);border-radius:6px;">&nbsp;</div>
+<div style={{display:'flex',gap:'12px',flexWrap:'wrap',marginTop:'0.6rem'}}>
+  <div style={{width:'120px',height:'40px',background:'var(--md-success-color)',borderRadius:'6px'}}>&nbsp;</div>
+  <div style={{width:'120px',height:'40px',background:'var(--md-warning-color)',borderRadius:'6px'}}>&nbsp;</div>
+  <div style={{width:'120px',height:'40px',background:'var(--md-danger-color)',borderRadius:'6px'}}>&nbsp;</div>
+  <div style={{width:'120px',height:'40px',background:'var(--md-info-color)',borderRadius:'6px'}}>&nbsp;</div>
 </div>
 
 ## Typography

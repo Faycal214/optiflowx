@@ -1,0 +1,27 @@
+{
+  "unversionedId": "algorithms/index",
+  "id": "algorithms/index",
+  "title": "Algorithms",
+  "description": "---",
+  "source": "@site/../docs/algorithms/index.md",
+  "sourceDirName": "algorithms",
+  "slug": "/algorithms/",
+  "permalink": "/algorithms/",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "title": "Algorithms",
+    "sidebar_label": "Algorithms"
+  },
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Getting Started",
+    "permalink": "/getting-started"
+  },
+  "next": {
+    "title": "PSO",
+    "permalink": "/algorithms/pso"
+  }
+}

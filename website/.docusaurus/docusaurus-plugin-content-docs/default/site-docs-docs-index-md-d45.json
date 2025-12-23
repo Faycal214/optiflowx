@@ -1,0 +1,20 @@
+{
+  "unversionedId": "docs/index",
+  "id": "docs/index",
+  "title": "Documentation notes",
+  "description": "This folder contains auxiliary mkdocs files. The main documentation pages are located under docs/ (top-level) and are listed in mkdocs.yml.",
+  "source": "@site/../docs/docs/index.md",
+  "sourceDirName": "docs",
+  "slug": "/docs/",
+  "permalink": "/docs/",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/docs/index.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Contributing to OptiFlowX",
+    "permalink": "/contributing"
+  }
+}

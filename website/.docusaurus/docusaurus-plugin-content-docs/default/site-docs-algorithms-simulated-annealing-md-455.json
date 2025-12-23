@@ -1,0 +1,17 @@
+{
+  "unversionedId": "algorithms/simulated_annealing",
+  "id": "algorithms/simulated_annealing",
+  "title": "simulated_annealing",
+  "description": "Simulated Annealing (SA)",
+  "source": "@site/../docs/algorithms/simulated_annealing.md",
+  "sourceDirName": "algorithms",
+  "slug": "/algorithms/simulated_annealing",
+  "permalink": "/algorithms/simulated_annealing",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/simulated_annealing.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "sidebar_label": "Simulated Annealing (SA)"
+  }
+}

@@ -1,0 +1,336 @@
+/* docs/stylesheets/extra.css
+   OptiFlowX polished theme overrides
+   Dark-first, muted indigo accents, accessibility-first
+   Place at: docs/stylesheets/extra.css
+*/
+
+/* ---------------------------
+   Color Tokens (palette)
+   ---------------------------
+   We map Material's scheme tokens and add a small set of ofx tokens.
+*/
+:root {
+  --ofx-accent-indigo: #51627a;     /* muted indigo accent */
+  --ofx-accent-lilac: #6b7088;      /* soft secondary */
+  --ofx-muted: #7a8390;             /* neutral muted */
+  --ofx-surface-radius: 10px;
+  --ofx-content-width: 1100px;
+  --ofx-line-height: 1.65;
+  --ofx-code-radius: 10px;
+  --ofx-code-padding: 1rem;
+  --ofx-toggle-bg: rgba(255,255,255,0.04);
+  --ofx-glass-blur: 6px;
+}
+
+/* ---------------------------
+   Dark scheme (primary)
+   ---------------------------
+   Material will expose [data-md-color-scheme="slate"] on <html>.
+   We set safe dark neutrals and accessible text color.
+*/
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: #0b0f12;   /* charcoal background (not pure black) */
+  --md-default-fg-color: #dbe7ee;   /* soft light text */
+  --md-primary-fg-color: var(--ofx-accent-indigo);
+  --md-accent-fg-color: var(--ofx-accent-indigo);
+  --md-surface: #0f1416;            /* card surface in dark */
+  --md-muted: #a6b0bd;              /* muted text for doc metadata */
+}
+
+/* ---------------------------
+   Light scheme (secondary)
+   --------------------------- */
+[data-md-color-scheme="default"] {
+  --md-default-bg-color: #f5f7f8;   /* very light gray */
+  --md-default-fg-color: #1f2933;   /* dark slate */
+  --md-primary-fg-color: var(--ofx-accent-indigo);
+  --md-accent-fg-color: var(--ofx-accent-lilac);
+  --md-surface: #ffffff;
+  --md-muted: #6b7280;
+}
+
+/* ---------------------------
+   Base layout & typography
+   --------------------------- */
+html, body {
+  background-color: var(--md-default-bg-color);
+  color: var(--md-default-fg-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  line-height: var(--ofx-line-height);
+}
+
+/* Limit content width and center */
+.md-content, .md-main {
+  max-width: var(--ofx-content-width);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+/* Increase body font-size slightly for readability */
+.md-typeset {
+  font-size: 0.96rem;
+  letter-spacing: 0.01em;
+}
+
+/* Headings hierarchy */
+.md-typeset h1 {
+  font-size: 2.1rem;
+  font-weight: 600;
+  margin-bottom: .4rem;
+}
+.md-typeset h2 {
+  font-size: 1.6rem;
+  margin-top: 1.1rem;
+  margin-bottom: .45rem;
+  font-weight: 600;
+}
+.md-typeset h3 { font-size: 1.25rem; margin-top: .9rem; margin-bottom: .35rem; }
+
+/* Subtle heading underline */
+.md-typeset h2::after {
+  content: "";
+  display: block;
+  width: 48px;
+  height: 3px;
+  margin-top: .45rem;
+  background: color-mix(in srgb, var(--md-primary-fg-color) 16%, transparent 84%);
+  border-radius: 6px;
+  opacity: .9;
+}
+
+/* ---------------------------
+   Header & top area
+   --------------------------- */
+.md-header {
+  background: rgba(15,18,20,0.95); /* charcoal, quiet */
+  box-shadow: 0 2px 6px rgba(2,6,12,0.45);
+  border-bottom: 1px solid color-mix(in srgb, var(--md-default-fg-color) 4%, transparent 96%);
+}
+
+/* Logo/title left */
+.md-header .md-logo { font-weight: 600; color: var(--md-default-fg-color); }
+
+/* Header links on right */
+.md-header .md-header-nav, .md-header .md-icons {
+  color: color-mix(in srgb, var(--md-default-fg-color) 84%, transparent 16%);
+}
+
+/* Minimal search input */
+.md-header .md-search { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 4px; }
+.md-header .md-search input { background: transparent; color: inherit; border: none; }
+
+/* ---------------------------
+   Floating compact toggle tab
+   --------------------------- */
+/* Visible on top-right, keyboard focusable */
+.ofx-toggle {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 1200;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .36rem .6rem;
+  border-radius: 999px;
+  background: var(--ofx-toggle-bg);
+  color: var(--md-default-fg-color);
+  backdrop-filter: blur(var(--ofx-glass-blur));
+  -webkit-backdrop-filter: blur(var(--ofx-glass-blur));
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 6%, transparent 94%);
+  box-shadow: 0 4px 18px rgba(2,6,12,0.28);
+  cursor: pointer;
+  font-size: .86rem;
+  line-height: 1;
+}
+.ofx-toggle:focus {
+  outline: 3px solid color-mix(in srgb, var(--md-primary-fg-color) 14%, transparent 86%);
+  outline-offset: 3px;
+  box-shadow: 0 6px 28px rgba(2,6,12,0.36);
+}
+.ofx-toggle .ofx-toggle-icon {
+  width: 18px; height: 18px; display: inline-block;
+  transform-origin: center;
+  display: inline-flex; align-items:center; justify-content:center;
+}
+
+/* Hide the label on very small screens to save space */
+@media (max-width: 520px) {
+  .ofx-toggle { padding: .32rem .44rem; right: 10px; top: 10px; }
+  .ofx-toggle .ofx-toggle-label { display: none; }
+}
+
+/* ---------------------------
+   Sidebar (left navigation)
+   --------------------------- */
+/* Soft sidebar background */
+.md-nav__primary {
+  background: color-mix(in srgb, var(--md-default-bg-color) 96%, var(--md-default-fg-color) 2%); /* subtle separation */
+  border-right: 1px solid color-mix(in srgb, var(--md-default-fg-color) 4%, transparent 96%);
+  transition: background-color 180ms ease;
+}
+
+/* Nav link base */
+.md-nav__link {
+  color: color-mix(in srgb, var(--md-default-fg-color) 86%, transparent 14%);
+  padding-left: 1rem;
+  transition: color 140ms ease, background-color 120ms ease;
+}
+
+/* Active item: thin left accent bar (3px) and slight color shift — not a full box */
+.md-nav__link--active {
+  color: var(--md-primary-fg-color) !important;
+  background: transparent !important;
+  border-left: 3px solid var(--md-primary-fg-color);
+  padding-left: calc(1rem - 3px);
+  box-shadow: none;
+}
+
+/* Smooth collapse/expand animations for nested nav (Material handles structure) */
+.md-nav__item > .md-nav__link {
+  transition: padding 160ms ease, color 160ms ease;
+}
+
+/* Reduce visual noise on small screens: collapsed nav */
+@media (max-width: 900px) {
+  .md-nav__primary { background: transparent; border-right: none; }
+  .ofx-toggle { right: 8px; top: 12px; }
+}
+
+/* ---------------------------
+   Right-side TOC
+   --------------------------- */
+.md-nav--toc {
+  position: sticky;
+  top: 84px;
+  max-height: calc(100vh - 120px);
+  padding-left: .5rem;
+  margin-left: 0.5rem;
+}
+
+/* ---------------------------
+   Cards & page surface
+   --------------------------- */
+.md-card, .md-page, .md-content {
+  background: var(--md-surface);
+  border-radius: var(--ofx-surface-radius);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 4%, transparent 96%);
+  box-shadow: 0 6px 18px rgba(2,6,12,0.06);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+/* Slight lift on hover for card-like elements */
+.md-card:hover, .md-content:hover { transform: translateY(-3px); box-shadow: 0 18px 40px rgba(2,6,12,0.08); }
+
+/* ---------------------------
+   Code blocks & inline code
+   --------------------------- */
+/* Inline code */
+.md-inline-code, code {
+  background: color-mix(in srgb, var(--md-surface) 92%, rgba(0,0,0,0.04) 8%);
+  padding: .08rem .36rem;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 6%, transparent 94%);
+  font-family: var(--code-font-family, "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace);
+  font-size: .92em;
+}
+
+/* Block code */
+.md-typeset pre, pre[class*="language-"] {
+  background: color-mix(in srgb, var(--md-surface) 92%, rgba(0,0,0,0.04) 8%);
+  color: var(--md-default-fg-color);
+  padding: var(--ofx-code-padding);
+  border-radius: var(--ofx-code-radius);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 6%, transparent 94%);
+  overflow: auto;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: .95rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.01);
+}
+
+/* Slightly darker code block in dark-mode (material tokens adapt automatically) */
+[data-md-color-scheme="slate"] .md-typeset pre, [data-md-color-scheme="slate"] pre[class*="language-"] {
+  background: rgba(12,16,20,0.72);
+  color: var(--md-default-fg-color);
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.6), inset 0 2px 6px rgba(255,255,255,0.02);
+}
+
+/* Code copy button visibility tweak (Material provides the button) */
+.md-typeset .md-clipboard {
+  background: color-mix(in srgb, var(--md-default-fg-color) 6%, transparent 94%);
+  color: var(--md-default-fg-color);
+  border-radius: 6px;
+  padding: .18rem .28rem;
+}
+
+/* Line numbers if enabled — subtle */
+pre[class*="language-"] .line-numbers-rows {
+  border-right: 1px solid color-mix(in srgb, var(--md-default-fg-color) 4%, transparent 96%);
+  background: transparent;
+}
+
+/* ---------------------------
+   Admonitions / callouts
+   --------------------------- */
+.md-typeset .admonition {
+  border-radius: 8px;
+  padding: .7rem .9rem;
+  margin: .9rem 0;
+  background: color-mix(in srgb, var(--md-surface) 96%, var(--md-primary-fg-color) 0%);
+  border: 1px solid color-mix(in srgb, var(--md-default-fg-color) 3%, transparent 97%);
+  display: block;
+}
+
+/* Note / tip / warning variants use left accent stripe and subtle tint */
+.md-typeset .admonition.note { background: color-mix(in srgb, var(--md-accent-fg-color, var(--md-primary-fg-color)) 6%, transparent 94%); border-left: 4px solid color-mix(in srgb, var(--md-accent-fg-color, var(--md-primary-fg-color)) 28%, transparent 72%); }
+.md-typeset .admonition.tip  { background: color-mix(in srgb, var(--md-primary-fg-color) 6%, transparent 94%); border-left: 4px solid color-mix(in srgb, var(--md-primary-fg-color) 28%, transparent 72%); }
+.md-typeset .admonition.warning { background: color-mix(in srgb, #f3c57a 6%, transparent 94%); border-left: 4px solid color-mix(in srgb, #f3c57a 28%, transparent 72%); }
+.md-typeset .admonition.danger  { background: color-mix(in srgb, #f2b8b8 6%, transparent 94%); border-left: 4px solid color-mix(in srgb, #f2b8b8 28%, transparent 72%); }
+
+/* Admonition icons: keep them aligned and subtle */
+.md-typeset .admonition .admonition-title {
+  font-weight: 600;
+  color: color-mix(in srgb, var(--md-default-fg-color) 86%, transparent 14%);
+}
+
+/* ---------------------------
+   Figures & captions
+   --------------------------- */
+.md-typeset figure { display: flex; flex-direction: column; align-items: center; gap: .5rem; }
+.md-typeset figcaption { color: var(--md-muted); font-size: .92rem; }
+
+/* ---------------------------
+   Accessibility tweaks
+   --------------------------- */
+/* Ensure links are indigo and clearly visible */
+a, a code { color: var(--md-primary-fg-color); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Focus outlines for keyboard users */
+a:focus, button:focus, .md-nav__link:focus, .ofx-toggle:focus {
+  outline: 3px solid color-mix(in srgb, var(--md-primary-fg-color) 14%, transparent 86%);
+  outline-offset: 3px;
+}
+
+/* Ensure body text contrast remains >= 4.5:1 for typical backgrounds:
+   - dark scheme uses #dbe7ee on #0b0f12 (contrast > 4.5)
+   - light scheme uses #1f2933 on #f5f7f8 (contrast > 4.5)
+*/
+
+/* ---------------------------
+   Responsive adjustments
+   --------------------------- */
+@media (max-width: 900px) {
+  .md-content, .md-main { padding-left: 12px; padding-right: 12px; }
+  .md-nav--toc { display: none; } /* hide right-side TOC on narrow screens */
+}
+
+/* Small detail: increase tap target for sidebar links on mobile */
+@media (max-width: 520px) {
+  .md-nav__link { padding-top: .75rem; padding-bottom: .75rem; }
+}

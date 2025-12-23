@@ -1,0 +1,24 @@
+{
+  "unversionedId": "design-system",
+  "id": "design-system",
+  "title": "Design System",
+  "description": "This page documents the visual system used by OptiFlowX: color palette, typography, and component previews.",
+  "source": "@site/../docs/design-system.md",
+  "sourceDirName": ".",
+  "slug": "/design-system",
+  "permalink": "/design-system",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/design-system.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {},
+  "sidebar": "docsSidebar",
+  "previous": {
+    "title": "API Reference",
+    "permalink": "/api"
+  },
+  "next": {
+    "title": "Contributing to OptiFlowX",
+    "permalink": "/contributing"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "unversionedId": "algorithms/random_search",
+  "id": "algorithms/random_search",
+  "title": "random_search",
+  "description": "Random Search",
+  "source": "@site/../docs/algorithms/random_search.md",
+  "sourceDirName": "algorithms",
+  "slug": "/algorithms/random_search",
+  "permalink": "/algorithms/random_search",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/random_search.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "sidebar_label": "Random Search"
+  }
+}

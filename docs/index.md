@@ -1,137 +1,67 @@
-# 🧠 Welcome to **OptiFlowX**
-
-**OptiFlowX** is an open-source optimization framework built for **machine learning**, **operations research**, and **applied AI**.
-It provides a unified interface for running, comparing, and tracking optimization workflows — from hyperparameter tuning to algorithmic benchmarking.
-
+---
+title: Welcome to OptiFlowX
+sidebar_label: Welcome to OptiFlowX
 ---
 
-## 🔍 What is OptiFlowX?
+# 🧠 Welcome to OptiFlowX
 
-Modern AI pipelines rely heavily on tuning parameters, model selection, and efficiency trade-offs.
-OptiFlowX was designed to make this process **faster**, **modular**, and **transparent**.
-It combines multiple optimization techniques — from **Bayesian Optimization**, **Genetic Algorithms**, and **Swarm Intelligence**, to **Gradient-based methods** — under a single consistent API.
+OptiFlowX is an open-source optimization framework for machine learning, operations research, and applied AI. It provides a consistent API to run, compare, and track optimization workflows — from hyperparameter tuning to algorithm benchmarking.
 
-Whether you are optimizing a machine learning model, a mathematical function, or a large-scale system, OptiFlowX adapts to your use case.
+## What you will find in this documentation
 
----
+- Quickstart and getting started guides
+- Examples with sklearn and custom models
+- API reference for core building blocks
+- Design system and theming notes for documentation
 
-## ⚡ Key Features
+The site supports a dark-first design. For users coming from other themes, note that code-block contrast and semantic colors are optimized for comfortable reading on dark backgrounds.
 
-| Category | Description |
-|-----------|--------------|
-| **Multi-Algorithm Optimization** | Access classical, heuristic, and Bayesian optimizers via a unified interface. |
-| **Cross-Domain Support** | Works with ML, operations research, and simulation-based optimization problems. |
-| **Parallel Execution** | Utilize CPU cores efficiently for multi-objective or multi-run optimization. |
-| **Smart Tracking** | Automatically logs metrics, configurations, and results for reproducibility. |
-| **Modular Design** | Extend with custom algorithms or integrate your own scoring functions. |
-| **Lightweight Integration** | Compatible with Scikit-Learn, PyTorch, TensorFlow, and custom models. |
+## Quick installation
 
----
-
-## 🧩 System Overview
-
-OptiFlowX architecture is organized into three layers:
-
-1. **Configuration Layer**
-   Define your problem, search space, and objective.
-
-2. **Optimization Engine**
-   Run your chosen algorithm (Bayesian, GA, PSO, etc.) efficiently across trials.
-
-3. **Evaluation Layer**
-   Validate, benchmark, and record the best performing configuration.
-
-## 🧠 Supported Algorithms
-
-OptiFlowX supports a broad range of optimizers:
-
-- **Bayesian Optimization (Gaussian Process, TPE)**
-- **Genetic Algorithms (GA)**
-- **Particle Swarm Optimization (PSO)**
-- **Simulated Annealing**
-- **Grid and Random Search**
-- **Gradient-Based Optimization**
-- **Hybrid Metaheuristics**
-
-Each algorithm is fully configurable and can run standalone or as part of a multi-optimizer pipeline.
-
----
-
-## 📦 Installation
-
-Install the latest stable release from PyPI:
+Install the stable release from PyPI:
 
 ```bash
 pip install optiflowx
 ```
 
-Or install directly from the source (recommended for contributors):
+Or install the latest development version from the repository:
 
 ```bash
-git clone https://github.com/faycal214/optiflowx.git
+git clone https://github.com/Faycal214/optiflowx.git
 cd optiflowx
 pip install -e .
 ```
 
-Note: The documentation site uses a custom dark neon theme. To preview locally,
-compile the SCSS with `docs/overrides/build_theme.sh` (requires `sass`) and then
-run `mkdocs serve`.
-
-## 🧭 Example Usage
+## Minimal example (Random Forest + GA)
 
 ```python
-# importing libraries
-from sklearn.datasets import load_iris
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from optiflowx.optimizers.genetic import GeneticOptimizer
+from sklearn.datasets import make_classification
 from optiflowx.models.configs.random_forest_config import RandomForestConfig
+from optiflowx.optimizers.genetic import GeneticOptimizer
 
-# loading the data
-X, y = load_iris(return_X_y=True)
-
-# Spliting the data into train set and test set
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= 0.2, random_state= 42)
-
-# Importing model configurations for building the search space and explore the model
+X, y = make_classification(n_samples=200, n_features=12, random_state=0)
 cfg = RandomForestConfig()
-search_space = cfg.build_search_space()
-model_class = cfg.get_wrapper().model_class
+wrapper = cfg.get_wrapper(task_type="classification")
 
-# Creating the optimizer object
-optimizer = GeneticOptimizer(
-    search_space=search_space,
+opt = GeneticOptimizer(
+    search_space=cfg.build_search_space(),
     metric="accuracy",
-    model_class=model_class,
-    X=X_train,
-    y=y_train,
+    model_class=wrapper.model_class,
+    X=X, y=y,
     population=10,
-    mutation_prob=0.3
 )
 
-# Proceeding with the choosing optimizer
-best_params, best_score = optimizer.run(max_iters=5)
-print(f"Best parameters : {best_params}")
-
-# Test the model with the optimal parameters
-model = RandomForestClassifier(**best_params)
-model.fit(X_train, y_train)
-y_pred = model.predict(X_test)
-print("Accuracy:", accuracy_score(y_test, y_pred))
+best_params, best_score = opt.run(max_iters=5)
+print("Best score:", best_score)
+print("Best params:", best_params)
 ```
 
-## 🧭 Philosophy
+## Goals & philosophy
 
-> “Optimization is the art of efficiency — finding balance between exploration and precision.”
+OptiFlowX aims to be:
 
-OptiFlowX bridges research and engineering to make optimization accessible, interpretable, and powerful for everyone.
+- Practical: run optimizers against real models and datasets
+- Extensible: add new optimizers and model wrappers easily
+- Reproducible: encourage deterministic experiments and CV-based evaluation
 
-## 📈 Project Goals
-
-* Simplify hyperparameter optimization for applied ML.
-
-* Offer transparent and reproducible experiment tracking.
-
-* Build an extensible framework adaptable to future algorithms.
-
-* Provide educational and research-friendly tooling for optimization studies.
+For detailed examples, API reference and contribution guidelines use the left-hand navigation.

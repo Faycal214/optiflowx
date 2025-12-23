@@ -1,0 +1,153 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/",
+          "mainDocId": "index",
+          "docs": [
+            {
+              "id": "algorithms",
+              "path": "/algorithms"
+            },
+            {
+              "id": "algorithms/ant_colony",
+              "path": "/algorithms/ant_colony"
+            },
+            {
+              "id": "algorithms/ant-colony-optimization",
+              "path": "/algorithms/ant-colony-optimization",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "algorithms/bayesian",
+              "path": "/algorithms/bayesian"
+            },
+            {
+              "id": "algorithms/bayesian-optimization",
+              "path": "/algorithms/bayesian-optimization",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "algorithms/genetic",
+              "path": "/algorithms/genetic"
+            },
+            {
+              "id": "algorithms/genetic-algorithm",
+              "path": "/algorithms/genetic-algorithm",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "algorithms/grey_wolf",
+              "path": "/algorithms/grey_wolf"
+            },
+            {
+              "id": "algorithms/grey-wolf-optimization",
+              "path": "/algorithms/grey-wolf-optimization",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "algorithms/grid_search",
+              "path": "/algorithms/grid_search"
+            },
+            {
+              "id": "algorithms/grid-search",
+              "path": "/algorithms/grid-search",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "algorithms/index",
+              "path": "/algorithms/",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "algorithms/pso",
+              "path": "/algorithms/pso",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "algorithms/random_search",
+              "path": "/algorithms/random_search"
+            },
+            {
+              "id": "algorithms/random-search",
+              "path": "/algorithms/random-search",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "algorithms/simulated_annealing",
+              "path": "/algorithms/simulated_annealing"
+            },
+            {
+              "id": "algorithms/simulated-annealing",
+              "path": "/algorithms/simulated-annealing",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "algorithms/tpe",
+              "path": "/algorithms/tpe",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "api",
+              "path": "/api",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "archives/removed_examples_custom_metric",
+              "path": "/archives/removed_examples_custom_metric"
+            },
+            {
+              "id": "contributing",
+              "path": "/contributing",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "design-system",
+              "path": "/design-system",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "docs/index",
+              "path": "/docs/",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "examples",
+              "path": "/examples",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "examples_custom_metric",
+              "path": "/examples_custom_metric"
+            },
+            {
+              "id": "getting-started",
+              "path": "/getting-started",
+              "sidebar": "docsSidebar"
+            },
+            {
+              "id": "index",
+              "path": "/",
+              "sidebar": "docsSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "docsSidebar": {
+              "link": {
+                "path": "/",
+                "label": "index"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

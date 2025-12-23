@@ -1,9 +1,89 @@
+
 # API Reference
 
-OptiFlowX provides a unified interface for running multiple optimization algorithms across different models and parameter spaces.
-This page documents the main modules and their interactions.
+This page highlights the core public API and recommended usage patterns. For full, live API docs consult the docstrings and the `optiflowx` package modules.
 
----
+## Core concepts
+
+- SearchSpace: define the hyperparameter space (continuous / discrete / categorical)
+- ModelConfig: model-specific configuration exposing `build_search_space()` and `get_wrapper()`
+- ModelWrapper: uniform CV and final-fit helper that accepts `custom_metric`
+- Optimizers: independent algorithm implementations that accept the same primary inputs and expose `.run(max_iters=...)`
+
+Typical optimizer initialization:
+
+```python
+from optiflowx.models.configs.random_forest_config import RandomForestConfig
+from optiflowx.optimizers.genetic import GeneticOptimizer
+
+cfg = RandomForestConfig()
+wrapper = cfg.get_wrapper(task_type="classification")
+
+opt = GeneticOptimizer(
+    search_space=cfg.build_search_space(),
+    metric="accuracy",            # or pass custom_metric callable
+    model_class=wrapper.model_class,
+    X=X_train, y=y_train,
+    population=12,
+)
+
+best_params, best_score = opt.run(max_iters=10)
+```
+
+All optimizers accept a `search_space`, a `metric` (or `custom_metric`), the `model_class`, and `X, y`. Optimizer-specific hyperparameters (population size, temperature schedule, etc.) are passed as keyword arguments.
+
+## Important modules
+
+### `optiflowx.core.search_space.SearchSpace`
+
+Use this to declare tunable parameters:
+
+```python
+from optiflowx.core.search_space import SearchSpace
+
+space = SearchSpace()
+space.add("n_estimators", "discrete", [50, 200])
+space.add("learning_rate", "continuous", [1e-4, 1e-1], log=True)
+space.add("criterion", "categorical", ["gini", "entropy"])
+```
+
+### `optiflowx.models.configs`
+
+Each config exposes two helpers:
+
+- `build_search_space()` → `SearchSpace` instance
+- `get_wrapper(task_type)` → `ModelWrapper` for CV and final-fit
+
+Example:
+
+```python
+from optiflowx.models.configs.random_forest_config import RandomForestConfig
+cfg = RandomForestConfig()
+space = cfg.build_search_space()
+wrapper = cfg.get_wrapper(task_type="classification")
+```
+
+### `optiflowx.core.model_wrapper.ModelWrapper`
+
+Use `ModelWrapper.train_and_score(params, X, y, cv=3, scoring='accuracy', custom_metric=None)` to evaluate a hyperparameter set with cross-validation. If a `custom_metric` callable is provided it will be used directly (and will be negated for regression error metrics by `get_metric()` where appropriate).
+
+### `optiflowx.optimizers`
+
+Implementations include `PSOOptimizer`, `GeneticOptimizer`, `RandomSearchOptimizer`, `TPEOptimizer`, and others. Each optimizer aims to return a `(best_params, best_score)` tuple from `run()`.
+
+```python
+from optiflowx.optimizers.pso import PSOOptimizer
+opt = PSOOptimizer(search_space=space, metric='accuracy', model_class=wrapper.model_class, X=X, y=y)
+best_params, best_score = opt.run(max_iters=20)
+```
+
+## Notes and best practices
+
+- Prefer using `ModelConfig` helpers (`build_search_space`, `get_wrapper`) for model-specific preprocessing and stable defaults.
+- When using `custom_metric` and parallel evaluation, ensure the callable is serializable (use `dill` if necessary).
+- For reproducible experiments, fix random seeds on the optimizer or wrapper where supported.
+
+For deeper API reference consult the code docstrings and the `optiflowx` package modules.
 
 ## 🔧 Common Interface
 

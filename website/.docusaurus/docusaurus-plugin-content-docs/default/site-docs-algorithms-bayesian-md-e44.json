@@ -1,0 +1,17 @@
+{
+  "unversionedId": "algorithms/bayesian",
+  "id": "algorithms/bayesian",
+  "title": "bayesian",
+  "description": "Bayesian Optimization",
+  "source": "@site/../docs/algorithms/bayesian.md",
+  "sourceDirName": "algorithms",
+  "slug": "/algorithms/bayesian",
+  "permalink": "/algorithms/bayesian",
+  "draft": false,
+  "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/bayesian.md",
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "sidebar_label": "Bayesian Optimization"
+  }
+}

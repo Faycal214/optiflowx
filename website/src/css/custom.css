@@ -1,0 +1,710 @@
+/* website/src/css/custom.css
+   OptiFlowX custom theme tweaks (dark-only).
+   CHANGE-ME block below: modify accent or fonts if needed.
+*/
+
+/* === CHANGE ME: theme tokens === */
+:root {
+  --ifx-accent: #4f46e5;     /* muted indigo */
+  --ifx-bg: #05060a;         /* near-black background */
+  --ifx-surface: #0b1220;    /* card / code surfaces */
+  --ifx-fg: #e6eef6;         /* main foreground */
+  --ifx-muted: #9aa6b2;      /* secondary text */
+  --ifx-code-bg: #07101a;    /* code block surface */
+  --content-max-width: 1100px;
+  --heading-accent-gradient: linear-gradient(90deg,#4f46e5,#60a5fa);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* === Global page layout & typography === */
+html, body, #__docusaurus {
+  background: var(--ifx-bg);
+  color: var(--ifx-fg);
+  font-family: var(--ifx-font, Inter, system-ui, -apple-system, "Segoe UI", Roboto);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Limit content width for readability */
+.theme-dark .container {
+  max-width: var(--content-max-width);
+}
+
+/* Paragraphs and list text: slightly muted for long reads */
+.theme-dark p,
+.theme-dark li {
+  color: #cbd5e1;
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+/* Header: quiet and minimal */
+.navbar {
+  background: rgba(2,6,23,0.85); /* charcoal */
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+  box-shadow: none;
+}
+
+/* Hide the top-left image mark / logo if present */
+.navbar__brand img,
+.navbar__logo {
+  display: none !important;
+}
+
+/* Ensure navbar title aligns correctly if logo removed */
+.navbar__brand {
+  padding-left: 16px;
+}
+
+/* Sidebar: soft surface, left accent for active link (3px) */
+.theme-dark .sidebar {
+  background: rgba(6,10,14,0.6);
+}
+.theme-dark .menu__list-item--active > .menu__link,
+.theme-dark .menu__link--active {
+  color: var(--ifx-accent) !important;
+  border-left: 3px solid var(--ifx-accent);
+  padding-left: calc(1rem - 3px);
+  background: transparent !important; /* no full box highlight */
+}
+
+/* Sidebar link hover transition */
+.theme-dark .menu__link {
+  transition: color 0.15s ease, background-color 0.12s ease;
+}
+
+/* Right TOC pinned styling */
+.theme-dark .table-of-contents {
+  position: sticky;
+  top: 88px;
+  color: var(--ifx-muted);
+}
+
+/* === Code blocks: surface, rounded corners, padding, subtle inner shadow === */
+.theme-dark pre[class*="language-"],
+.theme-dark .prism-code {
+  background: var(--ifx-code-bg);
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  color: var(--ifx-fg);
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Inline code */
+.theme-dark code:not(pre code) {
+  background: rgba(255,255,255,0.03);
+  padding: 0.12rem 0.38rem;
+  border-radius: 6px;
+  color: var(--ifx-fg);
+}
+
+/* Prism / Syntax highlighting — Python (rich multi-color tokens) */
+.theme-dark .token.comment,
+.theme-dark .token.prolog,
+.theme-dark .token.doctype,
+.theme-dark .token.cdata {
+  color: #718096; /* muted gray */
+  font-style: italic;
+}
+.theme-dark .token.punctuation { color: #94a3b8; }
+
+.theme-dark .token.selector,
+.theme-dark .token.tag,
+.theme-dark .token.boolean,
+.theme-dark .token.number,
+.theme-dark .token.constant,
+.theme-dark .token.symbol { color: #ff79c6; } /* pink/purple for numbers/constants */
+
+.theme-dark .token.property,
+.theme-dark .token.attr-name,
+.theme-dark .token.string,
+.theme-dark .token.char,
+.theme-dark .token.builtin,
+.theme-dark .token.url { color: #9ae6b4; } /* greenish for strings */
+
+.theme-dark .token.operator,
+.theme-dark .token.entity,
+.theme-dark .token.keyword { color: #60a5fa; } /* blue for keywords */
+
+.theme-dark .token.function,
+.theme-dark .token.class-name { color: #f6c177; } /* warm yellow/orange for functions/classes */
+
+.theme-dark .token.parameter { color: #c084fc; } /* soft purple for parameters */
+
+.theme-dark .token.regex { color: #f472b6; }
+.theme-dark .token.constant { color: #ffb86b; }
+
+/* Make line numbers subtle if enabled */
+.theme-dark .line-numbers .line-numbers-rows {
+  border-right: 1px solid rgba(255,255,255,0.02);
+}
+.theme-dark .line-numbers-rows span:before {
+  color: rgba(255,255,255,0.12);
+}
+
+/* Code block caption or copy button tweaks (Docusaurus uses its copy button) */
+.theme-dark .theme-code-block .copy-button {
+  color: var(--ifx-fg);
+  background: rgba(255,255,255,0.02);
+  border-radius: 6px;
+}
+
+/* === Headings redesign: distinct, editorial style === */
+.theme-dark h1 {
+  font-size: 2.05rem;
+  line-height: 1.12;
+  font-weight: 700;
+  color: var(--ifx-fg);
+  margin-top: 0.6rem;
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.02em;
+  display: block;
+}
+.theme-dark h1::after {
+  content: "";
+  display: inline-block;
+  height: 4px;
+  width: 56px;
+  background: var(--heading-accent-gradient);
+  border-radius: 3px;
+  margin-left: 0.6rem;
+  vertical-align: middle;
+}
+
+.theme-dark h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #e6eef6;
+  margin-top: 1.4rem;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.theme-dark h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #dbeafe;
+  margin-top: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+
+/* Section padding for smooth reading */
+.theme-dark section {
+  padding-top: 0.6rem;
+  padding-bottom: 0.8rem;
+}
+
+/* Admonitions: left accent stripe + tinted background */
+.theme-dark .admonition {
+  border-left: 4px solid rgba(79,70,229,0.85);
+  background: rgba(79,70,229,0.03);
+  padding: 0.8rem;
+  border-radius: 8px;
+}
+
+/* AlgorithmCard / cards generic */
+.ifx-algo-card {
+  background: rgba(255,255,255,0.02);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 6px 20px rgba(2,6,23,0.5);
+  display: block;
+}
+.ifx-algo-card .title {
+  font-weight: 700;
+  color: var(--ifx-fg);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.ifx-algo-card .badges { margin-top: 0.35rem; }
+.ifx-algo-card .badge {
+  display: inline-block;
+  background: rgba(79,70,229,0.12);
+  color: var(--ifx-accent);
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+/* Accessibility helpers */
+:focus {
+  outline: 3px solid rgba(79,70,229,0.25);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* Responsive tweaks */
+@media (max-width: 900px) {
+  .theme-dark .container { padding-left: 1rem; padding-right: 1rem; }
+  .table-of-contents { display: none; }
+}
+/* Force dark styles even if a .theme-light class is present elsewhere. */
+.theme-light,
+.theme-light * {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+/* Ensure the site always uses our dark tokens */
+.theme-light html, .theme-light body, .theme-light #__docusaurus {
+  background: var(--ifx-bg) !important;
+  color: var(--ifx-fg) !important;
+}
+
+/* Slight refinements to tokens for maximum contrast on dark bg */
+.theme-dark .token.number,
+.theme-dark .token.boolean,
+.theme-dark .token.symbol { color: #ffb86b; } /* warm orange for numbers */
+.theme-dark .token.string { color: #9ae6b4; } /* green for strings */
+.theme-dark .token.keyword { color: #7dd3fc; } /* brighter cyan for keywords */
+.theme-dark .token.function { color: #ffb86b; } /* orange for functions */
+.theme-dark .token.class-name { color: #ffd580; } /* pale yellow for classes */
+.theme-dark .token.builtin { color: #c084fc; } /* purple for builtins */
+.theme-dark .token.comment { color: #6b7280; font-style: italic; } /* slightly muted */
+
+/* Make h1/h2 hierarchy more technical */
+.theme-dark h1 { letter-spacing: -0.035em; font-variant: small-caps; }
+.theme-dark h2 { letter-spacing: -0.02em; }
+
+/* website/src/css/custom.css
+   OptiFlowX custom theme tweaks (dark-only).
+   CHANGE-ME block below: modify accent or fonts if needed.
+*/
+
+/* === CHANGE ME: theme tokens === */
+:root {
+  --ifx-accent: #4f46e5;     /* muted indigo */
+  --ifx-bg: #05060a;         /* near-black background */
+  --ifx-surface: #0b1220;    /* card / code surfaces */
+  --ifx-fg: #e6eef6;         /* main foreground */
+  --ifx-muted: #9aa6b2;      /* secondary text */
+  --ifx-code-bg: #07101a;    /* code block surface */
+  --content-max-width: 1100px;
+  --heading-accent-gradient: linear-gradient(90deg,#4f46e5,#60a5fa);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* === Global page layout & typography === */
+html, body, #__docusaurus {
+  background: var(--ifx-bg);
+  color: var(--ifx-fg);
+  font-family: var(--ifx-font, Inter, system-ui, -apple-system, "Segoe UI", Roboto);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Limit content width for readability */
+.theme-dark .container {
+  max-width: var(--content-max-width);
+}
+
+/* Paragraphs and list text: slightly muted for long reads */
+.theme-dark p,
+.theme-dark li {
+  color: #cbd5e1;
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+/* Header: quiet and minimal */
+.navbar {
+  background: rgba(2,6,23,0.85); /* charcoal */
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+  box-shadow: none;
+}
+
+/* Hide the top-left image mark / logo if present */
+.navbar__brand img,
+.navbar__logo {
+  display: none !important;
+}
+
+/* Ensure navbar title aligns correctly if logo removed */
+.navbar__brand {
+  padding-left: 16px;
+}
+
+/* Sidebar: soft surface, left accent for active link (3px) */
+.theme-dark .sidebar {
+  background: rgba(6,10,14,0.6);
+}
+.theme-dark .menu__list-item--active > .menu__link,
+.theme-dark .menu__link--active {
+  color: var(--ifx-accent) !important;
+  border-left: 3px solid var(--ifx-accent);
+  padding-left: calc(1rem - 3px);
+  background: transparent !important; /* no full box highlight */
+}
+
+/* Sidebar link hover transition */
+.theme-dark .menu__link {
+  transition: color 0.15s ease, background-color 0.12s ease;
+}
+
+/* Right TOC pinned styling */
+.theme-dark .table-of-contents {
+  position: sticky;
+  top: 88px;
+  color: var(--ifx-muted);
+}
+
+/* === Code blocks: surface, rounded corners, padding, subtle inner shadow === */
+.theme-dark pre[class*="language-"],
+.theme-dark .prism-code {
+  background: var(--ifx-code-bg);
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+  color: var(--ifx-fg);
+  overflow: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Inline code */
+.theme-dark code:not(pre code) {
+  background: rgba(255,255,255,0.03);
+  padding: 0.12rem 0.38rem;
+  border-radius: 6px;
+  color: var(--ifx-fg);
+}
+
+/* Prism / Syntax highlighting — Python (rich multi-color tokens) */
+.theme-dark .token.comment,
+.theme-dark .token.prolog,
+.theme-dark .token.doctype,
+.theme-dark .token.cdata {
+  color: #718096; /* muted gray */
+  font-style: italic;
+}
+.theme-dark .token.punctuation { color: #94a3b8; }
+
+.theme-dark .token.selector,
+.theme-dark .token.tag,
+.theme-dark .token.boolean,
+.theme-dark .token.number,
+.theme-dark .token.constant,
+.theme-dark .token.symbol { color: #ff79c6; } /* pink/purple for numbers/constants */
+
+.theme-dark .token.property,
+.theme-dark .token.attr-name,
+.theme-dark .token.string,
+.theme-dark .token.char,
+.theme-dark .token.builtin,
+.theme-dark .token.url { color: #9ae6b4; } /* greenish for strings */
+
+.theme-dark .token.operator,
+.theme-dark .token.entity,
+.theme-dark .token.keyword { color: #60a5fa; } /* blue for keywords */
+
+.theme-dark .token.function,
+.theme-dark .token.class-name { color: #f6c177; } /* warm yellow/orange for functions/classes */
+
+.theme-dark .token.parameter { color: #c084fc; } /* soft purple for parameters */
+
+.theme-dark .token.regex { color: #f472b6; }
+.theme-dark .token.constant { color: #ffb86b; }
+
+/* Make line numbers subtle if enabled */
+.theme-dark .line-numbers .line-numbers-rows {
+  border-right: 1px solid rgba(255,255,255,0.02);
+}
+.theme-dark .line-numbers-rows span:before {
+  color: rgba(255,255,255,0.12);
+}
+
+/* Code block caption or copy button tweaks (Docusaurus uses its copy button) */
+.theme-dark .theme-code-block .copy-button {
+  color: var(--ifx-fg);
+  background: rgba(255,255,255,0.02);
+  border-radius: 6px;
+}
+
+/* === Headings redesign: distinct, editorial style === */
+.theme-dark h1 {
+  font-size: 2.05rem;
+  line-height: 1.12;
+  font-weight: 700;
+  color: var(--ifx-fg);
+  margin-top: 0.6rem;
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.02em;
+  display: block;
+}
+.theme-dark h1::after {
+  content: "";
+  display: inline-block;
+  height: 4px;
+  width: 56px;
+  background: var(--heading-accent-gradient);
+  border-radius: 3px;
+  margin-left: 0.6rem;
+  vertical-align: middle;
+}
+
+.theme-dark h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #e6eef6;
+  margin-top: 1.4rem;
+  margin-bottom: 0.6rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.theme-dark h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #dbeafe;
+  margin-top: 1.1rem;
+  margin-bottom: 0.4rem;
+}
+
+/* Section padding for smooth reading */
+.theme-dark section {
+  padding-top: 0.6rem;
+  padding-bottom: 0.8rem;
+}
+
+/* Admonitions: left accent stripe + tinted background */
+.theme-dark .admonition {
+  border-left: 4px solid rgba(79,70,229,0.85);
+  background: rgba(79,70,229,0.03);
+  padding: 0.8rem;
+  border-radius: 8px;
+}
+
+/* AlgorithmCard / cards generic */
+.ifx-algo-card {
+  background: rgba(255,255,255,0.02);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 6px 20px rgba(2,6,23,0.5);
+  display: block;
+}
+.ifx-algo-card .title {
+  font-weight: 700;
+  color: var(--ifx-fg);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.ifx-algo-card .badges { margin-top: 0.35rem; }
+.ifx-algo-card .badge {
+  display: inline-block;
+  background: rgba(79,70,229,0.12);
+  color: var(--ifx-accent);
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+/* Accessibility helpers */
+:focus {
+  outline: 3px solid rgba(79,70,229,0.25);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* Responsive tweaks */
+@media (max-width: 900px) {
+  .theme-dark .container { padding-left: 1rem; padding-right: 1rem; }
+  .table-of-contents { display: none; }
+}
+/* website/src/css/custom.css
+   OptiFlowX Docusaurus custom styles
+   Dark-first, muted indigo accent, accessibility focused
+   CHANGE ME: adjust variables below to change global accents and tokens
+*/
+
+:root {
+  --ifx-accent: #51627a; /* CHANGE ME: muted indigo */
+  --ifx-accent-2: #6b7088;
+  --ifx-bg: #0b0f12;
+  --ifx-surface: #0f1416;
+  --ifx-fg: #dbe7ee; /* text on dark */
+  --ifx-fg-dark: #1f2933; /* text on light */
+  --ifx-muted: #7a8390;
+  --ifx-content-width: 1100px;
+  --ifx-line-height: 1.65;
+  --ifx-radius: 10px;
+  --ifx-code-radius: 10px;
+  --ifx-code-padding: 1rem;
+}
+
+/* ---------------------
+   Theme mode selectors
+   Docusaurus toggles .theme-dark/.theme-light on <html>
+   ---------------------*/
+
+.theme-dark {
+  --ifx-bg: #0b0f12;
+  --ifx-surface: #0f1416;
+  --ifx-fg: #dbe7ee;
+  --ifx-muted: #a6b0bd;
+}
+
+.theme-light {
+  --ifx-bg: #f5f7f8;
+  --ifx-surface: #ffffff;
+  --ifx-fg: #1f2933;
+  --ifx-muted: #6b7280;
+}
+
+/* ---------------------
+   Base layout & typography
+   ---------------------*/
+html, body {
+  background: var(--ifx-bg);
+  color: var(--ifx-fg);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  line-height: var(--ifx-line-height);
+}
+
+.main-wrapper {
+  max-width: var(--ifx-content-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.markdown {
+  font-size: 0.96rem;
+}
+
+/* Headings */
+.markdown h1 { font-size: 2.1rem; font-weight: 600; margin-bottom: .4rem; }
+.markdown h2 { font-size: 1.6rem; font-weight: 600; margin-top: 1.1rem; margin-bottom: .45rem; }
+.markdown h3 { font-size: 1.25rem; margin-top: .9rem; margin-bottom: .35rem; }
+
+/* Subtle underline for h2 */
+.markdown h2::after {
+  content: "";
+  display: block;
+  width: 48px; height: 3px; margin-top: .45rem;
+  background: linear-gradient(90deg, var(--ifx-accent), color-mix(in srgb, var(--ifx-accent) 40%, transparent 60%));
+  border-radius: 6px; opacity: 0.95;
+}
+
+/* ---------------------
+   Top bar / header
+   ---------------------*/
+.navbar {
+  background: rgba(15,18,20,0.95);
+  border-bottom: 1px solid color-mix(in srgb, var(--ifx-fg) 4%, transparent 96%);
+  box-shadow: 0 2px 6px rgba(2,6,12,0.45);
+}
+
+.navbar__title { color: var(--ifx-fg); font-weight: 600; }
+.navbar__items { color: color-mix(in srgb, var(--ifx-fg) 84%, transparent 16%); }
+
+/* ---------------------
+   Sidebar (left) — soft background, thin left accent for active
+   ---------------------*/
+.sidebar {
+  background: color-mix(in srgb, var(--ifx-bg) 92%, var(--ifx-fg) 2%);
+  border-right: 1px solid color-mix(in srgb, var(--ifx-fg) 4%, transparent 96%);
+}
+
+/* Docusaurus link active class is .menu__link--active */
+.menu__link--active {
+  color: var(--ifx-accent) !important;
+  background: transparent !important;
+  border-left: 3px solid var(--ifx-accent);
+  padding-left: calc(var(--ifx-padding, 12px) - 3px);
+}
+
+.menu__link { transition: color .14s ease; }
+.menu__link:hover { color: var(--ifx-accent-2); }
+
+/* Sidebar collapse transitions handled by Docusaurus JS — ensure no box highlight */
+.menu__list-item { transition: padding .16s ease, color .16s ease; }
+
+/* ---------------------
+   Right TOC
+   ---------------------*/
+.table-of-contents {
+  position: sticky; top: 84px; max-height: calc(100vh - 120px); padding-left: .5rem; margin-left: .5rem;
+}
+
+/* ---------------------
+   Cards & surfaces
+   ---------------------*/
+.card, .theme-doc-markdown .admonition, .theme-doc-markdown .table {
+  background: var(--ifx-surface);
+  border-radius: var(--ifx-radius);
+  border: 1px solid color-mix(in srgb, var(--ifx-fg) 4%, transparent 96%);
+  box-shadow: 0 6px 18px rgba(2,6,12,0.06);
+}
+
+/* ---------------------
+   Code blocks & inline code
+   ---------------------*/
+.token, pre, code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace; }
+
+/* Inline code */
+.code-inline, .markdown code:not(pre code) {
+  background: color-mix(in srgb, var(--ifx-surface) 92%, rgba(0,0,0,0.04) 8%);
+  padding: .06rem .32rem; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--ifx-fg) 6%, transparent 94%);
+}
+
+/* Block code */
+.theme-dark pre, .theme-light pre {
+  border-radius: var(--ifx-code-radius);
+  padding: var(--ifx-code-padding);
+  border: 1px solid color-mix(in srgb, var(--ifx-fg) 6%, transparent 94%);
+  background: color-mix(in srgb, var(--ifx-surface) 92%, rgba(0,0,0,0.04) 8%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.01);
+}
+
+/* Make sure dark-mode code is slightly darker */
+.theme-dark pre { background: rgba(12,16,20,0.72); color: var(--ifx-fg); border: 1px solid rgba(255,255,255,0.03); }
+
+/* Copy button provided by Docusaurus; ensure small and unobtrusive */
+.docusaurus-highlight .copy-button { background: transparent; color: var(--ifx-fg); border-radius: 6px; }
+
+/* ---------------------
+   Admonitions (callouts)
+   ---------------------*/
+.admonition {
+  border-left: 4px solid color-mix(in srgb, var(--ifx-accent) 28%, transparent 72%);
+  padding: .7rem .9rem; margin: .9rem 0; border-radius: 8px; background: color-mix(in srgb, var(--ifx-surface) 96%, var(--ifx-accent) 0%);
+}
+.admonition .admonition-title { font-weight: 600; }
+
+/* ---------------------
+   Floating compact toggle (top-right)
+   ---------------------*/
+.ofx-toggle {
+  position: fixed; top: 14px; right: 16px; z-index: 1200; display: inline-flex; gap: .5rem; align-items: center;
+  padding: .36rem .6rem; border-radius: 999px; background: rgba(255,255,255,0.03); color: var(--ifx-fg); backdrop-filter: blur(6px);
+  border: 1px solid color-mix(in srgb, var(--ifx-fg) 6%, transparent 94%); box-shadow: 0 4px 18px rgba(2,6,12,0.28); cursor: pointer;
+}
+.ofx-toggle:focus { outline: 3px solid color-mix(in srgb, var(--ifx-accent) 14%, transparent 86%); outline-offset: 3px; }
+.ofx-toggle .label { font-size: .86rem; }
+@media (max-width: 520px) { .ofx-toggle .label { display: none; } .ofx-toggle { right: 10px; top: 10px; } }
+
+/* ---------------------
+   Accessibility helpers
+   ---------------------*/
+:focus { outline: none; }
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--ifx-accent) 14%, transparent 86%); outline-offset: 3px; }
+
+/* ---------------------
+   Responsive
+   ---------------------*/
+@media (max-width: 900px) {
+  .table-of-contents { display: none; }
+}
+
+/* end of custom.css */
