@@ -1,5 +1,10 @@
 name: Build and deploy Docusaurus site
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 on:
   push:
     branches:
@@ -13,6 +18,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          # persist-credentials (defaults to true) ensures the GITHUB_TOKEN
+          # is available for later git push operations by actions and deploy tools
+          persist-credentials: true
           submodules: 'true'
 
       - name: Use Node.js 18
