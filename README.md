@@ -7,6 +7,8 @@
 
 OptiFlowX is a production-oriented, modular framework for hyperparameter and configuration optimization. It combines metaheuristic and probabilistic search algorithms with flexible search-space abstractions, an easy-to-use wrapper for models, and efficient parallel evaluation—designed for both research and production use.
 
+Current PyPI release: `0.0.7` — https://pypi.org/project/optiflowx/
+
 Key capabilities:
 
 - Optimize models for classification and regression tasks
