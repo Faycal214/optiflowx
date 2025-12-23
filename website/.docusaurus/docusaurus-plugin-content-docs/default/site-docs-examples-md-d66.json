@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "docsSidebar",
   "previous": {
-    "title": "Documentation notes",
-    "permalink": "/docs/"
+    "title": "Ant Colony Optimization",
+    "permalink": "/algorithms/ant-colony-optimization"
   },
   "next": {
-    "title": "Custom metrics and regression examples",
-    "permalink": "/examples_custom_metric"
+    "title": "API Reference",
+    "permalink": "/api"
   }
 }

@@ -13,14 +13,5 @@
   "version": "current",
   "frontMatter": {
     "sidebar_label": "Genetic Algorithm (GA)"
-  },
-  "sidebar": "docsSidebar",
-  "previous": {
-    "title": "Bayesian Optimization",
-    "permalink": "/algorithms/bayesian"
-  },
-  "next": {
-    "title": "Grey Wolf Optimization (GWO)",
-    "permalink": "/algorithms/grey_wolf"
   }
 }

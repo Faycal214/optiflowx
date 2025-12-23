@@ -1,8 +1,8 @@
 {
   "unversionedId": "index",
   "id": "index",
-  "title": "index",
-  "description": "🧠 Supported Algorithms",
+  "title": "Welcome to OptiFlowX",
+  "description": "OptiFlowX is an open-source optimization framework for machine learning, operations research, and applied AI. It provides a consistent API to run, compare, and track optimization workflows — from hyperparameter tuning to algorithm benchmarking.",
   "source": "@site/../docs/index.md",
   "sourceDirName": ".",
   "slug": "/",
@@ -11,9 +11,12 @@
   "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/index.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {},
+  "frontMatter": {
+    "title": "Welcome to OptiFlowX",
+    "sidebar_label": "Welcome to OptiFlowX"
+  },
   "sidebar": "docsSidebar",
-  "previous": {
+  "next": {
     "title": "Getting Started",
     "permalink": "/getting-started"
   }

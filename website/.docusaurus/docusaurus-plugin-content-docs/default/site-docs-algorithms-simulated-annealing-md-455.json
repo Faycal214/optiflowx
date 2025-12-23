@@ -13,14 +13,5 @@
   "version": "current",
   "frontMatter": {
     "sidebar_label": "Simulated Annealing (SA)"
-  },
-  "sidebar": "docsSidebar",
-  "previous": {
-    "title": "Random Search",
-    "permalink": "/algorithms/random_search"
-  },
-  "next": {
-    "title": "Tree-structured Parzen Estimator (TPE)",
-    "permalink": "/algorithms/tpe"
   }
 }

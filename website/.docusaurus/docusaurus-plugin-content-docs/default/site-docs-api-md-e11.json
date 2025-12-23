@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "docsSidebar",
   "previous": {
-    "title": "Algorithms in OptiFlowX",
-    "permalink": "/algorithms"
+    "title": "🧪 Examples",
+    "permalink": "/examples"
   },
   "next": {
-    "title": "Contributing to OptiFlowX",
-    "permalink": "/contributing"
+    "title": "Design System",
+    "permalink": "/design-system"
   }
 }

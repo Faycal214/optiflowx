@@ -13,14 +13,5 @@
   "version": "current",
   "frontMatter": {
     "sidebar_label": "Grey Wolf Optimization (GWO)"
-  },
-  "sidebar": "docsSidebar",
-  "previous": {
-    "title": "Genetic Algorithm (GA)",
-    "permalink": "/algorithms/genetic"
-  },
-  "next": {
-    "title": "Grid Search",
-    "permalink": "/algorithms/grid_search"
   }
 }

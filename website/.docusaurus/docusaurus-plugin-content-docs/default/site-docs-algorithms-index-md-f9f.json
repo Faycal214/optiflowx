@@ -2,7 +2,7 @@
   "unversionedId": "algorithms/index",
   "id": "algorithms/index",
   "title": "Algorithms",
-  "description": "This section provides focused, technical pages for each optimizer implemented in OptiFlowX. Use the links below to jump to a specific algorithm. Content has been reorganized for readability — full original wording preserved and split into shorter, scannable pages.",
+  "description": "---",
   "source": "@site/../docs/algorithms/index.md",
   "sourceDirName": "algorithms",
   "slug": "/algorithms/",
@@ -12,11 +12,16 @@
   "tags": [],
   "version": "current",
   "frontMatter": {
+    "title": "Algorithms",
     "sidebar_label": "Algorithms"
   },
   "sidebar": "docsSidebar",
+  "previous": {
+    "title": "Getting Started",
+    "permalink": "/getting-started"
+  },
   "next": {
-    "title": "Ant Colony Optimization (ACO)",
-    "permalink": "/algorithms/ant_colony"
+    "title": "PSO",
+    "permalink": "/algorithms/pso"
   }
 }

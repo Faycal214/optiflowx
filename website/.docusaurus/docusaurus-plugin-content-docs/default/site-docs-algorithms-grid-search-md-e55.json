@@ -13,14 +13,5 @@
   "version": "current",
   "frontMatter": {
     "sidebar_label": "Grid Search"
-  },
-  "sidebar": "docsSidebar",
-  "previous": {
-    "title": "Grey Wolf Optimization (GWO)",
-    "permalink": "/algorithms/grey_wolf"
-  },
-  "next": {
-    "title": "Particle Swarm Optimization (PSO)",
-    "permalink": "/algorithms/pso"
   }
 }

@@ -10,97 +10,84 @@
   "docsSidebars": {
     "docsSidebar": [
       {
+        "type": "link",
+        "label": "Welcome to OptiFlowX",
+        "href": "/",
+        "docId": "index"
+      },
+      {
+        "type": "link",
+        "label": "Getting Started",
+        "href": "/getting-started",
+        "docId": "getting-started"
+      },
+      {
         "type": "category",
         "label": "Algorithms",
-        "collapsible": true,
-        "collapsed": true,
         "items": [
           {
             "type": "link",
-            "label": "Ant Colony Optimization (ACO)",
-            "href": "/algorithms/ant_colony",
-            "docId": "algorithms/ant_colony"
+            "label": "Algorithms",
+            "href": "/algorithms/",
+            "docId": "algorithms/index"
           },
           {
             "type": "link",
-            "label": "Bayesian Optimization",
-            "href": "/algorithms/bayesian",
-            "docId": "algorithms/bayesian"
-          },
-          {
-            "type": "link",
-            "label": "Genetic Algorithm (GA)",
-            "href": "/algorithms/genetic",
-            "docId": "algorithms/genetic"
-          },
-          {
-            "type": "link",
-            "label": "Grey Wolf Optimization (GWO)",
-            "href": "/algorithms/grey_wolf",
-            "docId": "algorithms/grey_wolf"
-          },
-          {
-            "type": "link",
-            "label": "Grid Search",
-            "href": "/algorithms/grid_search",
-            "docId": "algorithms/grid_search"
-          },
-          {
-            "type": "link",
-            "label": "Particle Swarm Optimization (PSO)",
+            "label": "PSO",
             "href": "/algorithms/pso",
             "docId": "algorithms/pso"
           },
           {
             "type": "link",
-            "label": "Random Search",
-            "href": "/algorithms/random_search",
-            "docId": "algorithms/random_search"
+            "label": "Simulated Annealing",
+            "href": "/algorithms/simulated-annealing",
+            "docId": "algorithms/simulated-annealing"
           },
           {
             "type": "link",
-            "label": "Simulated Annealing (SA)",
-            "href": "/algorithms/simulated_annealing",
-            "docId": "algorithms/simulated_annealing"
+            "label": "Bayesian Optimization",
+            "href": "/algorithms/bayesian-optimization",
+            "docId": "algorithms/bayesian-optimization"
           },
           {
             "type": "link",
-            "label": "Tree-structured Parzen Estimator (TPE)",
+            "label": "TPE",
             "href": "/algorithms/tpe",
             "docId": "algorithms/tpe"
+          },
+          {
+            "type": "link",
+            "label": "Genetic Algorithm",
+            "href": "/algorithms/genetic-algorithm",
+            "docId": "algorithms/genetic-algorithm"
+          },
+          {
+            "type": "link",
+            "label": "Random Search",
+            "href": "/algorithms/random-search",
+            "docId": "algorithms/random-search"
+          },
+          {
+            "type": "link",
+            "label": "Grid Search",
+            "href": "/algorithms/grid-search",
+            "docId": "algorithms/grid-search"
+          },
+          {
+            "type": "link",
+            "label": "Grey Wolf Optimization",
+            "href": "/algorithms/grey-wolf-optimization",
+            "docId": "algorithms/grey-wolf-optimization"
+          },
+          {
+            "type": "link",
+            "label": "Ant Colony Optimization",
+            "href": "/algorithms/ant-colony-optimization",
+            "docId": "algorithms/ant-colony-optimization"
           }
         ],
-        "href": "/algorithms/"
-      },
-      {
-        "type": "link",
-        "label": "Algorithms in OptiFlowX",
-        "href": "/algorithms",
-        "docId": "algorithms"
-      },
-      {
-        "type": "link",
-        "label": "API Reference",
-        "href": "/api",
-        "docId": "api"
-      },
-      {
-        "type": "link",
-        "label": "Contributing to OptiFlowX",
-        "href": "/contributing",
-        "docId": "contributing"
-      },
-      {
-        "type": "link",
-        "label": "Design System",
-        "href": "/design-system",
-        "docId": "design-system"
-      },
-      {
-        "type": "link",
-        "label": "Documentation notes",
-        "href": "/docs/",
-        "docId": "docs/index"
+        "collapsed": true,
+        "collapsible": true
       },
       {
         "type": "link",
@@ -110,21 +97,35 @@
       },
       {
         "type": "link",
-        "label": "Custom metrics and regression examples",
-        "href": "/examples_custom_metric",
-        "docId": "examples_custom_metric"
+        "label": "API Reference",
+        "href": "/api",
+        "docId": "api"
       },
       {
         "type": "link",
-        "label": "Getting Started",
-        "href": "/getting-started",
-        "docId": "getting-started"
+        "label": "Design System",
+        "href": "/design-system",
+        "docId": "design-system"
       },
       {
         "type": "link",
-        "label": "index",
-        "href": "/",
-        "docId": "index"
+        "label": "Contributing to OptiFlowX",
+        "href": "/contributing",
+        "docId": "contributing"
+      },
+      {
+        "type": "category",
+        "label": "Internal notes",
+        "items": [
+          {
+            "type": "link",
+            "label": "Documentation notes",
+            "href": "/docs/",
+            "docId": "docs/index"
+          }
+        ],
+        "collapsed": true,
+        "collapsible": true
       }
     ]
   },
@@ -132,67 +133,101 @@
     "algorithms": {
       "id": "algorithms",
       "title": "Algorithms in OptiFlowX",
-      "description": "---",
-      "sidebar": "docsSidebar"
+      "description": "---"
     },
     "algorithms/ant_colony": {
       "id": "algorithms/ant_colony",
       "title": "ant_colony",
-      "description": "Ant Colony Optimization (ACO)",
+      "description": "Ant Colony Optimization (ACO)"
+    },
+    "algorithms/ant-colony-optimization": {
+      "id": "algorithms/ant-colony-optimization",
+      "title": "Ant Colony Optimization (ACO)",
+      "description": "Overview",
       "sidebar": "docsSidebar"
     },
     "algorithms/bayesian": {
       "id": "algorithms/bayesian",
       "title": "bayesian",
-      "description": "Bayesian Optimization",
+      "description": "Bayesian Optimization"
+    },
+    "algorithms/bayesian-optimization": {
+      "id": "algorithms/bayesian-optimization",
+      "title": "Bayesian Optimization",
+      "description": "Overview",
       "sidebar": "docsSidebar"
     },
     "algorithms/genetic": {
       "id": "algorithms/genetic",
       "title": "genetic",
-      "description": "Genetic Algorithm (GA)",
+      "description": "Genetic Algorithm (GA)"
+    },
+    "algorithms/genetic-algorithm": {
+      "id": "algorithms/genetic-algorithm",
+      "title": "Genetic Algorithm (GA)",
+      "description": "Overview",
       "sidebar": "docsSidebar"
     },
     "algorithms/grey_wolf": {
       "id": "algorithms/grey_wolf",
       "title": "grey_wolf",
-      "description": "Grey Wolf Optimization (GWO)",
+      "description": "Grey Wolf Optimization (GWO)"
+    },
+    "algorithms/grey-wolf-optimization": {
+      "id": "algorithms/grey-wolf-optimization",
+      "title": "Grey Wolf Optimization (GWO)",
+      "description": "Overview",
       "sidebar": "docsSidebar"
     },
     "algorithms/grid_search": {
       "id": "algorithms/grid_search",
       "title": "grid_search",
-      "description": "Grid Search",
+      "description": "Grid Search"
+    },
+    "algorithms/grid-search": {
+      "id": "algorithms/grid-search",
+      "title": "Grid Search",
+      "description": "Overview",
       "sidebar": "docsSidebar"
     },
     "algorithms/index": {
       "id": "algorithms/index",
       "title": "Algorithms",
-      "description": "This section provides focused, technical pages for each optimizer implemented in OptiFlowX. Use the links below to jump to a specific algorithm. Content has been reorganized for readability — full original wording preserved and split into shorter, scannable pages.",
+      "description": "---",
       "sidebar": "docsSidebar"
     },
     "algorithms/pso": {
       "id": "algorithms/pso",
-      "title": "pso",
-      "description": "Particle Swarm Optimization (PSO)",
+      "title": "Particle Swarm Optimization (PSO)",
+      "description": "Overview",
       "sidebar": "docsSidebar"
     },
     "algorithms/random_search": {
       "id": "algorithms/random_search",
       "title": "random_search",
-      "description": "Random Search",
+      "description": "Random Search"
+    },
+    "algorithms/random-search": {
+      "id": "algorithms/random-search",
+      "title": "Random Search",
+      "description": "Overview",
       "sidebar": "docsSidebar"
     },
     "algorithms/simulated_annealing": {
       "id": "algorithms/simulated_annealing",
       "title": "simulated_annealing",
-      "description": "Simulated Annealing (SA)",
+      "description": "Simulated Annealing (SA)"
+    },
+    "algorithms/simulated-annealing": {
+      "id": "algorithms/simulated-annealing",
+      "title": "Simulated Annealing (SA)",
+      "description": "Overview",
       "sidebar": "docsSidebar"
     },
     "algorithms/tpe": {
       "id": "algorithms/tpe",
-      "title": "tpe",
-      "description": "Tree-structured Parzen Estimator (TPE)",
+      "title": "Tree-structured Parzen Estimator (TPE)",
+      "description": "Overview",
       "sidebar": "docsSidebar"
     },
     "api": {
@@ -200,6 +235,11 @@
       "title": "API Reference",
       "description": "This page highlights the core public API and recommended usage patterns. For full, live API docs consult the docstrings and the optiflowx package modules.",
       "sidebar": "docsSidebar"
+    },
+    "archives/removed_examples_custom_metric": {
+      "id": "archives/removed_examples_custom_metric",
+      "title": "Archived: Custom metrics and regression examples",
+      "description": "This file is an archive of the original \"Custom metrics and regression examples\" content. The active examples documentation has been consolidated into docs/examples.md and classification/regression examples are included there. The archived content is preserved here for reference."
     },
     "contributing": {
       "id": "contributing",
@@ -228,8 +268,7 @@
     "examples_custom_metric": {
       "id": "examples_custom_metric",
       "title": "Custom metrics and regression examples",
-      "description": "OptiFlowX allows you to supply custom metric callables for specialized evaluation. The library treats all metrics as \"higher is better\"; for error metrics (MSE, RMSE, MAE) consider returning the negative error so optimizers maximize performance.",
-      "sidebar": "docsSidebar"
+      "description": "OptiFlowX allows you to supply custom metric callables for specialized evaluation. The library treats all metrics as \"higher is better\"; for error metrics (MSE, RMSE, MAE) consider returning the negative error so optimizers maximize performance."
     },
     "getting-started": {
       "id": "getting-started",
@@ -239,8 +278,8 @@
     },
     "index": {
       "id": "index",
-      "title": "index",
-      "description": "🧠 Supported Algorithms",
+      "title": "Welcome to OptiFlowX",
+      "description": "OptiFlowX is an open-source optimization framework for machine learning, operations research, and applied AI. It provides a consistent API to run, compare, and track optimization workflows — from hyperparameter tuning to algorithm benchmarking.",
       "sidebar": "docsSidebar"
     }
   }

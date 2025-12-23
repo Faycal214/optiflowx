@@ -23,7 +23,7 @@
               "unversionedId": "algorithms",
               "id": "algorithms",
               "title": "Algorithms in OptiFlowX",
-              "description": "Genetic Algorithm (GA)",
+              "description": "---",
               "source": "@site/../docs/algorithms.md",
               "sourceDirName": ".",
               "slug": "/algorithms",
@@ -32,11 +32,395 @@
               "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms.md",
               "tags": [],
               "version": "current",
-              "frontMatter": {},
+              "frontMatter": {}
+            },
+            {
+              "unversionedId": "algorithms/ant_colony",
+              "id": "algorithms/ant_colony",
+              "title": "ant_colony",
+              "description": "Ant Colony Optimization (ACO)",
+              "source": "@site/../docs/algorithms/ant_colony.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/ant_colony",
+              "permalink": "/algorithms/ant_colony",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/ant_colony.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "sidebar_label": "Ant Colony Optimization (ACO)"
+              }
+            },
+            {
+              "unversionedId": "algorithms/ant-colony-optimization",
+              "id": "algorithms/ant-colony-optimization",
+              "title": "Ant Colony Optimization (ACO)",
+              "description": "Overview",
+              "source": "@site/../docs/algorithms/ant-colony-optimization.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/ant-colony-optimization",
+              "permalink": "/algorithms/ant-colony-optimization",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/ant-colony-optimization.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "title": "Ant Colony Optimization (ACO)",
+                "sidebar_label": "Ant Colony Optimization"
+              },
               "sidebar": "docsSidebar",
+              "previous": {
+                "title": "Grey Wolf Optimization",
+                "permalink": "/algorithms/grey-wolf-optimization"
+              },
               "next": {
-                "title": "API Reference",
-                "permalink": "/api"
+                "title": "🧪 Examples",
+                "permalink": "/examples"
+              }
+            },
+            {
+              "unversionedId": "algorithms/bayesian",
+              "id": "algorithms/bayesian",
+              "title": "bayesian",
+              "description": "Bayesian Optimization",
+              "source": "@site/../docs/algorithms/bayesian.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/bayesian",
+              "permalink": "/algorithms/bayesian",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/bayesian.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "sidebar_label": "Bayesian Optimization"
+              }
+            },
+            {
+              "unversionedId": "algorithms/bayesian-optimization",
+              "id": "algorithms/bayesian-optimization",
+              "title": "Bayesian Optimization",
+              "description": "Overview",
+              "source": "@site/../docs/algorithms/bayesian-optimization.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/bayesian-optimization",
+              "permalink": "/algorithms/bayesian-optimization",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/bayesian-optimization.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "title": "Bayesian Optimization",
+                "sidebar_label": "Bayesian Optimization"
+              },
+              "sidebar": "docsSidebar",
+              "previous": {
+                "title": "Simulated Annealing",
+                "permalink": "/algorithms/simulated-annealing"
+              },
+              "next": {
+                "title": "TPE",
+                "permalink": "/algorithms/tpe"
+              }
+            },
+            {
+              "unversionedId": "algorithms/genetic",
+              "id": "algorithms/genetic",
+              "title": "genetic",
+              "description": "Genetic Algorithm (GA)",
+              "source": "@site/../docs/algorithms/genetic.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/genetic",
+              "permalink": "/algorithms/genetic",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/genetic.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "sidebar_label": "Genetic Algorithm (GA)"
+              }
+            },
+            {
+              "unversionedId": "algorithms/genetic-algorithm",
+              "id": "algorithms/genetic-algorithm",
+              "title": "Genetic Algorithm (GA)",
+              "description": "Overview",
+              "source": "@site/../docs/algorithms/genetic-algorithm.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/genetic-algorithm",
+              "permalink": "/algorithms/genetic-algorithm",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/genetic-algorithm.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "title": "Genetic Algorithm (GA)",
+                "sidebar_label": "Genetic Algorithm"
+              },
+              "sidebar": "docsSidebar",
+              "previous": {
+                "title": "TPE",
+                "permalink": "/algorithms/tpe"
+              },
+              "next": {
+                "title": "Random Search",
+                "permalink": "/algorithms/random-search"
+              }
+            },
+            {
+              "unversionedId": "algorithms/grey_wolf",
+              "id": "algorithms/grey_wolf",
+              "title": "grey_wolf",
+              "description": "Grey Wolf Optimization (GWO)",
+              "source": "@site/../docs/algorithms/grey_wolf.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/grey_wolf",
+              "permalink": "/algorithms/grey_wolf",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/grey_wolf.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "sidebar_label": "Grey Wolf Optimization (GWO)"
+              }
+            },
+            {
+              "unversionedId": "algorithms/grey-wolf-optimization",
+              "id": "algorithms/grey-wolf-optimization",
+              "title": "Grey Wolf Optimization (GWO)",
+              "description": "Overview",
+              "source": "@site/../docs/algorithms/grey-wolf-optimization.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/grey-wolf-optimization",
+              "permalink": "/algorithms/grey-wolf-optimization",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/grey-wolf-optimization.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "title": "Grey Wolf Optimization (GWO)",
+                "sidebar_label": "Grey Wolf Optimization"
+              },
+              "sidebar": "docsSidebar",
+              "previous": {
+                "title": "Grid Search",
+                "permalink": "/algorithms/grid-search"
+              },
+              "next": {
+                "title": "Ant Colony Optimization",
+                "permalink": "/algorithms/ant-colony-optimization"
+              }
+            },
+            {
+              "unversionedId": "algorithms/grid_search",
+              "id": "algorithms/grid_search",
+              "title": "grid_search",
+              "description": "Grid Search",
+              "source": "@site/../docs/algorithms/grid_search.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/grid_search",
+              "permalink": "/algorithms/grid_search",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/grid_search.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "sidebar_label": "Grid Search"
+              }
+            },
+            {
+              "unversionedId": "algorithms/grid-search",
+              "id": "algorithms/grid-search",
+              "title": "Grid Search",
+              "description": "Overview",
+              "source": "@site/../docs/algorithms/grid-search.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/grid-search",
+              "permalink": "/algorithms/grid-search",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/grid-search.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "title": "Grid Search",
+                "sidebar_label": "Grid Search"
+              },
+              "sidebar": "docsSidebar",
+              "previous": {
+                "title": "Random Search",
+                "permalink": "/algorithms/random-search"
+              },
+              "next": {
+                "title": "Grey Wolf Optimization",
+                "permalink": "/algorithms/grey-wolf-optimization"
+              }
+            },
+            {
+              "unversionedId": "algorithms/index",
+              "id": "algorithms/index",
+              "title": "Algorithms",
+              "description": "---",
+              "source": "@site/../docs/algorithms/index.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/",
+              "permalink": "/algorithms/",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/index.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "title": "Algorithms",
+                "sidebar_label": "Algorithms"
+              },
+              "sidebar": "docsSidebar",
+              "previous": {
+                "title": "Getting Started",
+                "permalink": "/getting-started"
+              },
+              "next": {
+                "title": "PSO",
+                "permalink": "/algorithms/pso"
+              }
+            },
+            {
+              "unversionedId": "algorithms/pso",
+              "id": "algorithms/pso",
+              "title": "Particle Swarm Optimization (PSO)",
+              "description": "Overview",
+              "source": "@site/../docs/algorithms/pso.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/pso",
+              "permalink": "/algorithms/pso",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/pso.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "title": "Particle Swarm Optimization (PSO)",
+                "sidebar_label": "PSO"
+              },
+              "sidebar": "docsSidebar",
+              "previous": {
+                "title": "Algorithms",
+                "permalink": "/algorithms/"
+              },
+              "next": {
+                "title": "Simulated Annealing",
+                "permalink": "/algorithms/simulated-annealing"
+              }
+            },
+            {
+              "unversionedId": "algorithms/random_search",
+              "id": "algorithms/random_search",
+              "title": "random_search",
+              "description": "Random Search",
+              "source": "@site/../docs/algorithms/random_search.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/random_search",
+              "permalink": "/algorithms/random_search",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/random_search.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "sidebar_label": "Random Search"
+              }
+            },
+            {
+              "unversionedId": "algorithms/random-search",
+              "id": "algorithms/random-search",
+              "title": "Random Search",
+              "description": "Overview",
+              "source": "@site/../docs/algorithms/random-search.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/random-search",
+              "permalink": "/algorithms/random-search",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/random-search.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "title": "Random Search",
+                "sidebar_label": "Random Search"
+              },
+              "sidebar": "docsSidebar",
+              "previous": {
+                "title": "Genetic Algorithm",
+                "permalink": "/algorithms/genetic-algorithm"
+              },
+              "next": {
+                "title": "Grid Search",
+                "permalink": "/algorithms/grid-search"
+              }
+            },
+            {
+              "unversionedId": "algorithms/simulated_annealing",
+              "id": "algorithms/simulated_annealing",
+              "title": "simulated_annealing",
+              "description": "Simulated Annealing (SA)",
+              "source": "@site/../docs/algorithms/simulated_annealing.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/simulated_annealing",
+              "permalink": "/algorithms/simulated_annealing",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/simulated_annealing.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "sidebar_label": "Simulated Annealing (SA)"
+              }
+            },
+            {
+              "unversionedId": "algorithms/simulated-annealing",
+              "id": "algorithms/simulated-annealing",
+              "title": "Simulated Annealing (SA)",
+              "description": "Overview",
+              "source": "@site/../docs/algorithms/simulated-annealing.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/simulated-annealing",
+              "permalink": "/algorithms/simulated-annealing",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/simulated-annealing.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "title": "Simulated Annealing (SA)",
+                "sidebar_label": "Simulated Annealing"
+              },
+              "sidebar": "docsSidebar",
+              "previous": {
+                "title": "PSO",
+                "permalink": "/algorithms/pso"
+              },
+              "next": {
+                "title": "Bayesian Optimization",
+                "permalink": "/algorithms/bayesian-optimization"
+              }
+            },
+            {
+              "unversionedId": "algorithms/tpe",
+              "id": "algorithms/tpe",
+              "title": "Tree-structured Parzen Estimator (TPE)",
+              "description": "Overview",
+              "source": "@site/../docs/algorithms/tpe.md",
+              "sourceDirName": "algorithms",
+              "slug": "/algorithms/tpe",
+              "permalink": "/algorithms/tpe",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/algorithms/tpe.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {
+                "title": "Tree-structured Parzen Estimator (TPE)",
+                "sidebar_label": "TPE"
+              },
+              "sidebar": "docsSidebar",
+              "previous": {
+                "title": "Bayesian Optimization",
+                "permalink": "/algorithms/bayesian-optimization"
+              },
+              "next": {
+                "title": "Genetic Algorithm",
+                "permalink": "/algorithms/genetic-algorithm"
               }
             },
             {
@@ -55,13 +439,28 @@
               "frontMatter": {},
               "sidebar": "docsSidebar",
               "previous": {
-                "title": "Algorithms in OptiFlowX",
-                "permalink": "/algorithms"
+                "title": "🧪 Examples",
+                "permalink": "/examples"
               },
               "next": {
-                "title": "Contributing to OptiFlowX",
-                "permalink": "/contributing"
+                "title": "Design System",
+                "permalink": "/design-system"
               }
+            },
+            {
+              "unversionedId": "archives/removed_examples_custom_metric",
+              "id": "archives/removed_examples_custom_metric",
+              "title": "Archived: Custom metrics and regression examples",
+              "description": "This file is an archive of the original \"Custom metrics and regression examples\" content. The active examples documentation has been consolidated into docs/examples.md and classification/regression examples are included there. The archived content is preserved here for reference.",
+              "source": "@site/../docs/archives/removed_examples_custom_metric.md",
+              "sourceDirName": "archives",
+              "slug": "/archives/removed_examples_custom_metric",
+              "permalink": "/archives/removed_examples_custom_metric",
+              "draft": false,
+              "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/archives/removed_examples_custom_metric.md",
+              "tags": [],
+              "version": "current",
+              "frontMatter": {}
             },
             {
               "unversionedId": "contributing",
@@ -79,12 +478,12 @@
               "frontMatter": {},
               "sidebar": "docsSidebar",
               "previous": {
-                "title": "API Reference",
-                "permalink": "/api"
-              },
-              "next": {
                 "title": "Design System",
                 "permalink": "/design-system"
+              },
+              "next": {
+                "title": "Documentation notes",
+                "permalink": "/docs/"
               }
             },
             {
@@ -103,12 +502,12 @@
               "frontMatter": {},
               "sidebar": "docsSidebar",
               "previous": {
-                "title": "Contributing to OptiFlowX",
-                "permalink": "/contributing"
+                "title": "API Reference",
+                "permalink": "/api"
               },
               "next": {
-                "title": "Documentation notes",
-                "permalink": "/docs/"
+                "title": "Contributing to OptiFlowX",
+                "permalink": "/contributing"
               }
             },
             {
@@ -127,12 +526,8 @@
               "frontMatter": {},
               "sidebar": "docsSidebar",
               "previous": {
-                "title": "Design System",
-                "permalink": "/design-system"
-              },
-              "next": {
-                "title": "🧪 Examples",
-                "permalink": "/examples"
+                "title": "Contributing to OptiFlowX",
+                "permalink": "/contributing"
               }
             },
             {
@@ -151,12 +546,12 @@
               "frontMatter": {},
               "sidebar": "docsSidebar",
               "previous": {
-                "title": "Documentation notes",
-                "permalink": "/docs/"
+                "title": "Ant Colony Optimization",
+                "permalink": "/algorithms/ant-colony-optimization"
               },
               "next": {
-                "title": "Custom metrics and regression examples",
-                "permalink": "/examples_custom_metric"
+                "title": "API Reference",
+                "permalink": "/api"
               }
             },
             {
@@ -172,16 +567,7 @@
               "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/examples_custom_metric.md",
               "tags": [],
               "version": "current",
-              "frontMatter": {},
-              "sidebar": "docsSidebar",
-              "previous": {
-                "title": "🧪 Examples",
-                "permalink": "/examples"
-              },
-              "next": {
-                "title": "Getting Started",
-                "permalink": "/getting-started"
-              }
+              "frontMatter": {}
             },
             {
               "unversionedId": "getting-started",
@@ -199,19 +585,19 @@
               "frontMatter": {},
               "sidebar": "docsSidebar",
               "previous": {
-                "title": "Custom metrics and regression examples",
-                "permalink": "/examples_custom_metric"
+                "title": "Welcome to OptiFlowX",
+                "permalink": "/"
               },
               "next": {
-                "title": "index",
-                "permalink": "/"
+                "title": "Algorithms",
+                "permalink": "/algorithms/"
               }
             },
             {
               "unversionedId": "index",
               "id": "index",
-              "title": "index",
-              "description": "🧠 Supported Algorithms",
+              "title": "Welcome to OptiFlowX",
+              "description": "OptiFlowX is an open-source optimization framework for machine learning, operations research, and applied AI. It provides a consistent API to run, compare, and track optimization workflows — from hyperparameter tuning to algorithm benchmarking.",
               "source": "@site/../docs/index.md",
               "sourceDirName": ".",
               "slug": "/",
@@ -220,9 +606,12 @@
               "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/index.md",
               "tags": [],
               "version": "current",
-              "frontMatter": {},
+              "frontMatter": {
+                "title": "Welcome to OptiFlowX",
+                "sidebar_label": "Welcome to OptiFlowX"
+              },
               "sidebar": "docsSidebar",
-              "previous": {
+              "next": {
                 "title": "Getting Started",
                 "permalink": "/getting-started"
               }
@@ -233,24 +622,59 @@
             "docsSidebar": [
               {
                 "type": "doc",
-                "id": "algorithms"
+                "id": "index"
               },
               {
                 "type": "doc",
-                "id": "api"
+                "id": "getting-started"
               },
               {
-                "type": "doc",
-                "id": "contributing"
-              },
-              {
-                "type": "doc",
-                "id": "design-system"
-              },
-              {
-                "type": "doc",
-                "label": "Documentation notes",
-                "id": "docs/index"
+                "type": "category",
+                "label": "Algorithms",
+                "items": [
+                  {
+                    "type": "doc",
+                    "id": "algorithms/index"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "algorithms/pso"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "algorithms/simulated-annealing"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "algorithms/bayesian-optimization"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "algorithms/tpe"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "algorithms/genetic-algorithm"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "algorithms/random-search"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "algorithms/grid-search"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "algorithms/grey-wolf-optimization"
+                  },
+                  {
+                    "type": "doc",
+                    "id": "algorithms/ant-colony-optimization"
+                  }
+                ],
+                "collapsed": true,
+                "collapsible": true
               },
               {
                 "type": "doc",
@@ -258,15 +682,27 @@
               },
               {
                 "type": "doc",
-                "id": "examples_custom_metric"
+                "id": "api"
               },
               {
                 "type": "doc",
-                "id": "getting-started"
+                "id": "design-system"
               },
               {
                 "type": "doc",
-                "id": "index"
+                "id": "contributing"
+              },
+              {
+                "type": "category",
+                "label": "Internal notes",
+                "items": [
+                  {
+                    "type": "doc",
+                    "id": "docs/index"
+                  }
+                ],
+                "collapsed": true,
+                "collapsible": true
               }
             ]
           }

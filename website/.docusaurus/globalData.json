@@ -12,32 +12,51 @@
           "docs": [
             {
               "id": "algorithms",
-              "path": "/algorithms",
-              "sidebar": "docsSidebar"
+              "path": "/algorithms"
             },
             {
               "id": "algorithms/ant_colony",
-              "path": "/algorithms/ant_colony",
+              "path": "/algorithms/ant_colony"
+            },
+            {
+              "id": "algorithms/ant-colony-optimization",
+              "path": "/algorithms/ant-colony-optimization",
               "sidebar": "docsSidebar"
             },
             {
               "id": "algorithms/bayesian",
-              "path": "/algorithms/bayesian",
+              "path": "/algorithms/bayesian"
+            },
+            {
+              "id": "algorithms/bayesian-optimization",
+              "path": "/algorithms/bayesian-optimization",
               "sidebar": "docsSidebar"
             },
             {
               "id": "algorithms/genetic",
-              "path": "/algorithms/genetic",
+              "path": "/algorithms/genetic"
+            },
+            {
+              "id": "algorithms/genetic-algorithm",
+              "path": "/algorithms/genetic-algorithm",
               "sidebar": "docsSidebar"
             },
             {
               "id": "algorithms/grey_wolf",
-              "path": "/algorithms/grey_wolf",
+              "path": "/algorithms/grey_wolf"
+            },
+            {
+              "id": "algorithms/grey-wolf-optimization",
+              "path": "/algorithms/grey-wolf-optimization",
               "sidebar": "docsSidebar"
             },
             {
               "id": "algorithms/grid_search",
-              "path": "/algorithms/grid_search",
+              "path": "/algorithms/grid_search"
+            },
+            {
+              "id": "algorithms/grid-search",
+              "path": "/algorithms/grid-search",
               "sidebar": "docsSidebar"
             },
             {
@@ -52,12 +71,20 @@
             },
             {
               "id": "algorithms/random_search",
-              "path": "/algorithms/random_search",
+              "path": "/algorithms/random_search"
+            },
+            {
+              "id": "algorithms/random-search",
+              "path": "/algorithms/random-search",
               "sidebar": "docsSidebar"
             },
             {
               "id": "algorithms/simulated_annealing",
-              "path": "/algorithms/simulated_annealing",
+              "path": "/algorithms/simulated_annealing"
+            },
+            {
+              "id": "algorithms/simulated-annealing",
+              "path": "/algorithms/simulated-annealing",
               "sidebar": "docsSidebar"
             },
             {
@@ -69,6 +96,10 @@
               "id": "api",
               "path": "/api",
               "sidebar": "docsSidebar"
+            },
+            {
+              "id": "archives/removed_examples_custom_metric",
+              "path": "/archives/removed_examples_custom_metric"
             },
             {
               "id": "contributing",
@@ -92,8 +123,7 @@
             },
             {
               "id": "examples_custom_metric",
-              "path": "/examples_custom_metric",
-              "sidebar": "docsSidebar"
+              "path": "/examples_custom_metric"
             },
             {
               "id": "getting-started",
@@ -110,8 +140,8 @@
           "sidebars": {
             "docsSidebar": {
               "link": {
-                "path": "/algorithms/",
-                "label": "Algorithms"
+                "path": "/",
+                "label": "index"
               }
             }
           }

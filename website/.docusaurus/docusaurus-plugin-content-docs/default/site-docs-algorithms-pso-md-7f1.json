@@ -1,8 +1,8 @@
 {
   "unversionedId": "algorithms/pso",
   "id": "algorithms/pso",
-  "title": "pso",
-  "description": "Particle Swarm Optimization (PSO)",
+  "title": "Particle Swarm Optimization (PSO)",
+  "description": "Overview",
   "source": "@site/../docs/algorithms/pso.md",
   "sourceDirName": "algorithms",
   "slug": "/algorithms/pso",
@@ -12,15 +12,16 @@
   "tags": [],
   "version": "current",
   "frontMatter": {
-    "sidebar_label": "Particle Swarm Optimization (PSO)"
+    "title": "Particle Swarm Optimization (PSO)",
+    "sidebar_label": "PSO"
   },
   "sidebar": "docsSidebar",
   "previous": {
-    "title": "Grid Search",
-    "permalink": "/algorithms/grid_search"
+    "title": "Algorithms",
+    "permalink": "/algorithms/"
   },
   "next": {
-    "title": "Random Search",
-    "permalink": "/algorithms/random_search"
+    "title": "Simulated Annealing",
+    "permalink": "/algorithms/simulated-annealing"
   }
 }

@@ -13,14 +13,5 @@
   "version": "current",
   "frontMatter": {
     "sidebar_label": "Random Search"
-  },
-  "sidebar": "docsSidebar",
-  "previous": {
-    "title": "Particle Swarm Optimization (PSO)",
-    "permalink": "/algorithms/pso"
-  },
-  "next": {
-    "title": "Simulated Annealing (SA)",
-    "permalink": "/algorithms/simulated_annealing"
   }
 }

@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "docsSidebar",
   "previous": {
-    "title": "API Reference",
-    "permalink": "/api"
-  },
-  "next": {
     "title": "Design System",
     "permalink": "/design-system"
+  },
+  "next": {
+    "title": "Documentation notes",
+    "permalink": "/docs/"
   }
 }

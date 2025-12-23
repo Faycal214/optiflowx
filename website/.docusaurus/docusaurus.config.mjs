@@ -40,7 +40,7 @@ export default {
           "position": "left"
         },
         {
-          "href": "https://github.com/your-org/optiflowx",
+          "href": "https://github.com/Faycal214/optiflowx",
           "label": "GitHub",
           "position": "right"
         }

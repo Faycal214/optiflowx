@@ -14,11 +14,11 @@
   "frontMatter": {},
   "sidebar": "docsSidebar",
   "previous": {
-    "title": "Custom metrics and regression examples",
-    "permalink": "/examples_custom_metric"
+    "title": "Welcome to OptiFlowX",
+    "permalink": "/"
   },
   "next": {
-    "title": "index",
-    "permalink": "/"
+    "title": "Algorithms",
+    "permalink": "/algorithms/"
   }
 }

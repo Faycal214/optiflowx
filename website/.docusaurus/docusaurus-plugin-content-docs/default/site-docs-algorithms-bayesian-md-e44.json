@@ -13,14 +13,5 @@
   "version": "current",
   "frontMatter": {
     "sidebar_label": "Bayesian Optimization"
-  },
-  "sidebar": "docsSidebar",
-  "previous": {
-    "title": "Ant Colony Optimization (ACO)",
-    "permalink": "/algorithms/ant_colony"
-  },
-  "next": {
-    "title": "Genetic Algorithm (GA)",
-    "permalink": "/algorithms/genetic"
   }
 }

@@ -1,8 +1,8 @@
 {
   "unversionedId": "algorithms/tpe",
   "id": "algorithms/tpe",
-  "title": "tpe",
-  "description": "Tree-structured Parzen Estimator (TPE)",
+  "title": "Tree-structured Parzen Estimator (TPE)",
+  "description": "Overview",
   "source": "@site/../docs/algorithms/tpe.md",
   "sourceDirName": "algorithms",
   "slug": "/algorithms/tpe",
@@ -12,15 +12,16 @@
   "tags": [],
   "version": "current",
   "frontMatter": {
-    "sidebar_label": "Tree-structured Parzen Estimator (TPE)"
+    "title": "Tree-structured Parzen Estimator (TPE)",
+    "sidebar_label": "TPE"
   },
   "sidebar": "docsSidebar",
   "previous": {
-    "title": "Simulated Annealing (SA)",
-    "permalink": "/algorithms/simulated_annealing"
+    "title": "Bayesian Optimization",
+    "permalink": "/algorithms/bayesian-optimization"
   },
   "next": {
-    "title": "Algorithms in OptiFlowX",
-    "permalink": "/algorithms"
+    "title": "Genetic Algorithm",
+    "permalink": "/algorithms/genetic-algorithm"
   }
 }

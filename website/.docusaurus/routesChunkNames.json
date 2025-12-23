@@ -1,85 +1,160 @@
 {
-  "/-c6c": {
-    "__comp": "1be78505",
+  "/__docusaurus/debug-539": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
     "__context": {
-      "plugin": "359239d3"
+      "plugin": "plugin---docusaurus-debug-5-e-3-373"
+    }
+  },
+  "/__docusaurus/debug/config-907": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debug-5-e-3-373"
+    }
+  },
+  "/__docusaurus/debug/content-233": {
+    "__comp": "__comp---theme-debug-contentba-8-ce7",
+    "__context": {
+      "plugin": "plugin---docusaurus-debug-5-e-3-373"
     },
-    "versionMetadata": "935f2afb"
+    "allContent": "allContent---docusaurus-debug-content-246-9aa"
+  },
+  "/__docusaurus/debug/globalData-132": {
+    "__comp": "__comp---theme-debug-global-dataede-0fa",
+    "__context": {
+      "plugin": "plugin---docusaurus-debug-5-e-3-373"
+    }
+  },
+  "/__docusaurus/debug/metadata-c50": {
+    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
+    "__context": {
+      "plugin": "plugin---docusaurus-debug-5-e-3-373"
+    }
+  },
+  "/__docusaurus/debug/registry-3bc": {
+    "__comp": "__comp---theme-debug-registry-679-501",
+    "__context": {
+      "plugin": "plugin---docusaurus-debug-5-e-3-373"
+    }
+  },
+  "/__docusaurus/debug/routes-df0": {
+    "__comp": "__comp---theme-debug-routes-946-699",
+    "__context": {
+      "plugin": "plugin---docusaurus-debug-5-e-3-373"
+    }
+  },
+  "/-d55": {
+    "__comp": "__comp---theme-doc-page-1-be-9be",
+    "__context": {
+      "plugin": "plugin---359-38a"
+    },
+    "versionMetadata": "versionMetadata---935-fcf"
   },
   "/-9d3": {
-    "__comp": "17896441",
-    "content": "03a88bad"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---03-a-a23"
   },
-  "/algorithms-d65": {
-    "__comp": "17896441",
-    "content": "8dedc156"
+  "/algorithms-fcf": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-8-de-c66"
   },
   "/algorithms/-c9a": {
-    "__comp": "17896441",
-    "content": "f9f5fbe8"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-f-9-f-1c5"
   },
-  "/algorithms/ant_colony-71f": {
-    "__comp": "17896441",
-    "content": "770b3367"
+  "/algorithms/ant_colony-16a": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-ant-colony-770-1f8"
   },
-  "/algorithms/bayesian-ce1": {
-    "__comp": "17896441",
-    "content": "e44e02a1"
+  "/algorithms/ant-colony-optimization-fdf": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-ant-colony-optimization-0-ef-5b6"
   },
-  "/algorithms/genetic-427": {
-    "__comp": "17896441",
-    "content": "6bd3478e"
+  "/algorithms/bayesian-f95": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-bayesiane-44-c49"
   },
-  "/algorithms/grey_wolf-77f": {
-    "__comp": "17896441",
-    "content": "c11a8253"
+  "/algorithms/bayesian-optimization-a31": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-bayesian-optimization-6-b-9-6af"
   },
-  "/algorithms/grid_search-f3f": {
-    "__comp": "17896441",
-    "content": "e55b1649"
+  "/algorithms/genetic-71c": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-genetic-6-bd-7e0"
+  },
+  "/algorithms/genetic-algorithm-680": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-genetic-algorithm-0-bf-6e9"
+  },
+  "/algorithms/grey_wolf-f5c": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-grey-wolfc-11-448"
+  },
+  "/algorithms/grey-wolf-optimization-8f9": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-grey-wolf-optimizationaa-3-ed1"
+  },
+  "/algorithms/grid_search-5e1": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-grid-searche-55-83d"
+  },
+  "/algorithms/grid-search-b99": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-grid-searche-61-8ce"
   },
   "/algorithms/pso-8f9": {
-    "__comp": "17896441",
-    "content": "7f1befd3"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-pso-7-f-1-896"
   },
-  "/algorithms/random_search-57c": {
-    "__comp": "17896441",
-    "content": "5e11c038"
+  "/algorithms/random_search-191": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-random-search-5-e-1-dd9"
   },
-  "/algorithms/simulated_annealing-52e": {
-    "__comp": "17896441",
-    "content": "45585104"
+  "/algorithms/random-search-d47": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-random-searchf-6-d-231"
+  },
+  "/algorithms/simulated_annealing-429": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-simulated-annealing-455-d63"
+  },
+  "/algorithms/simulated-annealing-cc2": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-simulated-annealingc-2-b-40a"
   },
   "/algorithms/tpe-8ee": {
-    "__comp": "17896441",
-    "content": "1c704aa7"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---algorithms-tpe-1-c-7-bae"
   },
   "/api-ef7": {
-    "__comp": "17896441",
-    "content": "e111f111"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---apie-11-10c"
+  },
+  "/archives/removed_examples_custom_metric-303": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---archives-removed-examples-custom-metric-31-a-d9c"
   },
   "/contributing-d27": {
-    "__comp": "17896441",
-    "content": "ecfe08ed"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---contributingecf-33e"
   },
   "/design-system-9b9": {
-    "__comp": "17896441",
-    "content": "cf758d07"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---design-systemcf-7-e8a"
   },
   "/docs/-c45": {
-    "__comp": "17896441",
-    "content": "d452b748"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---docs-d-45-447"
   },
   "/examples-969": {
-    "__comp": "17896441",
-    "content": "d665a578"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---examplesd-66-c2e"
   },
-  "/examples_custom_metric-825": {
-    "__comp": "17896441",
-    "content": "bc84fd1c"
+  "/examples_custom_metric-8f1": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---examples-custom-metricbc-8-731"
   },
   "/getting-started-f3c": {
-    "__comp": "17896441",
-    "content": "8d0344ba"
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---getting-started-8-d-0-3c6"
   }
 }

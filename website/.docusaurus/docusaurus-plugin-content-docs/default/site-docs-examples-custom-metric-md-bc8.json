@@ -11,14 +11,5 @@
   "editUrl": "https://github.com/Faycal214/optiflowx/edit/main/docs/../docs/examples_custom_metric.md",
   "tags": [],
   "version": "current",
-  "frontMatter": {},
-  "sidebar": "docsSidebar",
-  "previous": {
-    "title": "🧪 Examples",
-    "permalink": "/examples"
-  },
-  "next": {
-    "title": "Getting Started",
-    "permalink": "/getting-started"
-  }
+  "frontMatter": {}
 }
