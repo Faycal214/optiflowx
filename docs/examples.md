@@ -197,3 +197,53 @@ Notes
 
 - For CI-friendly quick runs set `EXAMPLES_FAST_MODE=1` and `EXAMPLES_MAX_ITERS=3`.
 - If your `custom_metric` is a nested function or closure, install `dill` to enable multiprocessing serialization.
+
+## Classification example (quick)
+
+This short snippet demonstrates using a built-in model config and a Bayesian optimizer for a classification task.
+
+```python
+from sklearn.datasets import load_iris
+from optiflowx.models.configs.random_forest_config import RandomForestConfig
+from optiflowx.optimizers.bayesian import BayesianOptimizer
+
+X, y = load_iris(return_X_y=True)
+cfg = RandomForestConfig()
+wrapper = cfg.get_wrapper(task_type='classification')
+opt = BayesianOptimizer(
+    search_space=cfg.build_search_space(),
+    metric='accuracy',
+    model_class=wrapper.model_class,
+    X=X, y=y,
+)
+best_params, best_score = opt.run(max_iters=10)
+print('Best score:', best_score)
+```
+
+## Regression example (quick)
+
+This quick regression example uses a `RandomForestConfig` wrapper with `task_type='regression'` and a negative RMSE metric (higher-is-better convention).
+
+```python
+from sklearn.datasets import load_boston
+from optiflowx.models.configs.random_forest_config import RandomForestConfig
+from optiflowx.optimizers.genetic import GeneticOptimizer
+from sklearn.metrics import mean_squared_error
+
+X, y = load_boston(return_X_y=True)
+cfg = RandomForestConfig()
+wrapper = cfg.get_wrapper(task_type='regression')
+
+def neg_rmse(y_true, y_pred):
+    return -float(mean_squared_error(y_true, y_pred, squared=False))
+
+opt = GeneticOptimizer(
+    search_space=cfg.build_search_space(),
+    custom_metric=neg_rmse,
+    model_class=wrapper.model_class,
+    X=X, y=y,
+    population=12,
+)
+best_params, best_score = opt.run(max_iters=8)
+print('Best score (neg rmse):', best_score)
+```

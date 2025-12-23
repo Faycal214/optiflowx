@@ -32,7 +32,7 @@ module.exports = {
       // remove or comment out any `logo` entry so no image mark is shown
       items: [
         {to: '/', label: 'Docs', position: 'left'},
-        {href: 'https://github.com/your-org/optiflowx', label: 'GitHub', position: 'right'}
+        {href: 'https://github.com/Faycal214/optiflowx', label: 'GitHub', position: 'right'}
       ],
     },
     colorMode: {

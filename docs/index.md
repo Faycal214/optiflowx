@@ -1,4 +1,8 @@
-## 🧠 Supported Algorithms
+---
+title: Welcome to OptiFlowX
+sidebar_label: Welcome to OptiFlowX
+---
+
 # 🧠 Welcome to OptiFlowX
 
 OptiFlowX is an open-source optimization framework for machine learning, operations research, and applied AI. It provides a consistent API to run, compare, and track optimization workflows — from hyperparameter tuning to algorithm benchmarking.
@@ -10,7 +14,7 @@ OptiFlowX is an open-source optimization framework for machine learning, operati
 - API reference for core building blocks
 - Design system and theming notes for documentation
 
-The site supports a light/dark toggle (top-right) — each theme adjusts backgrounds, code-block contrast and semantic colors for comfortable reading.
+The site supports a dark-first design. For users coming from other themes, note that code-block contrast and semantic colors are optimized for comfortable reading on dark backgrounds.
 
 ## Quick installation
 
