@@ -2,8 +2,8 @@
 module.exports = {
   title: 'OptiFlowX',
   tagline: 'Research-grade automatic ML pipeline optimizer',
-  url: 'https://your-domain.com',
-  baseUrl: '/',
+  url: 'https://Faycal214.github.io',
+  baseUrl: '/optiflowx/',
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'static/img/opti-mark.svg',
