@@ -1,10 +1,14 @@
 """
-OptiFlow - lightweight hyperparameter optimization package.
-Expose commonly used optimizers and registry here.
+OptiFlowX - modular optimization and ML workflow framework.
 """
 
-__version__ = "0.0.7"
+__version__ = "0.0.9"
 
-# lazy imports to avoid heavy deps on import
-from .optimizers import *
-from .models import registry as model_registry  # noqa: F401
+__all__ = [
+    "optimizers",
+    "models",
+    "core",
+]
+
+# Expose namespaces only (NO wildcard imports)
+# from . import optimizers  # noqa: F401

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "optiflowx"
-version = "0.0.8"
+version = "0.0.9"
 requires-python = ">=3.10"
 description = "A modular optimization and machine learning workflow framework for hyperparameter tuning and performance benchmarking across diverse datasets."
 readme = "README.md"
