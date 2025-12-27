@@ -1,7 +1,7 @@
 from skopt import Optimizer as SkOptimizer
 import warnings
 from skopt.space import Real, Integer, Categorical
-from optiflowx.core.metrics import get_metric
+from optiflowx.core import get_metric
 import logging
 
 

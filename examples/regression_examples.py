@@ -15,19 +15,20 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from sklearn.datasets import make_regression
 import os
-from optiflowx.models.configs.random_forest_config import RandomForestConfig
-from optiflowx.models.configs.custom_model_config import CustomModelConfig
-from optiflowx.core.metrics import get_metric
+from optiflowx.models.configs import RandomForestConfig, CustomModelConfig
+from optiflowx.core import get_metric
 from optiflowx.utils.sanitize import sanitize_params
 
-from optiflowx.optimizers.pso import PSOOptimizer
-from optiflowx.optimizers.genetic import GeneticOptimizer
-from optiflowx.optimizers.bayesian import BayesianOptimizer
-from optiflowx.optimizers.tpe import TPEOptimizer
-from optiflowx.optimizers.random_search import RandomSearchOptimizer
-from optiflowx.optimizers.simulated_annealing import SimulatedAnnealingOptimizer
-from optiflowx.optimizers.grey_wolf import GreyWolfOptimizer
-from optiflowx.optimizers.ant_colony import AntColonyOptimizer
+from optiflowx.optimizers import (
+    PSOOptimizer,
+    GeneticOptimizer,
+    BayesianOptimizer,
+    TPEOptimizer,
+    RandomSearchOptimizer,
+    SimulatedAnnealingOptimizer,
+    GreyWolfOptimizer,
+    AntColonyOptimizer,
+)
 
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(asctime)s - %(message)s")
 
@@ -139,11 +140,9 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from sklearn.datasets import make_regression
-from optiflowx.models.configs.random_forest_config import RandomForestConfig
-from optiflowx.core.metrics import get_metric
-from optiflowx.models.configs.custom_model_config import CustomModelConfig
-from optiflowx.optimizers.pso import PSOOptimizer
-from optiflowx.optimizers.genetic import GeneticOptimizer
+from optiflowx.models.configs import RandomForestConfig, CustomModelConfig
+from optiflowx.core import get_metric
+from optiflowx.optimizers import PSOOptimizer, GeneticOptimizer
 from sklearn.metrics import mean_squared_error
 
 

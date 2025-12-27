@@ -31,8 +31,8 @@ Common parameters
 Usage example (OptiFlowX)
 
 ```python
-from optiflowx.optimizers.simulated_annealing import SimulatedAnnealingOptimizer
-from optiflowx.models.configs.knn_config import KNNConfig
+from optiflowx.optimizers import SimulatedAnnealingOptimizer
+from optiflowx.models.configs import KNNConfig
 from sklearn.datasets import load_iris
 
 X, y = load_iris(return_X_y=True)

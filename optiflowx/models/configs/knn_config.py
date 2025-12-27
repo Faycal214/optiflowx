@@ -1,6 +1,5 @@
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-from optiflowx.core.search_space import SearchSpace
-from optiflowx.core.model_wrapper import ModelWrapper
+from optiflowx.core import SearchSpace, ModelWrapper
 
 
 class KNNConfig:

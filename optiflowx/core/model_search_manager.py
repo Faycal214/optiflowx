@@ -3,7 +3,7 @@ import inspect
 import pkgutil
 from typing import Dict, Any, Tuple
 from optiflowx.models.registry import MODEL_REGISTRY
-from optiflowx.core.optimization_engine import OptimizationEngine
+from .optimization_engine import OptimizationEngine
 import logging
 
 

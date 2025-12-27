@@ -7,8 +7,6 @@
 
 OptiFlowX is a production-oriented, modular framework for hyperparameter and configuration optimization. It combines metaheuristic and probabilistic search algorithms with flexible search-space abstractions, an easy-to-use wrapper for models, and efficient parallel evaluation—designed for both research and production use.
 
-Current PyPI release: `0.0.7` — https://pypi.org/project/optiflowx/
-
 Key capabilities:
 
 - Optimize models for classification and regression tasks
@@ -78,19 +76,19 @@ Minimal example (random forest + PSO):
 
 ```python
 from sklearn.datasets import make_classification
-from optiflowx.models.configs.random_forest_config import RandomForestConfig
-from optiflowx.optimizers.pso import PSOOptimizer
+from optiflowx.models.configs import RandomForestConfig
+from optiflowx.optimizers import PSOOptimizer
 
 X, y = make_classification(n_samples=200, n_features=12, random_state=0)
 cfg = RandomForestConfig()
 wrapper = cfg.get_wrapper(task_type="classification")
 
 opt = PSOOptimizer(
-    search_space=cfg.build_search_space(),
-    metric="accuracy",
-    model_class=wrapper.model_class,
-    X=X, y=y,
-    n_particles=12,
+  search_space=cfg.build_search_space(),
+  metric="accuracy",
+  model_class=wrapper.model_class,
+  X=X, y=y,
+  n_particles=12,
 )
 best_params, best_score = opt.run(max_iters=10)
 print(best_score, best_params)
@@ -115,7 +113,7 @@ Search space
 Use built-in configs for quick starts (e.g., `RandomForestConfig().build_search_space()`), or create custom spaces with `optiflowx.core.search_space.SearchSpace`:
 
 ```python
-from optiflowx.core.search_space import SearchSpace
+from optiflowx.core import SearchSpace
 
 s = SearchSpace()
 s.add("n_estimators", "discrete", [10, 50, 100, 200])
@@ -141,10 +139,10 @@ API reference — quick
 
 High-level building blocks (see docstrings for full signatures):
 
-- `optiflowx.core.search_space.SearchSpace` — define and sample hyperparameter spaces
-- `optiflowx.core.model_wrapper.ModelWrapper` — cross-val evaluation and final fitting
-- `optiflowx.core.metrics.get_metric` — normalized metric callables (negates regression errors so optimizers maximize)
-- `optiflowx.core.parallel_executor.ParallelExecutor` — parallel candidate evaluation
+- `optiflowx.core.SearchSpace` — define and sample hyperparameter spaces
+- `optiflowx.core.ModelWrapper` — cross-val evaluation and final fitting
+- `optiflowx.core.get_metric` — normalized metric callables (negates regression errors so optimizers maximize)
+- `optiflowx.core.ParallelExecutor` — parallel candidate evaluation
 - `optiflowx.optimizers.*` — concrete optimizers (e.g., `PSOOptimizer`, `GeneticOptimizer`)
 - `optiflowx.models.configs.*` — model configs exposing `build_search_space()` and `get_wrapper()`
 

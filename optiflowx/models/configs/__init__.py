@@ -19,6 +19,11 @@ except Exception:
     XGBoostConfig = None  # XGBoost optional
 
 
+
+"""
+All model configuration classes.
+Each config defines:
+"""
 __all__ = [
     "SVCConfig",
     "RandomForestConfig",

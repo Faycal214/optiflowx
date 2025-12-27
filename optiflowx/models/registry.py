@@ -1,19 +1,21 @@
 # optiflowx/models/registry.py
 """
 Central model registry.
-It imports the config classes you already have in models/configs and exposes:
+It imports the config classes in `models/configs` and exposes:
  - MODEL_REGISTRY dict
  - get_model_config(name) helper
 """
 
-from optiflowx.models.configs.svc_config import SVCConfig
-from optiflowx.models.configs.random_forest_config import RandomForestConfig
-from optiflowx.models.configs.xgboost_config import XGBoostConfig
-from optiflowx.models.configs.mlp_config import MLPConfig
-from optiflowx.models.configs.decision_tree_config import DecisionTreeConfig
-from optiflowx.models.configs.knn_config import KNNConfig
-from optiflowx.models.configs.logistic_regression_config import LogisticRegressionConfig
-from optiflowx.models.configs.custom_model_config import CustomModelConfig
+from optiflowx.models.configs import (
+    SVCConfig,
+    RandomForestConfig,
+    XGBoostConfig,
+    MLPConfig,
+    DecisionTreeConfig,
+    KNNConfig,
+    LogisticRegressionConfig,
+    CustomModelConfig,
+)
 
 # add imports only for config files that actually exist
 

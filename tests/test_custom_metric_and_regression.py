@@ -2,7 +2,7 @@ import pytest
 from sklearn.datasets import make_regression
 from sklearn.metrics import mean_squared_error
 
-from optiflowx.models.configs.random_forest_config import RandomForestConfig
+from optiflowx.models.configs import RandomForestConfig
 
 
 def test_regression_with_custom_metric():

@@ -1,15 +1,17 @@
 import time
 import logging
 from optiflowx.models.registry import MODEL_REGISTRY
-from optiflowx.core.parallel_executor import ParallelExecutor
-from optiflowx.optimizers.genetic import GeneticOptimizer
-from optiflowx.optimizers.pso import PSOOptimizer
-from optiflowx.optimizers.bayesian import BayesianOptimizer
-from optiflowx.optimizers.simulated_annealing import SimulatedAnnealingOptimizer
-from optiflowx.optimizers.tpe import TPEOptimizer
-from optiflowx.optimizers.random_search import RandomSearchOptimizer
-from optiflowx.optimizers.grey_wolf import GreyWolfOptimizer
-from optiflowx.optimizers.ant_colony import AntColonyOptimizer
+from .parallel_executor import ParallelExecutor
+from optiflowx.optimizers import (
+    GeneticOptimizer,
+    PSOOptimizer,
+    BayesianOptimizer,
+    SimulatedAnnealingOptimizer,
+    TPEOptimizer,
+    RandomSearchOptimizer,
+    GreyWolfOptimizer,
+    AntColonyOptimizer,
+)
 
 
 class OptimizationEngine:

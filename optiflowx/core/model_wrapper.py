@@ -1,7 +1,7 @@
 from sklearn.model_selection import KFold, cross_val_score
 from sklearn.base import clone
 from typing import Callable, Optional
-from optiflowx.core.metrics import get_metric
+from .metrics import get_metric
 
 
 class ModelWrapper:

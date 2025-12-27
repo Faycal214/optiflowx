@@ -15,8 +15,8 @@ We show :
 OptiFlowX can automatically infer the parameter search space, model configuration, and default metric from the model type.
 
 ```python
-from optiflowx.optimizers.bayesian import BayesianOptimizer
-from optiflowx.models.configs.random_forest_config import RandomForestConfig
+from optiflowx.optimizers import BayesianOptimizer
+from optiflowx.models.configs import RandomForestConfig
 from sklearn.ensemble import RandomForestClassifier
 
 # Load dataset
@@ -60,8 +60,8 @@ For full control, you can define your own search space and evaluation metric.
 This allows adapting OptiFlowX to any scikit-learn compatible model.
 
 ```python
-from optiflowx.optimizers.genetic import GeneticOptimizer
-from optiflowx.core.search_space import SearchSpace
+from optiflowx.optimizers import GeneticOptimizer
+from optiflowx.core import SearchSpace
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
@@ -159,8 +159,8 @@ Example 1 — Automatic setup
 Use a model config to build the search space and wrapper automatically:
 
 ```python
-from optiflowx.models.configs.random_forest_config import RandomForestConfig
-from optiflowx.optimizers.bayesian import BayesianOptimizer
+from optiflowx.models.configs import RandomForestConfig
+from optiflowx.optimizers import BayesianOptimizer
 
 cfg = RandomForestConfig()
 wrapper = cfg.get_wrapper(task_type="classification")
@@ -173,8 +173,8 @@ Example 2 — Custom search space and metric
 Define a `SearchSpace` and a `custom_metric` callable to integrate bespoke scoring logic:
 
 ```python
-from optiflowx.core.search_space import SearchSpace
-from optiflowx.optimizers.genetic import GeneticOptimizer
+from optiflowx.core import SearchSpace
+from optiflowx.optimizers import GeneticOptimizer
 
 space = SearchSpace()
 space.add("n_estimators", "discrete", [20, 200])
@@ -204,8 +204,8 @@ This short snippet demonstrates using a built-in model config and a Bayesian opt
 
 ```python
 from sklearn.datasets import load_iris
-from optiflowx.models.configs.random_forest_config import RandomForestConfig
-from optiflowx.optimizers.bayesian import BayesianOptimizer
+from optiflowx.models.configs import RandomForestConfig
+from optiflowx.optimizers import BayesianOptimizer
 
 X, y = load_iris(return_X_y=True)
 cfg = RandomForestConfig()
@@ -226,8 +226,8 @@ This quick regression example uses a `RandomForestConfig` wrapper with `task_typ
 
 ```python
 from sklearn.datasets import load_boston
-from optiflowx.models.configs.random_forest_config import RandomForestConfig
-from optiflowx.optimizers.genetic import GeneticOptimizer
+from optiflowx.models.configs import RandomForestConfig
+from optiflowx.optimizers import GeneticOptimizer
 from sklearn.metrics import mean_squared_error
 
 X, y = load_boston(return_X_y=True)

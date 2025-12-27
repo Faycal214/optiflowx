@@ -2,9 +2,8 @@ import pytest
 
 from sklearn.datasets import make_classification
 
-from optiflowx.core.parallel_executor import ParallelExecutor
-from optiflowx.core.base_optimizer import Candidate
-from optiflowx.models.configs.random_forest_config import RandomForestConfig
+from optiflowx.core import ParallelExecutor, Candidate
+from optiflowx.models.configs import RandomForestConfig
 
 
 def test_custom_metric_multiprocessing_serialization():

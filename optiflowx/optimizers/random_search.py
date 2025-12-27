@@ -164,3 +164,4 @@ class RandomSearchOptimizer:
         if self.best_candidate is not None:
             return self.best_candidate.params, self.best_candidate.score
         return None, None
+        

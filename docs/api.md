@@ -39,7 +39,7 @@ All optimizers accept a `search_space`, a `metric` (or `custom_metric`), the `mo
 Use this to declare tunable parameters:
 
 ```python
-from optiflowx.core.search_space import SearchSpace
+from optiflowx.core import SearchSpace
 
 space = SearchSpace()
 space.add("n_estimators", "discrete", [50, 200])
@@ -151,7 +151,7 @@ Handles definition and sampling of parameter spaces.
 **Example:**
 
 ```python
-from optiflowx.core.search_space import SearchSpace
+from optiflowx.core import SearchSpace
 
 search_space = SearchSpace()
 

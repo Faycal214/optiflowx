@@ -23,8 +23,8 @@ Core ideas
 Usage example (OptiFlowX)
 
 ```python
-from optiflowx.optimizers.ant_colony import AntColonyOptimizer
-from optiflowx.models.configs.random_forest_config import RandomForestConfig
+from optiflowx.optimizers import AntColonyOptimizer
+from optiflowx.models.configs import RandomForestConfig
 from sklearn.datasets import load_iris
 
 X, y = load_iris(return_X_y=True)

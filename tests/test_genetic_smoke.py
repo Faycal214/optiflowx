@@ -1,7 +1,7 @@
 from sklearn.datasets import make_classification
 from sklearn.tree import DecisionTreeClassifier
-from optiflowx.core.search_space import SearchSpace
-from optiflowx.optimizers.genetic import GeneticOptimizer
+from optiflowx.core import SearchSpace
+from optiflowx.optimizers import GeneticOptimizer
 
 
 def test_genetic_small():

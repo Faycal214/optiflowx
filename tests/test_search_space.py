@@ -1,4 +1,4 @@
-from optiflowx.core.search_space import SearchSpace
+from optiflowx.core import SearchSpace
 
 
 def test_sample_returns_dict():

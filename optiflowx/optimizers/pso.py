@@ -1,5 +1,5 @@
 import numpy as np
-from optiflowx.core.metrics import get_metric
+from optiflowx.core import get_metric
 import logging
 
 

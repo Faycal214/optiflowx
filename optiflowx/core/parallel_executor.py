@@ -1,6 +1,6 @@
 from multiprocessing import Pool
 from typing import List
-from optiflowx.core.base_optimizer import Candidate
+from .base_optimizer import Candidate
 import os
 import logging
 import pickle

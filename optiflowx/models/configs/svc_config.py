@@ -1,8 +1,7 @@
 from sklearn.svm import SVC, SVR
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from optiflowx.core.search_space import SearchSpace
-from optiflowx.core.model_wrapper import ModelWrapper
+from optiflowx.core import SearchSpace, ModelWrapper
 
 
 def build_svc_pipeline(**params):

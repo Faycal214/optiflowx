@@ -24,8 +24,8 @@ Core ideas
 Usage example (OptiFlowX)
 
 ```python
-from optiflowx.optimizers.grid_search import GridSearchOptimizer
-from optiflowx.models.configs.svc_config import SVCConfig
+from optiflowx.optimizers import GridSearchOptimizer
+from optiflowx.models.configs import SVCConfig
 from sklearn.datasets import load_iris
 
 X, y = load_iris(return_X_y=True)

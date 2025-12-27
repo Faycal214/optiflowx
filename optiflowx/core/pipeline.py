@@ -1,4 +1,4 @@
-from optiflowx.core.optimization_engine import OptimizationEngine
+from .optimization_engine import OptimizationEngine
 import logging
 
 

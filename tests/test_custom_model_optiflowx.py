@@ -13,16 +13,17 @@ This is suitable for mkdocs and user reference.
 import numpy as np
 from sklearn.datasets import make_regression
 from sklearn.metrics import mean_squared_error
-from optiflowx.core.search_space import SearchSpace
-from optiflowx.core.model_wrapper import ModelWrapper
-from optiflowx.optimizers.genetic import GeneticOptimizer
-from optiflowx.optimizers.pso import PSOOptimizer
-from optiflowx.optimizers.bayesian import BayesianOptimizer
-from optiflowx.optimizers.tpe import TPEOptimizer
-from optiflowx.optimizers.random_search import RandomSearchOptimizer
-from optiflowx.optimizers.simulated_annealing import SimulatedAnnealingOptimizer
-from optiflowx.optimizers.grey_wolf import GreyWolfOptimizer
-from optiflowx.optimizers.ant_colony import AntColonyOptimizer
+from optiflowx.core import SearchSpace, ModelWrapper
+from optiflowx.optimizers import (
+    GeneticOptimizer,
+    PSOOptimizer,
+    BayesianOptimizer,
+    TPEOptimizer,
+    RandomSearchOptimizer,
+    SimulatedAnnealingOptimizer,
+    GreyWolfOptimizer,
+    AntColonyOptimizer,
+)
 
 # 1. Define a real custom ML model (simple linear regression with regularization)
 

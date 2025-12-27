@@ -1,5 +1,4 @@
-from optiflowx.core.search_space import SearchSpace
-from optiflowx.core.model_wrapper import ModelWrapper
+from optiflowx.core import SearchSpace, ModelWrapper
 
 class CustomModelConfig:
     """Configuration class for a user-defined custom ML model."""
