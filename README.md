@@ -9,7 +9,7 @@ OptiFlowX is a modular hyperparameter optimization framework that unifies **meta
 
 Unlike most libraries that focus on a single optimization paradigm (e.g., Bayesian optimization), OptiFlowX enables **experimentation across multiple optimizer families**, making it ideal for research, benchmarking, and hybrid optimization strategies.
 
-## Key capabilities:
+## What you can do with OptiFlowX :
 
 - Optimize models for classification and regression tasks
 - Support for scikit-learn models and user-supplied custom models
@@ -29,6 +29,7 @@ Table of contents
 - [Search space](#search-space)
 - [Parallelism & multiprocessing notes](#parallelism--multiprocessing-notes)
 - [API reference (quick)](#api-reference-quick)
+- [Roadmap](#roadmap)
 - [Development & testing](#development--testing)
 - [Contributing](#contributing)
 - [License](#license)
@@ -66,8 +67,10 @@ The main strength of OptiFlowX is its ability to **treat different optimization 
 
 This allows you to:
 - switch optimizers with minimal code changes  
-- compare their performance on the same search space  
-- build hybrid optimization strategies  
+- compare their performance on the same search space
+- build hybrid optimization strategies by chaining or combining optimizers
+
+> This design makes OptiFlowX particularly useful for advanced users who want fine control over optimization behavior without being locked into a single methodology.
 
 ## Key features
 
@@ -91,21 +94,7 @@ This allows you to:
 | Bayesian | Probabilistic | Sample-efficient tuning |
 | Random | Baseline | Quick exploration |
 
-- Metaheuristics / Combinatorial:
-  - Particle Swarm Optimization (PSO)
-  - Genetic Algorithm (GA)
-  - Simulated Annealing (SA)
-  - Ant Colony Optimization (ACO)
-  - Grey Wolf Optimizer (GWO)
-- Probabilistic / Bayesian & related:
-  - Tree-Structured Parzen Estimator (TPE)
-  - Bayesian Optimization
-  - Random Search
-
-All algorithms are implemented under `optiflowx.optimizers.*`. Most optimizers expose a `run(max_iters=...)` method that returns `(best_params, best_score)`.
-
-- `best_params`: best configuration found  
-- `best_score`: corresponding score  
+All optimizers are available under `optiflowx.optimizers.*` and follow a consistent interface.
 
 ## Quickstart
 
@@ -137,6 +126,7 @@ opt = PSOOptimizer(
   X=X, y=y,
   n_particles=12,
 )
+# Run optimization
 best_params, best_score = opt.run(max_iters=10)
 print(best_score, best_params)
 ```
@@ -199,6 +189,17 @@ Typical high-level flow:
 2. Build its `SearchSpace` and `ModelWrapper`.
 3. Initialize an optimizer with the space, metric, `model_class`, and data.
 4. Run `optimizer.run(max_iters=...)` or use `optiflowx.core.OptimizationEngine` / `MLPipeline` to orchestrate runs.
+
+## Roadmap
+
+Planned improvements:
+
+- Hybrid optimization strategies (multi-phase optimization)
+- Optimizer comparison utilities
+- Optimization history tracking and visualization
+- Early stopping / pruning mechanisms
+- Additional model integrations (e.g., PyTorch, XGBoost pipelines)
+
 
 ## Development & testing
 
