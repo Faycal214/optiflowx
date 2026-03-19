@@ -30,13 +30,13 @@ Table of contents
 - [License](#license)
 - [Contact & citation](#contact--citation)
 
-Why OptiFlowX
+## Why OptiFlowX
 
 - Single, consistent API across many optimizers (metaheuristics and probabilistic methods)
 - Production-minded: packaged with docs, examples, tests, and CI
 - Extensible — add new optimizers, model wrappers, or search-space primitives
 
-Key features
+## Key features
 
 - Unified optimizer interface (PSO, GA, ACO, GWO, SA, TPE, Bayesian, Random Search)
 - Classification and regression support
@@ -45,7 +45,7 @@ Key features
 - Flexible `SearchSpace` supporting continuous, discrete, and categorical parameters with sampling and grid generation
 - Parallel evaluation via `ParallelExecutor` with pickle/dill serialization fallbacks
 
-Algorithms included
+## Algorithms included
 
 - Metaheuristics / Combinatorial:
   - Particle Swarm Optimization (PSO)
@@ -60,7 +60,7 @@ Algorithms included
 
 All algorithms are implemented under `optiflowx.optimizers.*`. Most optimizers expose a `run(max_iters=...)` method that returns `(best_params, best_score)`.
 
-Quickstart
+## Quickstart
 
 Install (recommended inside a virtual environment):
 
@@ -94,7 +94,7 @@ best_params, best_score = opt.run(max_iters=10)
 print(best_score, best_params)
 ```
 
-Examples
+## Examples
 
 The `examples/` directory contains runnable scripts covering common combinations:
 
@@ -108,7 +108,7 @@ Run one of the example scripts directly:
 python examples/classification/classification_sklearn_model_sklearn_metric.py
 ```
 
-Search space
+## Search space
 
 Use built-in configs for quick starts (e.g., `RandomForestConfig().build_search_space()`), or create custom spaces with `optiflowx.core.search_space.SearchSpace`:
 
@@ -121,7 +121,7 @@ s.add("learning_rate", "continuous", [1e-3, 0.3], log=True)
 s.add("criterion", "categorical", ["gini", "entropy"])
 ```
 
-Parallelism & multiprocessing notes
+## Parallelism & multiprocessing notes
 
 `ParallelExecutor` uses `multiprocessing.Pool` to evaluate candidates concurrently. If you pass non-pickleable callables (e.g., nested functions or closures) as custom metrics, the executor will:
 
@@ -135,7 +135,7 @@ If you plan to pass nested custom metrics and want parallel execution, install `
 pip install dill
 ```
 
-API reference — quick
+## API reference (quick)
 
 High-level building blocks (see docstrings for full signatures):
 
@@ -153,7 +153,7 @@ Typical high-level flow:
 3. Initialize an optimizer with the space, metric, `model_class`, and data.
 4. Run `optimizer.run(max_iters=...)` or use `optiflowx.core.OptimizationEngine` / `MLPipeline` to orchestrate runs.
 
-Development & testing
+## Development & testing
 
 Run tests locally (recommended in a virtualenv):
 
@@ -171,7 +171,7 @@ black .
 mypy optiflowx
 ```
 
-Contributing
+## Contributing
 
 Contributions welcome. Please follow these steps:
 
@@ -186,11 +186,11 @@ If you plan to add new optimizers or model configs, aim for:
 - unit tests in `tests/` exercising the integration (optimizer + wrapper + executor);
 - lightweight, focused commits.
 
-License
+## License
 
 This project is licensed under the MIT License — see the `LICENSE` file for details.
 
-Contact & citation
+## Contact & citation
 
 If you use OptiFlowX in research or production, please cite:
 
