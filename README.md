@@ -5,9 +5,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://github.com/Faycal214/optiflowx/actions/workflows/test.yml/badge.svg)](https://github.com/Faycal214/optiflowx/actions)
 
-OptiFlowX is a production-oriented, modular framework for hyperparameter and configuration optimization. It combines metaheuristic and probabilistic search algorithms with flexible search-space abstractions, an easy-to-use wrapper for models, and efficient parallel evaluation—designed for both research and production use.
+OptiFlowX is a modular hyperparameter optimization framework that unifies **metaheuristics and probabilistic optimization methods** under a single, consistent API.
 
-Key capabilities:
+Unlike most libraries that focus on a single optimization paradigm (e.g., Bayesian optimization), OptiFlowX enables **experimentation across multiple optimizer families**, making it ideal for research, benchmarking, and hybrid optimization strategies.
+
+## Key capabilities:
 
 - Optimize models for classification and regression tasks
 - Support for scikit-learn models and user-supplied custom models
@@ -18,6 +20,8 @@ Key capabilities:
 Table of contents
 
 - [Why OptiFlowX](#why-optiflowx)
+- [Use Cases](#use-cases)
+- [Core Strength](#core-strength)
 - [Key features](#key-features)
 - [Algorithms included](#algorithms-included)
 - [Quickstart](#quickstart)
@@ -32,9 +36,38 @@ Table of contents
 
 ## Why OptiFlowX
 
-- Single, consistent API across many optimizers (metaheuristics and probabilistic methods)
-- Production-minded: packaged with docs, examples, tests, and CI
-- Extensible — add new optimizers, model wrappers, or search-space primitives
+Most hyperparameter optimization libraries specialize in a single approach:
+
+- Optuna → Bayesian / TPE optimization  
+- scikit-optimize → lightweight Bayesian optimization  
+- DEAP → evolutionary algorithms  
+
+OptiFlowX is designed differently:
+
+- Combines **metaheuristics (PSO, GA, ACO, GWO, SA)** and **probabilistic methods (TPE, Bayesian)**  
+- Provides a **unified API** across all optimizers  
+- Enables **easy comparison and experimentation between optimization strategies**  
+
+This makes it particularly suitable for:
+- research and benchmarking  
+- testing multiple optimization strategies on the same problem  
+- building hybrid optimization workflows
+
+## Use Cases
+
+- Hyperparameter tuning for ML models  
+- Comparing optimization algorithms  
+- Research in metaheuristics and hybrid optimization  
+- Building custom AutoML pipelines  
+
+## Core Strength
+
+The main strength of OptiFlowX is its ability to **treat different optimization paradigms as interchangeable components**.
+
+This allows you to:
+- switch optimizers with minimal code changes  
+- compare their performance on the same search space  
+- build hybrid optimization strategies  
 
 ## Key features
 
@@ -46,6 +79,17 @@ Table of contents
 - Parallel evaluation via `ParallelExecutor` with pickle/dill serialization fallbacks
 
 ## Algorithms included
+
+| Optimizer | Type | Best for |
+|----------|------|----------|
+| PSO | Metaheuristic | Continuous optimization |
+| GA | Evolutionary | Complex/discrete spaces |
+| SA | Metaheuristic | Escaping local minima |
+| ACO | Swarm | Combinatorial problems |
+| GWO | Swarm | Exploration-heavy search |
+| TPE | Probabilistic | Efficient search |
+| Bayesian | Probabilistic | Sample-efficient tuning |
+| Random | Baseline | Quick exploration |
 
 - Metaheuristics / Combinatorial:
   - Particle Swarm Optimization (PSO)
@@ -60,6 +104,9 @@ Table of contents
 
 All algorithms are implemented under `optiflowx.optimizers.*`. Most optimizers expose a `run(max_iters=...)` method that returns `(best_params, best_score)`.
 
+- `best_params`: best configuration found  
+- `best_score`: corresponding score  
+
 ## Quickstart
 
 Install (recommended inside a virtual environment):
@@ -72,7 +119,7 @@ pip install -e .
 pip install dill xgboost
 ```
 
-Minimal example (random forest + PSO):
+Minimal example (runs in a few seconds):
 
 ```python
 from sklearn.datasets import make_classification
