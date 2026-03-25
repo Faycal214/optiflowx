@@ -67,10 +67,28 @@ The main strength of OptiFlowX is its ability to **treat different optimization 
 
 This allows you to:
 - switch optimizers with minimal code changes  
-- compare their performance on the same search space
-- build hybrid optimization strategies by chaining or combining optimizers
+- compare their performance on the same search space  
+- build hybrid optimization strategies by chaining or combining optimizers  
 
-> This design makes OptiFlowX particularly useful for advanced users who want fine control over optimization behavior without being locked into a single methodology.
+### Switching Optimizers in Practice
+
+One of the core advantages of OptiFlowX is how easily you can switch between fundamentally different optimization strategies:
+
+```python
+from optiflowx.optimizers import PSOOptimizer, TPEOptimizer
+
+# Change only the optimizer class
+opt = TPEOptimizer(
+    search_space=cfg.build_search_space(),
+    metric="accuracy",
+    model_class=wrapper.model_class,
+    X=X, y=y,
+)
+
+best_params, best_score = opt.run(max_iters=10)
+```
+
+> This design makes OptiFlowX particularly useful for advanced users who want fine control over optimization behavior while maintaining a simple and consistent interface.
 
 ## Key features
 
@@ -259,13 +277,3 @@ Contact:
 Acknowledgements
 
 This project draws on many open-source tools and libraries including scikit-learn, Optuna, scikit-optimize, and others. See `pyproject.toml` for declared dependencies.
-
-----
-
-If you'd like, I can also:
-
-- run the test suite in this environment and report results,
-- produce a condensed one-page quick reference for the most common API calls,
-- add badges for coverage/Docs/CodeQL if you want to include them in CI.
-
-
