@@ -172,7 +172,7 @@ $$
 \mu_n=n\mu+\beta,
 $$
 
-où $\alpha$ représente l'immigration et $\beta$ l'émigration. fileciteturn324file7L472-L496
+où $\alpha$ représente l'immigration et $\beta$ l'émigration.
 
 ```python
 process = BirthDeathProcess.linear(
@@ -183,7 +183,7 @@ process = BirthDeathProcess.linear(
 )
 ```
 
-Le cas particulier de croissance pure par immigration est explicitement relié au processus de Poisson dans le chapitre. fileciteturn324file7L497-L507
+Le cas particulier de croissance pure par immigration est explicitement relié au processus de Poisson dans le chapitre.
 
 ## 9. Correspondance cours → package
 
