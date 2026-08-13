@@ -4,21 +4,24 @@ build-backend = "hatchling.build"
 
 [project]
 name = "optiflowx"
-version = "0.0.9"
+version = "0.1.0"
 requires-python = ">=3.10"
-description = "Stochastic-process analysis and simulation tools based on the USTHB MSPRO Processus Aleatoires curriculum."
+description = "Stochastic-process analysis and simulation tools based on the USTHB MSPRO Processus Aléatoires curriculum."
 readme = "README.md"
 authors = [{ name = "Alikacem Faycal", email = "faycal213.dz@gmail.com" }]
 license = { text = "MIT" }
-dependencies = ["numpy", "scipy", "scikit-learn", "tqdm", "optuna", "scikit-optimize"]
+dependencies = ["numpy", "scipy"]
 keywords = [
   "stochastic processes",
-  "Markov chains",
+  "discrete-time Markov chains",
+  "CMTD",
   "Poisson process",
   "continuous-time Markov chains",
+  "CMTC",
   "birth-death process",
   "conditional expectation",
   "martingales",
+  "stopping times",
 ]
 
 classifiers = [
@@ -36,10 +39,6 @@ Repository = "https://github.com/Faycal214/optiflowx"
 Issues = "https://github.com/Faycal214/optiflowx/issues"
 
 [project.optional-dependencies]
-optuna = ["optuna>=3.0"]
-skopt = ["scikit-optimize>=0.9"]
-xgboost = ["xgboost>=2.0"]
-
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
@@ -59,7 +58,7 @@ docs = [
 packages = ["optiflowx"]
 
 [tool.pytest.ini_options]
-addopts = "-q --disable-warnings --maxfail=1 -m 'not xgboost'"
+addopts = "-q --disable-warnings --maxfail=1"
 testpaths = ["tests"]
 
 [tool.coverage.run]
