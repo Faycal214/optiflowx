@@ -16,7 +16,7 @@ $$
 E(X\mid B)=\frac{E(X\mathbf 1_B)}{P(B)}.
 $$
 
-Le cours interprète cette quantité comme la valeur moyenne de $X$ lorsque $B$ est réalisé. fileciteturn344file1L106-L138
+Le cours interprète cette quantité comme la valeur moyenne de $X$ lorsque $B$ est réalisé.
 
 Dans OptiFlowX :
 
@@ -58,8 +58,6 @@ $$
 \qquad A\in\mathcal G.
 $$
 
-Le théorème de caractérisation présenté dans le cours donne également la formulation avec les variables $\mathcal G$-mesurables bornées. fileciteturn344file2L170-L203
-
 Dans notre représentation finie, une tribu finie est représentée par une `Partition`. Sur chaque bloc $G$ de probabilité positive :
 
 $$
@@ -90,8 +88,6 @@ De même,
 $$
 P(A\mid\mathcal G)=E(\mathbf 1_A\mid\mathcal G).
 $$
-
-fileciteturn344file5L409-L422
 
 OptiFlowX construit la partition engendrée par $Y$ en regroupant les issues ayant la même valeur de $Y$ :
 
@@ -133,8 +129,6 @@ $$
 E(E(X\mid\mathcal G))=E(X).
 $$
 
-Ces propriétés sont explicitement regroupées dans le chapitre. fileciteturn344file2L204-L212
-
 Dans OptiFlowX, l'identité d'espérance totale peut être vérifiée par :
 
 ```python
@@ -151,8 +145,6 @@ E(E(X\mid\mathcal G_2)\mid\mathcal G_1)
 E(X\mid\mathcal G_1).
 $$
 
-fileciteturn344file4L318-L330
-
 Dans la représentation par partitions, `finer` représente la tribu contenant davantage d'information et `coarser` la tribu plus petite :
 
 ```python
@@ -168,8 +160,6 @@ E(YX\mid\mathcal G)
 =
 Y E(X\mid\mathcal G).
 $$
-
-fileciteturn344file3L237-L294
 
 ```python
 residual = space.pull_out(Y, X, G)
@@ -224,8 +214,7 @@ $$
 et
 
 $$
-Cov(X,Y)
-=E[Cov(X,Y\mid\mathcal G)]
+Cov(X,Y)=E[Cov(X,Y\mid\mathcal G)]
 +Cov(E[X\mid\mathcal G],E[Y\mid\mathcal G]).
 $$
 
