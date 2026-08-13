@@ -1,30 +1,66 @@
 site_name: OptiFlowX
-site_description: Stochastic-process tools based strictly on the five USTHB MSPRO Processus Aléatoires course PDFs.
+site_description: Executable stochastic-process course material based on the five USTHB MSPRO Processus Aléatoires PDFs.
 repo_url: https://github.com/Faycal214/optiflowx
+repo_name: Faycal214/optiflowx
 
 nav:
   - Home: index.md
-  - Mathematical reference:
+  - Course material:
+      - Course → API map: course-map.md
       - CMTD: cmt_d.md
       - Processus de Poisson: poisson.md
       - CMTC: cmtc.md
       - Processus de naissance et de mort: birth_death.md
       - Espérance conditionnelle: conditional_expectation.md
       - Martingales à temps discret: martingales.md
-  - API map: api.md
+  - Library design:
+      - Architecture: architecture.md
+      - API map: api.md
+  - Examples:
+      - Worked examples: examples.md
 
 theme:
   name: material
   features:
+    - navigation.instant
+    - navigation.instant.progress
     - navigation.sections
+    - navigation.top
+    - toc.follow
+    - search.highlight
+    - search.share
     - content.code.copy
+    - content.code.annotate
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+
 markdown_extensions:
   - admonition
+  - attr_list
   - pymdownx.arithmatex:
       generic: true
+  - pymdownx.details
   - pymdownx.highlight
   - pymdownx.superfences
-  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+extra_css:
+  - stylesheets/extra.css
 
 extra_javascript:
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
