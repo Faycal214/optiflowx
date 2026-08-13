@@ -1,279 +1,141 @@
 # OptiFlowX
 
-[![PyPI version](https://img.shields.io/pypi/v/optiflowx)](https://pypi.org/project/optiflowx/)
-[![Python versions](https://img.shields.io/pypi/pyversions/optiflowx.svg)](https://pypi.org/project/optiflowx/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://github.com/Faycal214/optiflowx/actions/workflows/test.yml/badge.svg)](https://github.com/Faycal214/optiflowx/actions)
+OptiFlowX is a Python library for working with the stochastic-process material developed in the USTHB MSPRO **Processus Aléatoires** course. The stochastic API is organized around the five course chapters and is intended to make the definitions, formulas, and constructions of the PDFs executable and testable.
 
-OptiFlowX is a modular hyperparameter optimization framework that unifies **metaheuristics and probabilistic optimization methods** under a single, consistent API.
+## Course coverage
 
-Unlike most libraries that focus on a single optimization paradigm (e.g., Bayesian optimization), OptiFlowX enables **experimentation across multiple optimizer families**, making it ideal for research, benchmarking, and hybrid optimization strategies.
+| Chapter | Course material | Main API |
+|---|---|---|
+| 1 | Discrete-time Markov chains (CMTD) | `MarkovChain` |
+| 2 | Poisson processes | `PoissonProcess`, `NonHomogeneousPoissonProcess` |
+| 3 | Continuous-time Markov chains and birth-death processes | `ContinuousTimeMarkovChain`, `BirthDeathProcess` |
+| 4 | Conditional expectation | `FiniteProbabilitySpace`, `RandomVariable`, `Partition` |
+| 5 | Discrete-time martingales | `Filtration`, `Martingale`, `StoppingTime`, `StoppedProcess` |
 
-## What you can do with OptiFlowX :
+The implementation follows the finite/discrete computational setting used throughout the supplied course material. Features are added only when they correspond to definitions, propositions, formulas, examples, or constructions present in the PDFs.
 
-- Optimize models for classification and regression tasks
-- Support for scikit-learn models and user-supplied custom models
-- Built-in metrics and user-provided custom metric callables
-- Built-in search-space definitions and fully custom search spaces
-- Parallel candidate evaluation with optional `dill` fallback for non-pickleable callables
+## Installation
 
-Table of contents
+```bash
+python -m pip install optiflowx
+```
 
-- [Why OptiFlowX](#why-optiflowx)
-- [Use Cases](#use-cases)
-- [Core Strength](#core-strength)
-- [Key features](#key-features)
-- [Algorithms included](#algorithms-included)
-- [Quickstart](#quickstart)
-- [Examples](#examples)
-- [Search space](#search-space)
-- [Parallelism & multiprocessing notes](#parallelism--multiprocessing-notes)
-- [API reference (quick)](#api-reference-quick)
-- [Roadmap](#roadmap)
-- [Development & testing](#development--testing)
-- [Contributing](#contributing)
-- [License](#license)
-- [Contact & citation](#contact--citation)
+For development:
 
-## Why OptiFlowX
+```bash
+python -m pip install -e . --no-deps
+python -m pip install numpy scipy pytest
+```
 
-Most hyperparameter optimization libraries specialize in a single approach:
+## Quick examples
 
-- Optuna → Bayesian / TPE optimization  
-- scikit-optimize → lightweight Bayesian optimization  
-- DEAP → evolutionary algorithms  
-
-OptiFlowX is designed differently:
-
-- Combines **metaheuristics (PSO, GA, ACO, GWO, SA)** and **probabilistic methods (TPE, Bayesian)**  
-- Provides a **unified API** across all optimizers  
-- Enables **easy comparison and experimentation between optimization strategies**  
-
-This makes it particularly suitable for:
-- research and benchmarking  
-- testing multiple optimization strategies on the same problem  
-- building hybrid optimization workflows
-
-## Use Cases
-
-- Hyperparameter tuning for ML models  
-- Comparing optimization algorithms  
-- Research in metaheuristics and hybrid optimization  
-- Building custom AutoML pipelines  
-
-## Core Strength
-
-The main strength of OptiFlowX is its ability to **treat different optimization paradigms as interchangeable components**.
-
-This allows you to:
-- switch optimizers with minimal code changes  
-- compare their performance on the same search space  
-- build hybrid optimization strategies by chaining or combining optimizers  
-
-### Switching Optimizers in Practice
-
-One of the core advantages of OptiFlowX is how easily you can switch between fundamentally different optimization strategies:
+### Discrete-time Markov chain
 
 ```python
-from optiflowx.optimizers import PSOOptimizer, TPEOptimizer
+import numpy as np
+from optiflowx.stochastic import MarkovChain
 
-# Change only the optimizer class
-opt = TPEOptimizer(
-    search_space=cfg.build_search_space(),
-    metric="accuracy",
-    model_class=wrapper.model_class,
-    X=X, y=y,
+P = [[0.7, 0.3],
+     [0.4, 0.6]]
+
+chain = MarkovChain(P, states=["A", "B"])
+
+print(chain.n_step_transition(5))
+print(chain.stationary_distribution())
+print(chain.simulate(10, initial_state="A", rng=np.random.default_rng(0)))
+```
+
+### Poisson process
+
+```python
+from optiflowx.stochastic import PoissonProcess
+
+process = PoissonProcess(rate=2.0)
+print(process.count_probability(n=4, t=3.0))
+print(process.arrival_times(5))
+```
+
+### Continuous-time Markov chain
+
+```python
+from optiflowx.stochastic import ContinuousTimeMarkovChain
+
+Q = [[-2.0, 2.0],
+     [ 1.0, -1.0]]
+
+chain = ContinuousTimeMarkovChain(Q)
+print(chain.transition_matrix(0.5))
+print(chain.stationary_distribution())
+```
+
+### Conditional expectation on a finite probability space
+
+```python
+from optiflowx.stochastic import FiniteProbabilitySpace
+
+space = FiniteProbabilitySpace(
+    outcomes=[0, 1, 2, 3],
+    probabilities=[0.25, 0.25, 0.25, 0.25],
 )
 
-best_params, best_score = opt.run(max_iters=10)
+X = space.random_variable([1.0, 3.0, 5.0, 7.0])
+Y = space.random_variable([0.0, 0.0, 1.0, 1.0])
+
+print(space.conditional_expectation_given(X, Y).array())
 ```
 
-> This design makes OptiFlowX particularly useful for advanced users who want fine control over optimization behavior while maintaining a simple and consistent interface.
-
-## Key features
-
-- Unified optimizer interface (PSO, GA, ACO, GWO, SA, TPE, Bayesian, Random Search)
-- Classification and regression support
-- Plug-and-play model configs (`optiflowx.models.configs.*`) and `ModelWrapper` for CV and final fitting
-- Built-in metric helpers and a `get_metric()` abstraction that normalizes regression metrics for maximization
-- Flexible `SearchSpace` supporting continuous, discrete, and categorical parameters with sampling and grid generation
-- Parallel evaluation via `ParallelExecutor` with pickle/dill serialization fallbacks
-
-## Algorithms included
-
-| Optimizer | Type | Best for |
-|----------|------|----------|
-| PSO | Metaheuristic | Continuous optimization |
-| GA | Evolutionary | Complex/discrete spaces |
-| SA | Metaheuristic | Escaping local minima |
-| ACO | Swarm | Combinatorial problems |
-| GWO | Swarm | Exploration-heavy search |
-| TPE | Probabilistic | Efficient search |
-| Bayesian | Probabilistic | Sample-efficient tuning |
-| Random | Baseline | Quick exploration |
-
-All optimizers are available under `optiflowx.optimizers.*` and follow a consistent interface.
-
-## Quickstart
-
-Install (recommended inside a virtual environment):
-
-```bash
-python -m venv venv
-source venv/bin/activate
-pip install -e .
-# Optional extras
-pip install dill xgboost
-```
-
-Minimal example (runs in a few seconds):
+### Martingale
 
 ```python
-from sklearn.datasets import make_classification
-from optiflowx.models.configs import RandomForestConfig
-from optiflowx.optimizers import PSOOptimizer
+from optiflowx.stochastic import Filtration, Martingale
 
-X, y = make_classification(n_samples=200, n_features=12, random_state=0)
-cfg = RandomForestConfig()
-wrapper = cfg.get_wrapper(task_type="classification")
+filtration = Filtration.natural([X])
+martingale = Martingale([X], filtration)
+print(martingale.is_martingale())
+```
 
-opt = PSOOptimizer(
-  search_space=cfg.build_search_space(),
-  metric="accuracy",
-  model_class=wrapper.model_class,
-  X=X, y=y,
-  n_particles=12,
+## Public stochastic API
+
+```python
+from optiflowx.stochastic import (
+    BirthDeathProcess,
+    CTMCPath,
+    ContinuousTimeMarkovChain,
+    FiniteProbabilitySpace,
+    Filtration,
+    MarkovChain,
+    Martingale,
+    NonHomogeneousPoissonProcess,
+    Partition,
+    PoissonProcess,
+    RandomVariable,
+    StoppedProcess,
+    StoppingTime,
 )
-# Run optimization
-best_params, best_score = opt.run(max_iters=10)
-print(best_score, best_params)
 ```
 
-## Examples
+## Design principle
 
-The `examples/` directory contains runnable scripts covering common combinations:
+The library separates the computational objects of the course rather than introducing a general-purpose symbolic probability framework. Finite probability spaces and partitions are used for the Chapter 4 material; finite-state transition matrices and generators are used for the Markov-chain chapters; discrete filtrations and stopping times are used for Chapter 5.
 
-- classification with sklearn models and sklearn/custom metrics
-- regression with sklearn models and sklearn/custom metrics
-- examples that use `CustomModelConfig` for user-defined model wrappers
+## Testing
 
-Run one of the example scripts directly:
+The branch is tested on Python 3.10, 3.11, and 3.12 with the stochastic test suite:
 
 ```bash
-python examples/classification/classification_sklearn_model_sklearn_metric.py
+pytest -q tests/test_stochastic_*.py --disable-warnings
 ```
 
-## Search space
+## Source basis
 
-Use built-in configs for quick starts (e.g., `RandomForestConfig().build_search_space()`), or create custom spaces with `optiflowx.core.search_space.SearchSpace`:
+The implementation is based on the five supplied USTHB MSPRO 2024–2025 course PDFs:
 
-```python
-from optiflowx.core import SearchSpace
-
-s = SearchSpace()
-s.add("n_estimators", "discrete", [10, 50, 100, 200])
-s.add("learning_rate", "continuous", [1e-3, 0.3], log=True)
-s.add("criterion", "categorical", ["gini", "entropy"])
-```
-
-## Parallelism & multiprocessing notes
-
-`ParallelExecutor` uses `multiprocessing.Pool` to evaluate candidates concurrently. If you pass non-pickleable callables (e.g., nested functions or closures) as custom metrics, the executor will:
-
-1. Try to serialize with `pickle`.
-2. If `pickle` fails and `dill` is installed, it will serialize using `dill`.
-3. If serialization is not possible and multiple workers are requested, the executor raises an error. If only one worker is used it will fall back to sequential evaluation.
-
-If you plan to pass nested custom metrics and want parallel execution, install `dill`:
-
-```bash
-pip install dill
-```
-
-## API reference (quick)
-
-High-level building blocks (see docstrings for full signatures):
-
-- `optiflowx.core.SearchSpace` — define and sample hyperparameter spaces
-- `optiflowx.core.ModelWrapper` — cross-val evaluation and final fitting
-- `optiflowx.core.get_metric` — normalized metric callables (negates regression errors so optimizers maximize)
-- `optiflowx.core.ParallelExecutor` — parallel candidate evaluation
-- `optiflowx.optimizers.*` — concrete optimizers (e.g., `PSOOptimizer`, `GeneticOptimizer`)
-- `optiflowx.models.configs.*` — model configs exposing `build_search_space()` and `get_wrapper()`
-
-Typical high-level flow:
-
-1. Select model config from `optiflowx.models.registry.MODEL_REGISTRY`.
-2. Build its `SearchSpace` and `ModelWrapper`.
-3. Initialize an optimizer with the space, metric, `model_class`, and data.
-4. Run `optimizer.run(max_iters=...)` or use `optiflowx.core.OptimizationEngine` / `MLPipeline` to orchestrate runs.
-
-## Roadmap
-
-Planned improvements:
-
-- Hybrid optimization strategies (multi-phase optimization)
-- Optimizer comparison utilities
-- Optimization history tracking and visualization
-- Early stopping / pruning mechanisms
-- Additional model integrations (e.g., PyTorch, XGBoost pipelines)
-
-
-## Development & testing
-
-Run tests locally (recommended in a virtualenv):
-
-```bash
-pip install -r requirements-test.txt
-pytest -q
-```
-
-Developer tools (optional):
-
-```bash
-pip install black ruff mypy pytest pytest-cov
-ruff check .
-black .
-mypy optiflowx
-```
-
-## Contributing
-
-Contributions welcome. Please follow these steps:
-
-1. Open an issue describing the feature or bug.
-2. Create a topic branch in your fork.
-3. Add tests for any new behavior.
-4. Submit a PR with a clear description and changelog entry.
-
-If you plan to add new optimizers or model configs, aim for:
-
-- clear docstrings and examples under `examples/`;
-- unit tests in `tests/` exercising the integration (optimizer + wrapper + executor);
-- lightweight, focused commits.
+1. CMTD / discrete-time Markov chains.
+2. Poisson processes.
+3. CMTC / continuous-time Markov chains and birth-death processes.
+4. Conditional expectation.
+5. Generalities on discrete-time martingales.
 
 ## License
 
-This project is licensed under the MIT License — see the `LICENSE` file for details.
-
-## Contact & citation
-
-If you use OptiFlowX in research or production, please cite:
-
-```bibtex
-@software{optiflowx,
-    author = {Faycal, Alikacem},
-    title = {OptiFlowX: Combinatorial Hyperparameter Optimization Framework},
-    year = {2025},
-    url = {https://github.com/Faycal214/optiflowx}
-}
-```
-
-Contact:
-
-- Author: Alikacem Faycal
-- Email: faycal213.dz@gmail.com
-
-Acknowledgements
-
-This project draws on many open-source tools and libraries including scikit-learn, Optuna, scikit-optimize, and others. See `pyproject.toml` for declared dependencies.
+MIT
