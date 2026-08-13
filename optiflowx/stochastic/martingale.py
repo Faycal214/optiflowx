@@ -18,7 +18,7 @@ class Filtration:
             raise ValueError("a filtration must contain at least one partition")
         self.partitions = tuple(partitions)
         for previous, current in zip(self.partitions, self.partitions[1:]):
-            if not previous.refines(current):
+            if not current.refines(previous):
                 raise ValueError("filtration partitions must be increasing")
 
     def __getitem__(self, n: int) -> Partition:
