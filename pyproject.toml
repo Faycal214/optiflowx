@@ -6,23 +6,19 @@ build-backend = "hatchling.build"
 name = "optiflowx"
 version = "0.0.9"
 requires-python = ">=3.10"
-description = "A modular optimization and machine learning workflow framework for hyperparameter tuning and performance benchmarking across diverse datasets."
+description = "Stochastic-process analysis and simulation tools based on the USTHB MSPRO Processus Aleatoires curriculum."
 readme = "README.md"
 authors = [{ name = "Alikacem Faycal", email = "faycal213.dz@gmail.com" }]
 license = { text = "MIT" }
-dependencies = ["numpy", "scikit-learn", "tqdm", "optuna", "scikit-optimize"]
+dependencies = ["numpy", "scipy", "scikit-learn", "tqdm", "optuna", "scikit-optimize"]
 keywords = [
-  "hyperparameter optimization",
-  "AutoML",
-  "combinatorial optimization",
-  "machine learning",
-  "genetic algorithm",
-  "particle swarm optimization",
-  "bayesian optimization",
-  "tpe",
-  "simulated annealing",
-  "ant colony optimization",
-  "grey wolf optimization"
+  "stochastic processes",
+  "Markov chains",
+  "Poisson process",
+  "continuous-time Markov chains",
+  "birth-death process",
+  "conditional expectation",
+  "martingales",
 ]
 
 classifiers = [
@@ -59,7 +55,6 @@ docs = [
     "mkdocs-material",
 ]
 
-# Hatch project configuration
 [tool.hatch.build.targets.wheel]
 packages = ["optiflowx"]
 
@@ -77,7 +72,7 @@ skip_covered = true
 
 [tool.black]
 line-length = 88
-target-version = ["py38"]
+target-version = ["py310"]
 
 [tool.ruff]
 line-length = 88
