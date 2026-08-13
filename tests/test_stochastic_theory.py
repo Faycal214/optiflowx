@@ -2,16 +2,14 @@ import numpy as np
 import pytest
 
 from optiflowx.stochastic import (
-    BirthDeathProcess,
+    CTMCPath,
     ContinuousTimeMarkovChain,
     Filtration,
     FiniteProbabilitySpace,
     MarkovChain,
     Martingale,
     Partition,
-    RandomVariable,
     StoppingTime,
-    CTMCPath,
     conditional_characterization_error,
     conditional_expectation_given_event,
     conditional_probability_given_event,
@@ -98,9 +96,10 @@ def test_stopped_martingale_helper():
     space = FiniteProbabilitySpace([0, 1], [0.5, 0.5])
     x0 = space.random_variable([0.0, 0.0])
     x1 = space.random_variable([1.0, -1.0])
+    trivial = space.partition([space.outcomes])
     full = space.partition([{0}, {1}])
-    filtration = Filtration([full, full])
+    filtration = Filtration([trivial, full])
     mart = Martingale([x0, x1], filtration)
-    stopping = StoppingTime.from_values(space, {0: 1, 1: 0}, filtration)
+    stopping = StoppingTime.from_values(space, {0: 1, 1: 1}, filtration)
     stopped = stopped_martingale(mart, stopping)
     assert stopped.is_martingale()
