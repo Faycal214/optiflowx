@@ -29,3 +29,24 @@ jobs:
       - name: Run stochastic tests
         run: |
           pytest -q tests/test_stochastic_*.py --disable-warnings
+
+  examples-and-docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install package and documentation tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install mkdocs mkdocs-material
+      - name: Run worked examples
+        run: |
+          for example in examples/*.py; do python "$example" >/dev/null; done
+      - name: Build mathematical documentation
+        run: mkdocs build --strict
