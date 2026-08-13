@@ -1,0 +1,30 @@
+site_name: OptiFlowX
+site_description: Stochastic-process tools based strictly on the five USTHB MSPRO Processus Aléatoires course PDFs.
+repo_url: https://github.com/Faycal214/optiflowx
+
+nav:
+  - Home: index.md
+  - Mathematical reference:
+      - CMTD: cmt d.md
+      - Processus de Poisson: poisson.md
+      - CMTC: cmtc.md
+      - Processus de naissance et de mort: birth_death.md
+      - Espérance conditionnelle: conditional_expectation.md
+      - Martingales à temps discret: martingales.md
+  - API map: api.md
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - content.code.copy
+markdown_extensions:
+  - admonition
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.details
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
