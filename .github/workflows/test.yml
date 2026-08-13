@@ -2,9 +2,9 @@ name: Stochastic Test Suite
 
 on:
   push:
-    branches: [ stoch-process-foundation ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, stoch-process-foundation ]
+    branches: [ main ]
 
 jobs:
   test:
