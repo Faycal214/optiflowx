@@ -1,6 +1,6 @@
 """Finite conditional-expectation objects from MSPRO Chapter 4.
 
-The chapter develops conditional expectation in a discrete setting.  The
+The chapter develops conditional expectation in a discrete setting. The
 package therefore represents a finite probability space explicitly, models a
 finite sigma-field by a partition, and represents a discrete random variable
 by its value on each outcome.
@@ -101,7 +101,7 @@ class Partition:
 class FiniteProbabilitySpace:
     """Finite probability space used for the chapter's discrete framework.
 
-    Outcomes and their probabilities are stored explicitly.  This makes the
+    Outcomes and their probabilities are stored explicitly. This makes the
     weighted sums defining expectation and conditional expectation exact up to
     ordinary floating-point arithmetic.
     """
@@ -148,6 +148,32 @@ class FiniteProbabilitySpace:
             raise ValueError("event contains an unknown outcome")
         return float(sum(self.probabilities[o] for o in event))
 
+    def conditional_probability_given_event(
+        self, event: Iterable[Outcome], condition: Iterable[Outcome]
+    ) -> float:
+        """Return ``P(A|B)=P(A intersect B)/P(B)`` when ``P(B)>0``."""
+        a = set(event)
+        b = set(condition)
+        if not a.issubset(self.outcomes) or not b.issubset(self.outcomes):
+            raise ValueError("event contains an unknown outcome")
+        denominator = self.probability(b)
+        if denominator <= 0:
+            raise ValueError("conditioning event must have positive probability")
+        return self.probability(a & b) / denominator
+
+    def conditional_expectation_given_event(
+        self, x: RandomVariable, condition: Iterable[Outcome]
+    ) -> float:
+        """Return ``E(X|B)=E(X 1_B)/P(B)`` for ``P(B)>0``."""
+        if x.space is not self:
+            raise ValueError("random variable belongs to another probability space")
+        b = set(condition)
+        denominator = self.probability(b)
+        if denominator <= 0:
+            raise ValueError("conditioning event must have positive probability")
+        numerator = sum(self.probabilities[o] * x.values[o] for o in b)
+        return float(numerator / denominator)
+
     def partition(self, blocks: Iterable[Iterable[Outcome]]) -> Partition:
         """Create a finite sigma-field representation from its partition blocks."""
         return Partition.from_blocks(blocks, self)
@@ -157,7 +183,7 @@ class FiniteProbabilitySpace:
 
         On a block ``G`` with positive probability, the chapter's discrete
         definition is the weighted mean
-        ``sum_{omega in G} X(omega)P({omega}) / P(G)``.  The result is constant
+        ``sum_{omega in G} X(omega)P({omega}) / P(G)``. The result is constant
         on each block and is therefore measurable with respect to ``G``.
         """
         if x.space is not self:
@@ -198,7 +224,7 @@ class FiniteProbabilitySpace:
         )
 
     def pull_out(self, y: RandomVariable, x: RandomVariable, partition: Partition) -> RandomVariable:
-        """Return the numerical residual of ``E(YX|G)=Y E(X|G)``."""
+        """Return the residual of ``E(YX|G)=Y E(X|G)``."""
         if not self.check_measurable(y, partition):
             raise ValueError("y must be measurable with respect to the conditioning partition")
         left = self.conditional_expectation(y * x, partition)
