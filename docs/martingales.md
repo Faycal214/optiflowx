@@ -10,8 +10,6 @@ $$
 \mathcal F_0\subseteq\mathcal F_1\subseteq\cdots.
 $$
 
-fileciteturn347file4L321-L337
-
 Dans OptiFlowX, le cadre fini représente chaque $\mathcal F_n$ par une `Partition` :
 
 ```python
@@ -27,8 +25,6 @@ Le chapitre dit que $(X_n)$ est adapté à $(\mathcal F_n)$ si, pour tout $n$,
 $$
 X_n\text{ est }\mathcal F_n\text{-mesurable}.
 $$
-
-fileciteturn347file4L327-L337
 
 ```python
 filtration.is_adapted(process)
@@ -54,8 +50,6 @@ $$
 E[(X_{n+1}-X_n)\mid\mathcal F_n]=0.
 $$
 
-fileciteturn347file3L246-L262
-
 OptiFlowX vérifie directement le résidu :
 
 ```python
@@ -77,7 +71,7 @@ $$
 E[X_{n+1}\mid\mathcal F_n]\geq X_n,
 $$
 
-avec les conditions d'intégrabilité et d'adaptation. fileciteturn324file2L145-L154
+avec les conditions d'intégrabilité et d'adaptation.
 
 ```python
 mart.is_submartingale()
@@ -93,8 +87,6 @@ E[X_{n+k}\mid\mathcal F_n]=X_n,
 \qquad k\geq0.
 $$
 
-fileciteturn324file1L76-L97
-
 ```python
 mart.conditional_future(n, k)
 ```
@@ -107,7 +99,7 @@ $$
 X_n=E(X\mid\mathcal F_n),
 $$
 
-qui définit une martingale appelée martingale de Doob. fileciteturn347file2L196-L217
+qui définit une martingale appelée martingale de Doob.
 
 ```python
 mart = Martingale.doob(terminal_variable, filtration)
@@ -115,7 +107,7 @@ mart = Martingale.doob(terminal_variable, filtration)
 
 ## 7. Transformations par fonctions convexes ou concaves
 
-Le cours rappelle l'inégalité de Jensen et établit que, sous les hypothèses d'intégrabilité du chapitre, une transformation convexe d'une martingale donne une sous-martingale ; une transformation concave donne une surmartingale. fileciteturn324file9L605-L619
+Le cours rappelle l'inégalité de Jensen et établit que, sous les hypothèses d'intégrabilité du chapitre, une transformation convexe d'une martingale donne une sous-martingale ; une transformation concave donne une surmartingale.
 
 Cette propriété est documentée ici comme un **résultat théorique du cours**. Elle ne correspond pas encore à une fonction publique dédiée dans l'API actuelle ; nous ne prétendons donc pas qu'une méthode de transformation existe.
 
@@ -127,7 +119,7 @@ $$
 X_n=\sum_{i=1}^{n}\xi_i,
 $$
 
-avec des variables $\xi_i$ IID prenant les valeurs $-1$ et $1$ avec probabilité $1/2$, et sa filtration canonique. fileciteturn324file1L99-L127
+avec des variables $\xi_i$ IID prenant les valeurs $-1$ et $1$ avec probabilité $1/2$, et sa filtration canonique.
 
 Le package peut représenter cet exemple dans le cadre fini et tester la condition de martingale par `Martingale.is_martingale()`.
 
@@ -170,19 +162,17 @@ X_n\mathbf1_{\{n<T\}}
 +X_T\mathbf1_{\{T\leq n\}}.
 $$
 
-fileciteturn347file0L33-L67
-
 ```python
 stopped = mart.stopped(T)
 stopped.values(n)
 stopped.sequence()
 ```
 
-Le théorème du chapitre établit que si $(X_n)$ est une martingale et $T$ un temps d'arrêt, alors le processus arrêté reste une martingale. fileciteturn347file0L69-L75
+Le théorème du chapitre établit que si $(X_n)$ est une martingale et $T$ un temps d'arrêt, alors le processus arrêté reste une martingale.
 
 ## 11. Variable terminale
 
-Lorsque $T$ est presque sûrement fini, le chapitre définit la variable terminale $X_T$ et établit la convergence du processus arrêté vers cette variable terminale. fileciteturn324file8L536-L577
+Lorsque $T$ est presque sûrement fini, le chapitre définit la variable terminale $X_T$ et établit la convergence du processus arrêté vers cette variable terminale.
 
 ```python
 terminal = stopped.terminal_value()
