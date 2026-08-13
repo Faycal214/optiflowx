@@ -1,6 +1,6 @@
 # Chapitre 3 — Chaînes de Markov à Temps Continu (CMTC)
 
-> **Cours de référence :** N. Boussaha, *Processus Aléatoires (3)*, MSPRO, USTHB, 2024–2025.
+> **Cours de référence :** N. Boussaha, *Processus Aléatoires (3)*, Master Modélisation Stochastique et Prévision en Recherche Opérationnelle (MSPRO), USTHB, 2024–2025.
 >
 > Cette page appartient à **Course material**. Elle suit le support du chapitre et reste séparée de la documentation Package / API.
 
@@ -12,12 +12,9 @@ Sur un espace de probabilité, un processus \(X=(X_t)_{t\ge0}\) à espace d'éta
 0=t_0<t_1<\cdots<t_n<t_{n+1},
 \]
 
-il vérifie
-
 \[
 P(X_{t_{n+1}}=j_{n+1}\mid X_{t_n}=j_n,\ldots,X_{t_0}=j_0)
-=
-P(X_{t_{n+1}}=j_{n+1}\mid X_{t_n}=j_n).
+=P(X_{t_{n+1}}=j_{n+1}\mid X_{t_n}=j_n).
 \]
 
 Dans le cas homogène,
@@ -26,18 +23,18 @@ Dans le cas homogène,
 P(X_{s+t}=j\mid X_s=i)=p_{ij}(t),
 \]
 
-donc la transition dépend uniquement de la durée \(t\). Le support note
+la transition dépendant uniquement de la durée \(t\). On note
 
 \[
 P(t)=(p_{ij}(t)),
-\qquad p_{ij}(0)=\delta_{ij},
+\qquad p_{ij}(0)=\delta_{ij}.
 \]
 
-avec \(p_{ij}(t)\ge0\) et des lignes de somme \(1\). fileciteturn478file3L219-L250
+Chaque ligne de \(P(t)\) est une distribution de probabilité.
 
 ## 2. Générateur infinitésimal
 
-Le générateur \(Q=(q_{ij})\) décrit le comportement pendant un intervalle infinitésimal \(h\). Pour \(i\neq j\),
+Le générateur \(Q=(q_{ij})\) décrit le comportement pendant une durée infinitésimale \(h\). Pour \(i\ne j\),
 
 \[
 q_{ij}=\lim_{h\to0}\frac{p_{ij}(h)}{h},
@@ -59,22 +56,22 @@ Les lignes de \(Q\) ont somme nulle :
 q_{ii}=-\sum_{j\ne i}q_{ij}.
 \]
 
-La probabilité de deux transitions ou plus sur un intervalle infinitésimal est \(o(h)\). fileciteturn468file2L1633-L1649 fileciteturn468file2L1651-L1692
+La probabilité d'effectuer deux transitions ou plus sur un intervalle infinitésimal est d'ordre \(o(h)\).
 
 ## 3. Processus de Poisson comme CMTC
 
-Le support reprend le processus de Poisson de taux \(\lambda\) et obtient un générateur dont les seules transitions possibles sont \(i\to i+1\), avec taux \(\lambda\), et une diagonale compensatrice. fileciteturn468file2L1861-L1917
+Pour un processus de Poisson de taux \(\lambda\), les transitions possibles sont \(i\to i+1\) avec taux \(\lambda\), et la diagonale de \(Q\) compense les taux de sortie. Le processus de Poisson fournit ainsi un exemple élémentaire de CMTC.
 
 ## 4. Équations de Kolmogorov
 
-Les équations de Kolmogorov relient l'évolution de \(P(t)\) au générateur. Pour un espace d'états fini, le support donne notamment l'équation backward
+Le générateur gouverne l'évolution de la matrice de transition. Dans le cas matriciel fini, l'équation backward s'écrit
 
 \[
 P'(t)=QP(t),
 \qquad P(0)=I,
 \]
 
-et sa solution matricielle
+et donne
 
 \[
 \boxed{P(t)=e^{tQ}}.
@@ -87,17 +84,17 @@ e^{tQ}=I+tQ+\frac{t^2Q^2}{2!}+\cdots
 =\sum_{k=0}^{\infty}\frac{t^kQ^k}{k!}.
 \]
 
-Le support souligne cependant que, dans le cadre général, notamment lorsque \(S\) est infini, une expression explicite de \(P(t)\) n'est pas toujours disponible. fileciteturn478file2L149-L195
+Dans le cas général, surtout lorsque l'espace des états est infini, une expression explicite de \(P(t)\) peut ne pas être disponible.
 
 ## 5. Loi de l'état
 
-Si \(\mu_0\) est la loi initiale sous forme de vecteur ligne, alors
+Si \(\mu_0\) est la loi initiale sous forme de vecteur ligne,
 
 \[
-\mu_t=\mu_0P(t).
+\boxed{\mu_t=\mu_0P(t)}.
 \]
 
-Cette identité est l'analogue continu du résultat discret \(\mu_n=\mu_0P^n\).
+C'est l'analogue continu de \(\mu_n=\mu_0P^n\) pour les chaînes à temps discret.
 
 ## 6. Distribution stationnaire
 
@@ -108,21 +105,23 @@ Une distribution \(\pi\) est stationnaire si
 \qquad \forall t\ge0.
 \]
 
-Le support établit l'équivalence, dans le cadre considéré,
+Le support établit la caractérisation par le générateur :
 
 \[
-\boxed{\pi P(t)=\pi\ \forall t\ge0
-\iff
-\pi Q=0,\quad \sum_i\pi_i=1,\quad \pi_i\ge0.}
+\boxed{\pi Q=0},
+\qquad
+\pi_i\ge0,
+\qquad
+\sum_i\pi_i=1.
 \]
 
-L'intérêt est pratique : lorsque \(P(t)\) ne peut pas être calculée explicitement, on peut chercher \(\pi\) directement à partir de \(Q\). fileciteturn478file6L424-L440
+Cette équation permet de trouver une distribution stationnaire sans calculer explicitement toute la matrice \(P(t)\).
 
 ## 7. Temps de séjour
 
-Le processus reste un temps aléatoire dans son état courant avant d'effectuer un saut vers un nouvel état. Le support décrit cette construction par des temps de séjour successifs : à partir de \(X_0\), le processus attend un premier temps aléatoire, saute, attend à nouveau, et ainsi de suite. fileciteturn478file0L45-L58
+Le processus reste pendant un temps aléatoire dans son état courant avant de sauter vers un nouvel état. Les temps de séjour successifs décrivent la trajectoire entre les instants de saut.
 
-Le taux total de sortie de \(i\) est
+Le taux total de sortie de l'état \(i\) est
 
 \[
 -q_{ii}=\sum_{j\ne i}q_{ij}.
@@ -130,39 +129,37 @@ Le taux total de sortie de \(i\) est
 
 ## 8. Chaîne embarquée
 
-Les états observés aux instants de saut forment une chaîne de Markov discrète, appelée chaîne embarquée. Lorsque \(-q_{ii}>0\), la probabilité que le prochain saut depuis \(i\) arrive en \(j\neq i\) est obtenue à partir des taux de sortie par
+Les états observés aux instants de saut constituent une chaîne de Markov à temps discret, appelée chaîne embarquée. Lorsque \(-q_{ii}>0\), la probabilité que le prochain saut depuis \(i\) conduise à \(j\ne i\) est
 
 \[
 r_{ij}=\frac{q_{ij}}{-q_{ii}}.
 \]
 
-Cette construction permet de réutiliser les résultats des CMTD pour analyser certains aspects de la CMTC.
+Cette construction relie les propriétés de la CMTC à celles des CMTD.
 
-## 9. Comportement de long terme
+## 9. Retour, occupation et comportement asymptotique
 
-Le chapitre étudie ensuite les propriétés de retour, les proportions d'occupation et le comportement asymptotique. Pour un coût \(h(i)\) par unité de temps dans l'état \(i\), le coût moyen selon une distribution stationnaire \(\pi\) est
+Le chapitre étudie les temps de retour et les proportions de temps passées dans les états. Si chaque unité de temps passée dans l'état \(i\) engendre un coût \(h(i)\), alors sous une distribution stationnaire \(\pi\), le coût moyen est
 
 \[
 \sum_i\pi_i h(i).
 \]
 
-fileciteturn469file3L98-L106
+Pour une CMTC irréductible non explosive et récurrente positive, le support donne une distribution stationnaire unique \(\pi\) telle que
 
-Le support donne également des résultats sur la non-explosion et la distribution limite : pour une CMTC irréductible non explosive et récurrente positive, il existe une distribution stationnaire unique \(\pi\) vérifiant \(\pi Q=0\) et
+\[
+\pi Q=0,
+\]
+
+et
 
 \[
 \lim_{t\to\infty}p_{ij}(t)=\pi_j.
 \]
 
-Il relie aussi le temps moyen de retour à la distribution stationnaire par
+Il relie également le temps moyen de retour à la distribution stationnaire par une formule faisant intervenir le taux de sortie \(-q_{ii}\) et \(\pi_i\).
 
-\[
-\mu_i=\frac{1}{q_{ii}\pi_i}
-\]
-
-avec la convention du cours sur le signe de \(q_{ii}\) et son taux de sortie. fileciteturn478file7L466-L495
-
-Le support donne enfin un critère de non-explosion pour un générateur associé à une CMTC : un espace d'états fini et un ensemble de taux diagonaux borné conduisent au cadre non explosif étudié dans le théorème correspondant. fileciteturn478file7L461-L466
+Le cours traite aussi la non-explosion, c'est-à-dire l'absence d'une infinité de sauts en temps fini.
 
 # 10. Processus de naissance et de mort
 
@@ -178,9 +175,7 @@ et, pour \(i>0\),
 i\to i-1 \quad\text{(mort)}.
 \]
 
-fileciteturn469file3L104-L113
-
-On introduit les taux de naissance \(\lambda_i\) et de mort \(\mu_i\). Le générateur est tridiagonal et le diagramme de transition porte ces taux, pas des probabilités finies. fileciteturn469file3L115-L145
+On introduit les taux de naissance \(\lambda_i\) et de mort \(\mu_i\). Le générateur est alors tridiagonal et le diagramme de transition porte ces taux.
 
 ## 10.1. Équations de Kolmogorov
 
@@ -190,17 +185,17 @@ En posant
 p_k(t)=P(X_t=k),
 \]
 
-les équations de Kolmogorov expriment le bilan des flux entrants et sortants de chaque état \(k\). Le support traite ces équations explicitement pour les processus de naissance et de mort. fileciteturn469file3L147-L158
+les équations de Kolmogorov décrivent le bilan des flux entrants et sortants de chaque état \(k\).
 
 ## 10.2. Distribution stationnaire
 
-Lorsque la distribution stationnaire existe et est normalisable, les masses sont reliées aux taux successifs. La forme récursive conduit à une construction de type
+Lorsque la distribution stationnaire existe, les probabilités stationnaires sont liées aux taux successifs par une relation récursive de la forme
 
 \[
 \pi_n\propto\prod_{k=0}^{n-1}\frac{\lambda_k}{\mu_{k+1}},
 \]
 
-puis à une normalisation par \(\sum_n\pi_n=1\).
+suivie d'une normalisation lorsque la somme des masses est finie.
 
 ## 10.3. Taux linéaires
 
@@ -210,11 +205,11 @@ Le support étudie notamment
 \lambda_n=n\lambda+\alpha,
 \]
 
-où \(\alpha\ge0\) est un taux d'immigration constant et \(\lambda\ge0\) le taux de naissance par individu. Avec \(n\) individus, une mort sur \([t,t+h[\) a une probabilité de l'ordre de \(n\mu h\). fileciteturn469file3L164-L185
+où \(\alpha\ge0\) représente l'immigration et \(\lambda\ge0\) le taux de naissance par individu. Le taux de mort est proportionnel au nombre d'individus : avec \(n\) individus, une mort pendant \([t,t+h[\) est de probabilité de l'ordre de \(n\mu h\).
 
 ## 10.4. Non-explosion
 
-Le cours étudie le temps d'explosion \(\zeta\). Pour une naissance pure, il donne notamment le critère
+Le cours étudie le temps d'explosion \(\zeta\). Pour une naissance pure, un critère présenté est
 
 \[
 \sum_k\frac1{\lambda_k}=\infty
@@ -222,14 +217,10 @@ Le cours étudie le temps d'explosion \(\zeta\). Pour une naissance pure, il don
 P(\zeta=\infty)=1.
 \]
 
-fileciteturn469file3L158-L162
-
 ## 11. Synthèse
 
-La progression du chapitre est donc
-
 \[
-\text{définition CMTC}
+\text{CMTC}
 \rightarrow P(t)
 \rightarrow Q
 \rightarrow\text{Kolmogorov}
@@ -237,7 +228,7 @@ La progression du chapitre est donc
 \rightarrow\text{stationnarité}
 \rightarrow\text{séjours}
 \rightarrow\text{chaîne embarquée}
-\rightarrow\text{long terme},
+\rightarrow\text{long terme}
 \]
 
 puis
@@ -250,5 +241,3 @@ puis
 \rightarrow\text{taux particuliers}
 \rightarrow\text{non-explosion}.
 \]
-
-Cette page reste limitée au contenu du chapitre 3 fourni.
