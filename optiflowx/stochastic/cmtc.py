@@ -24,9 +24,9 @@ State = Hashable
 class CTMCPath:
     """A simulated path represented by jump times and visited states.
 
-    ``times[k]`` is the time at which ``states[k]`` is entered.  The state is
-    therefore constant between consecutive jump times, exactly as used by
-    the holding-time construction in the course.
+    ``times[k]`` is the time at which ``states[k]`` is entered. The state is
+    therefore constant between consecutive jump times, matching the
+    holding-time construction used in the course.
     """
 
     times: np.ndarray
@@ -44,11 +44,10 @@ class CTMCPath:
 class ContinuousTimeMarkovChain:
     """Finite-state homogeneous CTMC represented by its generator ``Q``.
 
-    For ``i != j`` the chapter defines the infinitesimal transition behavior
-    through ``p_ij(h) = q_ij h + o(h)``.  Consequently off-diagonal entries of
-    ``Q`` are non-negative, diagonal entries are non-positive, and every row
-    sums to zero.  For the finite homogeneous setting, the transition matrix
-    is ``P(t) = exp(tQ)``.
+    For ``i != j`` the chapter defines ``p_ij(h)=q_ij h+o(h)``. Thus the
+    off-diagonal entries of ``Q`` are non-negative, its diagonal entries are
+    non-positive, and every row sums to zero. In the finite homogeneous case,
+    ``P(t)=exp(tQ)``.
     """
 
     def __init__(
@@ -65,8 +64,7 @@ class ContinuousTimeMarkovChain:
         if not np.all(np.isfinite(q)):
             raise ValueError("generator must contain finite values")
 
-        # These are precisely the sign and row-sum conditions for a finite
-        # generator matrix used throughout the chapter.
+        # These are the generator sign and row-sum conditions used in Chapter 3.
         off_diag = q - np.diag(np.diag(q))
         if np.any(off_diag < -tolerance):
             raise ValueError("off-diagonal generator entries must be non-negative")
@@ -99,26 +97,26 @@ class ContinuousTimeMarkovChain:
         return len(self._states)
 
     def infinitesimal_transition_matrix(self, h: float) -> np.ndarray:
-        """Return the first-order matrix ``I + hQ`` used by the chapter."""
+        """Return the first-order matrix ``I+hQ``."""
         self._validate_time(h)
         return np.eye(self.n_states) + float(h) * self._Q
 
     def transition_matrix(self, t: float) -> np.ndarray:
-        """Return ``P(t) = exp(tQ)`` for the homogeneous finite CTMC."""
+        """Return ``P(t)=exp(tQ)`` for the finite homogeneous CTMC."""
         self._validate_time(t)
         return expm(self._Q * float(t))
 
     def transition_probability(self, source: State, target: State, t: float) -> float:
-        """Return ``p_ij(t) = P(X_t=j | X_0=i)``."""
+        """Return ``p_ij(t)=P(X_t=j | X_0=i)``."""
         return float(self.transition_matrix(t)[self._idx(source), self._idx(target)])
 
     def state_distribution(self, initial_distribution: Sequence[float], t: float) -> np.ndarray:
-        """Return ``mu_t = mu_0 P(t)`` for a row-vector initial law."""
+        """Return ``mu_t=mu_0 P(t)`` for a row-vector initial law."""
         mu = self._distribution(initial_distribution)
         return mu @ self.transition_matrix(t)
 
     def chapman_kolmogorov(self, s: float, t: float) -> np.ndarray:
-        """Return ``P(s)P(t) = P(s+t)`` from the homogeneous semigroup."""
+        """Return ``P(s)P(t)=P(s+t)``."""
         self._validate_time(s)
         self._validate_time(t)
         return self.transition_matrix(s) @ self.transition_matrix(t)
@@ -132,7 +130,7 @@ class ContinuousTimeMarkovChain:
         return self._Q @ self.transition_matrix(t)
 
     def stationary_distribution(self) -> np.ndarray:
-        """Return a stationary law solving ``pi Q = 0`` and ``sum(pi)=1``."""
+        """Return a stationary law solving ``pi Q=0`` and ``sum(pi)=1``."""
         n = self.n_states
         a = self._Q.T.copy()
         a[-1] = 1.0
@@ -157,8 +155,7 @@ class ContinuousTimeMarkovChain:
     def jump_chain_matrix(self) -> np.ndarray:
         """Return the transition matrix of the embedded jump chain.
 
-        For a state with positive exit rate ``q_i=-q_ii``, the chapter gives
-        ``p~_ij = q_ij / q_i`` for ``i != j``.
+        For ``q_i=-q_ii>0``, Chapter 3 gives ``p~_ij=q_ij/q_i`` for ``i!=j``.
         """
         transition = np.zeros_like(self._Q)
         for i in range(self.n_states):
@@ -175,7 +172,7 @@ class ContinuousTimeMarkovChain:
         return MarkovChain(self.jump_chain_matrix(), self._states, tolerance=self._tolerance)
 
     def holding_rate(self, state: State) -> float:
-        """Return the exit/holding rate ``q_i=-q_ii``."""
+        """Return the exit rate ``q_i=-q_ii``."""
         return float(-self._Q[self._idx(state), self._idx(state)])
 
     def holding_time(self, state: State, *, rng: np.random.Generator | None = None) -> float:
@@ -226,7 +223,7 @@ class ContinuousTimeMarkovChain:
     def _distribution(self, values: Sequence[float]) -> np.ndarray:
         mu = np.asarray(values, dtype=float)
         if (
-            mu.shape != (self.n_states)
+            mu.shape != (self.n_states,)
             or not np.all(np.isfinite(mu))
             or np.any(mu < 0)
             or not np.isclose(mu.sum(), 1.0)
