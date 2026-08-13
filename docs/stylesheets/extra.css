@@ -1,0 +1,54 @@
+:root {
+  --ofx-radius: 0.7rem;
+}
+
+.md-typeset h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.md-typeset h2 {
+  margin-top: 2.2rem;
+  font-weight: 650;
+}
+
+.md-typeset h3 {
+  margin-top: 1.5rem;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: var(--ofx-radius);
+}
+
+.md-typeset table:not([class]) {
+  width: 100%;
+}
+
+.md-typeset code {
+  border-radius: 0.3rem;
+}
+
+.md-typeset .highlight {
+  border-radius: var(--ofx-radius);
+  overflow: hidden;
+}
+
+.course-source {
+  border-left: 0.2rem solid var(--md-primary-fg-color);
+  padding: 0.7rem 1rem;
+  margin: 1rem 0 1.5rem;
+  background: var(--md-code-bg-color);
+  border-radius: 0 var(--ofx-radius) var(--ofx-radius) 0;
+}
+
+.math-contract {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: var(--ofx-radius);
+  padding: 1rem 1.1rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.api-map {
+  font-size: 0.92rem;
+}
