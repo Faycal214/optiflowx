@@ -1,12 +1,7 @@
-"""Stochastic-process and optimization tools."""
+"""OptiFlowX stochastic-process toolkit."""
 
-__version__ = "0.0.9"
+__version__ = "0.1.0"
 
-__all__ = [
-    "optimizers",
-    "models",
-    "core",
-    "stochastic",
-]
+from . import stochastic
 
-# Keep the namespaces explicit; avoid wildcard imports.
+__all__ = ["stochastic"]
