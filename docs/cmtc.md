@@ -1,65 +1,72 @@
 # Chaînes de Markov à temps continu (CMTC)
 
-## 1. Définition
+Cette page suit le **Chapitre 3 — Chaînes de Markov à temps continu**. Les définitions et résultats mathématiques présentés ici sont ceux du PDF du cours ; l'API est ensuite mise en regard de ces objets.
 
-Une CMTC homogène est un processus $(X_t)_{t\ge0}$ à espace d'états discret vérifiant la propriété de Markov. Dans le cas homogène,
+## 1. Processus et matrice de transition
+
+Pour une CMTC homogène, le chapitre utilise les probabilités
 
 $$
-P(X_{t+s}=j\mid X_s=i)=p_{ij}(t),
+p_{ij}(t)=P(X_{s+t}=j\mid X_s=i),
 $$
 
-et on note
+qui ne dépendent que de la durée $t$. On note
 
-$$P(t)=(p_{ij}(t)).
+$$
+P(t)=(p_{ij}(t)).
 $$
 
-La matrice satisfait $P(0)=I$ et les probabilités de chaque ligne somment à $1$.
+La matrice vérifie notamment $P(0)=I$ et la propriété de Chapman–Kolmogorov.
 
 ```python
 from optiflowx.stochastic import ContinuousTimeMarkovChain
-chain = ContinuousTimeMarkovChain(Q, states=[...])
+
+chain = ContinuousTimeMarkovChain(Q, states=[0, 1, 2])
+chain.transition_matrix(2.0)
 ```
 
 ## 2. Générateur infinitésimal
 
-Le générateur $Q=(q_{ij})$ vérifie, pour $i\ne j$,
+Le chapitre introduit la matrice génératrice $Q=(q_{ij})$ par le comportement infinitésimal. Pour $i\neq j$ :
 
 $$
-p_{ij}(h)=q_{ij}h+o(h),
+p_{ij}(h)=q_{ij}h+o(h).
 $$
 
-et les lignes de $Q$ somment à zéro. Les coefficients diagonaux sont non positifs et les coefficients hors diagonale sont non négatifs.
+Les coefficients hors diagonale sont positifs ou nuls, les coefficients diagonaux sont non positifs, et les lignes de $Q$ somment à zéro.
 
 ```python
 chain.generator_matrix
 chain.infinitesimal_transition_matrix(h)
 ```
 
-## 3. Matrice de transition à temps t
+L'expression `I + hQ` représente ici le développement au premier ordre utilisé dans le cours ; la matrice de transition exacte est traitée séparément.
 
-Dans le cadre fini homogène étudié :
+## 3. Matrice de transition et loi à l'instant t
+
+Dans le cadre homogène fini du chapitre :
 
 $$
-P(t)=e^{Qt}.
+P(t)=e^{tQ}.
 $$
 
 ```python
-chain.transition_matrix(t)
+P_t = chain.transition_matrix(t)
 ```
 
-La loi initiale $\mu_0$ donne
+Si la loi initiale est le vecteur-ligne $\mu_0$, alors
 
 $$
 \mu_t=\mu_0P(t).
 $$
 
 ```python
-chain.state_distribution(mu0, t)
+mu_t = chain.state_distribution(mu_0, t)
 ```
 
 ## 4. Chapman–Kolmogorov
 
-Pour $s,t\ge0$ :
+L'homogénéité donne
 
 $$
 P(s+t)=P(s)P(t).
@@ -71,7 +78,7 @@ chain.chapman_kolmogorov(s, t)
 
 ## 5. Équations de Kolmogorov
 
-Le chapitre introduit les équations avant et arrière :
+Le chapitre présente les équations avant et arrière :
 
 $$
 \frac{dP(t)}{dt}=P(t)Q,
@@ -90,53 +97,46 @@ chain.backward_derivative(t)
 
 ## 6. Temps de séjour
 
-Depuis un état $i$, le temps de séjour avant le prochain saut est exponentiel de paramètre
+Depuis l'état $i$, le taux de sortie est
 
 $$
 q_i=-q_{ii}.
 $$
+
+Le temps de séjour est exponentiel de paramètre $q_i$ lorsque $q_i>0$.
 
 ```python
 chain.holding_rate(i)
 chain.holding_time(i)
 ```
 
-Un état avec taux de sortie nul est absorbant dans la représentation finie utilisée ici et son temps de séjour est infini.
+Si le taux de sortie est nul, le temps de séjour est infini dans la construction utilisée par le package.
 
 ## 7. Chaîne des sauts
 
-Conditionnellement au fait qu'un saut quitte $i$, la probabilité que le prochain état soit $j$ est
+Le chapitre associe à la CMTC une chaîne de Markov discrète décrivant les états visités aux instants de saut. Pour $i\neq j$ et $q_i>0$ :
 
 $$
-\tilde p_{ij}=\frac{q_{ij}}{-q_{ii}},\qquad i\ne j.
+\widetilde p_{ij}=\frac{q_{ij}}{q_i}
+=\frac{q_{ij}}{-q_{ii}}.
 $$
 
 ```python
 chain.jump_chain_matrix()
-chain.jump_chain()
+jump_chain = chain.jump_chain()
 ```
 
-Le chapitre établit également que la communication du processus est équivalente à celle de sa chaîne des sauts.
+Cette relation est importante car les propriétés de communication et de récurrence étudiées dans le chapitre sont reliées à la chaîne des sauts.
 
-## 8. Communication et récurrence
+## 8. Loi stationnaire
 
-Les notions d'accessibilité, de communication et de classe s'étendent au temps continu. Le chapitre relie ces propriétés au graphe de la chaîne des sauts.
-
-```python
-ctmc_communication_classes(chain)
-```
-
-Le temps de premier retour est désormais une variable aléatoire continue. La récurrence signifie un retour presque sûr après avoir quitté l'état.
-
-## 9. Distribution stationnaire
-
-Une distribution $\pi$ est stationnaire si
+Une loi $\pi$ est stationnaire si
 
 $$
-\pi P(t)=\pi,\qquad \forall t\ge0.
+\pi P(t)=\pi,\qquad \forall t\geq0.
 $$
 
-Dans le cadre fini étudié, ceci est équivalent à
+Dans le cadre étudié, elle est caractérisée par
 
 $$
 \pi Q=0,
@@ -144,85 +144,79 @@ $$
 $$
 
 ```python
-chain.stationary_distribution()
+pi = chain.stationary_distribution()
 ```
 
-## 10. Relation avec la chaîne des sauts
+Le package résout cette relation dans le cadre fini représenté par `ContinuousTimeMarkovChain`.
 
-Si la chaîne des sauts possède une loi stationnaire $\phi$ et si $q_i=-q_{ii}>0$, le chapitre donne
+## 9. Relation avec la chaîne des sauts
+
+Le chapitre relie la distribution stationnaire de la CMTC à celle de sa chaîne des sauts en tenant compte des temps de séjour. OptiFlowX conserve cette relation dans les outils de théorie associés à la CMTC.
+
+## 10. Explosion et régularité
+
+Le chapitre définit le temps d'explosion à partir de la somme des temps de séjour successifs :
 
 $$
-\pi_i=\frac{\phi_i/q_i}{\sum_j\phi_j/q_j}.
+\zeta=\sum_{n\geq1}S_n.
 $$
+
+Le processus est régulier lorsque
+
+$$
+P(\zeta=+\infty)=1,
+$$
+
+et explosif lorsqu'une explosion en temps fini peut avoir une probabilité positive.
+
+Pour les processus de naissance pure, la question est liée à la série des inverses des taux de naissance. Le package ne déduit pas la convergence d'une série infinie à partir d'un nombre fini de termes : il expose explicitement une somme partielle dans `pure_birth_reciprocal_rate_sum`.
+
+## 11. Comportement ergodique dans le temps
+
+Pour un état $i$, le temps passé dans $i$ jusqu'à $T$ peut être représenté par
+
+$$
+\int_0^T \mathbf 1_{\{X_t=i\}}\,dt.
+$$
+
+La fraction de temps est
+
+$$
+\frac1T\int_0^T \mathbf 1_{\{X_t=i\}}\,dt.
+$$
+
+Dans le cadre ergodique/récurrent positif développé dans le chapitre, cette quantité converge vers la probabilité stationnaire correspondante.
+
+## 12. Simulation
+
+La simulation suit la construction du chapitre :
+
+1. choisir l'état courant ;
+2. générer le temps de séjour exponentiel associé à son taux de sortie ;
+3. choisir le prochain état selon la chaîne des sauts ;
+4. recommencer jusqu'à l'horizon demandé.
 
 ```python
-ctmc_stationary_from_jump_chain(chain)
+path = chain.simulate(t_max=20.0, initial_state=0)
+path.times
+path.states
+path.state_at(5.0)
 ```
 
-Le temps moyen de retour vérifie
+## 13. Correspondance cours → package
 
-$$
-\mu_i=\frac{1}{q_i\pi_i}
-$$
-
-avec $q_i=-q_{ii}$.
-
-```python
-ctmc_mean_return_time(chain, i)
-```
-
-## 11. Explosion
-
-Le chapitre définit le premier temps d'explosion par la somme des temps de séjour successifs :
-
-$$
-\zeta=\sum_{n\ge1}S_n.
-$$
-
-Le processus est régulier si
-
-$$P(\zeta=+\infty)=1,
-$$
-
-et explosif si
-
-$$P(\zeta<+\infty)>0.
-$$
-
-OptiFlowX ne transforme pas une troncature numérique en affirmation de convergence : pour les processus de naissance pure, la fonction disponible retourne explicitement une somme partielle des $1/\lambda_n$.
-
-## 12. Ergodicité continue
-
-Pour un état $i$, la fraction de temps passée dans $i$ est
-
-$$
-\frac1T\int_0^T\mathbf 1_{\{X_t=i\}}dt.
-$$
-
-Dans le cas ergodique/récurrent positif du chapitre,
-
-$$
-\frac1T\int_0^T\mathbf 1_{\{X_t=i\}}dt\xrightarrow[T\to\infty]{p.s.}\pi_i.
-$$
-
-```python
-occupation_fraction(path, i, T)
-```
-
-## 13. Composants principaux
-
-| Mathématique | API |
+| Objet du chapitre | Composant OptiFlowX |
 |---|---|
 | Générateur $Q$ | `ContinuousTimeMarkovChain` |
-| $I+hQ$ | `infinitesimal_transition_matrix` |
+| Approximation infinitésimale | `infinitesimal_transition_matrix` |
 | $P(t)$ | `transition_matrix` |
-| Loi à t | `state_distribution` |
+| $p_{ij}(t)$ | `transition_probability` |
+| Loi $\mu_t$ | `state_distribution` |
+| Chapman–Kolmogorov | `chapman_kolmogorov` |
 | Kolmogorov avant | `forward_derivative` |
 | Kolmogorov arrière | `backward_derivative` |
-| Temps de séjour | `holding_time` |
-| Chaîne des sauts | `jump_chain` |
-| Stationnaire | `stationary_distribution` |
-| Relation chaîne des sauts | `ctmc_stationary_from_jump_chain` |
-| Retour moyen | `ctmc_mean_return_time` |
-| Occupation | `occupation_time`, `occupation_fraction` |
+| Temps de séjour | `holding_rate`, `holding_time` |
+| Chaîne des sauts | `jump_chain`, `jump_chain_matrix` |
+| Loi stationnaire | `stationary_distribution` |
+| Trajectoire | `CTMCPath` |
 | Simulation | `simulate` |
