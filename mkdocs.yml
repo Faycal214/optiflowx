@@ -5,7 +5,7 @@ repo_url: https://github.com/Faycal214/optiflowx
 nav:
   - Home: index.md
   - Mathematical reference:
-      - CMTD: cmt d.md
+      - CMTD: cmt_d.md
       - Processus de Poisson: poisson.md
       - CMTC: cmtc.md
       - Processus de naissance et de mort: birth_death.md
