@@ -143,20 +143,30 @@ class MarkovChain:
     def limiting_distribution(self) -> np.ndarray:
         if self.is_ergodic(): return np.tile(self.stationary_distribution(),(self.n_states,1))
         closed=self.closed_classes()
-        if len(closed)!=1: raise ValueError("the course conditions for a limiting distribution are not met")
+        if len(closed)!=1: raise ValueError("no limiting distribution under the finite-chain course conditions")
         cls=self.classify_states()
-        if any(cls[s]!="transient" for s in self._states if s not in closed[0]): raise ValueError("the unique closed class is not the only recurrent class")
+        if any(cls[s]!="transient" for s in self._states if s not in closed[0]): raise ValueError("no limiting distribution under the finite-chain course conditions")
         ids=[self._idx(s) for s in closed[0]]; sub=self._P[np.ix_(ids,ids)]
-        if not self._matrix_ergodic(sub): raise ValueError("the unique closed class is not ergodic")
+        if not self._matrix_ergodic(sub): raise ValueError("no limiting distribution under the finite-chain course conditions")
         out=np.zeros((self.n_states,self.n_states)); out[:,ids]=self._stationary(sub); return out
 
     def absorption_probability(self, source: State, absorbing_class: Sequence[State]) -> float:
+        """Return the probability of ever reaching the given closed absorbing class."""
         target=set(absorbing_class)
-        if not target or not any(set(c)==target for c in self.closed_classes()): raise ValueError("absorbing_class must be a closed communicating class")
-        i=self._idx(source); tids={self._idx(s) for s in target}
-        if i in tids: return 1.0
-        ids=[k for k in range(self.n_states) if k not in tids]; A=np.eye(len(ids))-self._P[np.ix_(ids,ids)]; b=self._P[np.ix_(ids,sorted(tids))].sum(axis=1)
-        return float(np.linalg.solve(A,b)[ids.index(i)])
+        if not target or not any(set(c)==target for c in self.closed_classes()):
+            raise ValueError("absorbing_class must be a closed communicating class")
+        i=self._idx(source); target_ids={self._idx(s) for s in target}
+        if i in target_ids:
+            return 1.0
+        classifications=self.classify_states()
+        if classifications[self._states[i]] != "transient":
+            return 0.0
+        transient_ids=[k for k, state in enumerate(self._states) if classifications[state] == "transient"]
+        if i not in transient_ids:
+            return 0.0
+        A=np.eye(len(transient_ids))-self._P[np.ix_(transient_ids,transient_ids)]
+        b=self._P[np.ix_(transient_ids,sorted(target_ids))].sum(axis=1)
+        return float(np.linalg.solve(A,b)[transient_ids.index(i)])
 
     def simulate(self,n_steps:int,*,initial_state:State|None=None,initial_distribution:Sequence[float]|None=None,rng:np.random.Generator|None=None)->list[State]:
         self._nonnegative_int(n_steps,"n_steps")
