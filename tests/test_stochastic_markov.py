@@ -12,12 +12,106 @@ def test_transition_matrix_is_validated_and_exposed():
     assert chain.n_states == 2
 
 
-def test_n_step_transition():
+def test_n_step_transition_and_chapman_kolmogorov():
     chain = MarkovChain([[0.7, 0.3], [0.4, 0.6]])
+    expected = np.linalg.matrix_power(chain.transition_matrix, 5)
+
+    np.testing.assert_allclose(chain.n_step_transition(5), expected)
     np.testing.assert_allclose(
-        chain.n_step_transition(2),
-        np.linalg.matrix_power(chain.transition_matrix, 2),
+        chain.chapman_kolmogorov(2, 3),
+        chain.n_step_transition(5),
     )
+
+
+def test_state_distribution_from_initial_law():
+    chain = MarkovChain([[0.7, 0.3], [0.4, 0.6]])
+    mu0 = [1.0, 0.0]
+
+    np.testing.assert_allclose(
+        chain.state_distribution(mu0, 2),
+        np.asarray(mu0) @ np.linalg.matrix_power(chain.transition_matrix, 2),
+    )
+
+
+def test_accessibility_and_communication_classes():
+    chain = MarkovChain(
+        [
+            [0.5, 0.5, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ],
+        states=["A", "B", "C"],
+    )
+
+    assert chain.accessible("A", "B")
+    assert not chain.accessible("B", "A")
+    assert chain.communicate("B", "B")
+    assert {frozenset(c) for c in chain.communicating_classes()} == {
+        frozenset({"A"}),
+        frozenset({"B"}),
+        frozenset({"C"}),
+    }
+
+
+def test_closed_and_absorbing_classes():
+    chain = MarkovChain(
+        [
+            [0.5, 0.5, 0.0],
+            [0.0, 1.0, 0.0],
+            [0.0, 0.0, 1.0],
+        ],
+        states=["A", "B", "C"],
+    )
+
+    assert {frozenset(c) for c in chain.closed_classes()} == {
+        frozenset({"B"}),
+        frozenset({"C"}),
+    }
+    assert chain.is_absorbing_state("B")
+    assert not chain.is_absorbing_state("A")
+
+
+def test_recurrence_transience_and_ergodicity():
+    chain = MarkovChain(
+        [
+            [0.7, 0.3, 0.0],
+            [0.4, 0.6, 0.0],
+            [0.4, 0.0, 0.6],
+        ],
+        states=["A", "B", "C"],
+    )
+
+    classifications = chain.classify_states()
+    assert classifications["A"] == "recurrent"
+    assert classifications["B"] == "recurrent"
+    assert classifications["C"] == "recurrent"
+    assert chain.period("A") == 1
+    assert chain.is_aperiodic()
+    assert not chain.is_irreducible()
+    assert not chain.is_ergodic()
+
+
+def test_periodic_chain_is_not_ergodic():
+    chain = MarkovChain([[0.0, 1.0], [1.0, 0.0]])
+
+    assert chain.is_irreducible()
+    assert chain.period(0) == 2
+    assert chain.period(1) == 2
+    assert not chain.is_aperiodic()
+    assert not chain.is_ergodic()
+
+
+def test_first_visit_probability():
+    chain = MarkovChain([[0.5, 0.5], [0.0, 1.0]])
+
+    assert chain.first_visit_probability(0, 1, 1) == pytest.approx(0.5)
+    assert chain.first_visit_probability(0, 1, 2) == pytest.approx(0.25)
+    assert chain.visit_probability(0, 1, 2) == pytest.approx(0.75)
+
+
+def test_expected_hitting_time():
+    chain = MarkovChain([[0.5, 0.5], [0.0, 1.0]])
+    assert chain.expected_hitting_time(0, 1) == pytest.approx(2.0)
 
 
 def test_stationary_distribution():
@@ -28,22 +122,26 @@ def test_stationary_distribution():
     np.testing.assert_allclose(stationary @ chain.transition_matrix, stationary)
 
 
-def test_classes_irreducibility_period_and_classification():
+def test_ergodic_limiting_distribution():
+    chain = MarkovChain([[0.7, 0.3], [0.4, 0.6]])
+    limit = chain.limiting_distribution()
+    expected = np.tile([4 / 7, 3 / 7], (2, 1))
+
+    np.testing.assert_allclose(limit, expected)
+
+
+def test_absorption_probability():
     chain = MarkovChain(
         [
-            [0.7, 0.3, 0.0],
-            [0.4, 0.6, 0.0],
+            [0.5, 0.5, 0.0],
+            [0.0, 1.0, 0.0],
             [0.0, 0.0, 1.0],
         ],
         states=["A", "B", "C"],
     )
 
-    assert not chain.is_irreducible()
-    assert chain.is_aperiodic()
-    assert set(chain.classify_states()) == {"A", "B", "C"}
-    assert chain.classify_states()["A"] == "recurrent"
-    assert chain.classify_states()["B"] == "recurrent"
-    assert chain.classify_states()["C"] == "recurrent"
+    assert chain.absorption_probability("A", ["B"]) == pytest.approx(1.0)
+    assert chain.absorption_probability("B", ["B"]) == pytest.approx(1.0)
 
 
 def test_simulation_is_reproducible_with_generator():
@@ -66,5 +164,5 @@ def test_invalid_transition_matrix_is_rejected():
 def test_reducible_chain_requires_explicit_closed_class_for_stationarity():
     chain = MarkovChain([[1.0, 0.0], [0.2, 0.8]])
 
-    with pytest.raises(ValueError, match="reducible"):
+    with pytest.raises(ValueError, match="irreducible"):
         chain.stationary_distribution()
