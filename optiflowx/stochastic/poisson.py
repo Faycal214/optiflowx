@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from math import exp, factorial
-from typing import Sequence
 
 import numpy as np
 
@@ -18,7 +17,7 @@ class PoissonProcess:
         self.rate = float(rate)
 
     def count_probability(self, n: int, t: float) -> float:
-        """Return P(N(t)=n) = exp(-lambda*t)(lambda*t)^n/n!."""
+        """Return P(N(t)=n)."""
         self._validate_time(t)
         self._validate_count(n)
         x = self.rate * float(t)
@@ -29,32 +28,17 @@ class PoissonProcess:
         self._validate_interval(s, t)
         return self._count_probability_for_mean(n, self.rate * (float(t) - float(s)))
 
-    def interarrival_samples(
-        self,
-        n: int,
-        *,
-        rng: np.random.Generator | None = None,
-    ) -> np.ndarray:
+    def interarrival_samples(self, n: int, *, rng: np.random.Generator | None = None) -> np.ndarray:
         """Generate n IID exponential inter-arrival times with rate lambda."""
         self._validate_positive_count(n)
         generator = rng if rng is not None else np.random.default_rng()
         return generator.exponential(scale=1.0 / self.rate, size=int(n))
 
-    def arrival_times(
-        self,
-        n: int,
-        *,
-        rng: np.random.Generator | None = None,
-    ) -> np.ndarray:
+    def arrival_times(self, n: int, *, rng: np.random.Generator | None = None) -> np.ndarray:
         """Generate the first n occurrence times tau_1,...,tau_n."""
         return np.cumsum(self.interarrival_samples(n, rng=rng))
 
-    def simulate(
-        self,
-        t_max: float,
-        *,
-        rng: np.random.Generator | None = None,
-    ) -> np.ndarray:
+    def simulate(self, t_max: float, *, rng: np.random.Generator | None = None) -> np.ndarray:
         """Generate all occurrence times in [0, t_max]."""
         self._validate_time(t_max)
         generator = rng if rng is not None else np.random.default_rng()
@@ -67,12 +51,7 @@ class PoissonProcess:
             times.append(current)
         return np.asarray(times, dtype=float)
 
-    def count_sample(
-        self,
-        t: float,
-        *,
-        rng: np.random.Generator | None = None,
-    ) -> int:
+    def count_sample(self, t: float, *, rng: np.random.Generator | None = None) -> int:
         """Sample N(t) directly from its Poisson(lambda*t) law."""
         self._validate_time(t)
         generator = rng if rng is not None else np.random.default_rng()
@@ -87,17 +66,8 @@ class PoissonProcess:
             return 1.0
         return float(y / s)
 
-    def conditional_arrival_times(
-        self,
-        k: int,
-        s: float,
-        *,
-        rng: np.random.Generator | None = None,
-    ) -> np.ndarray:
-        """Sample occurrence times conditional on N(s)=k.
-
-        The k occurrence times are an ordered k-sample from Uniform([0,s]).
-        """
+    def conditional_arrival_times(self, k: int, s: float, *, rng: np.random.Generator | None = None) -> np.ndarray:
+        """Sample occurrence times conditional on N(s)=k."""
         self._validate_positive_count(k)
         self._validate_positive_time(s, "s")
         generator = rng if rng is not None else np.random.default_rng()
@@ -109,14 +79,13 @@ class PoissonProcess:
             raise TypeError("other must be a PoissonProcess")
         return PoissonProcess(self.rate + other.rate)
 
-    def split(self, probability: float) -> tuple["PoissonProcess", "PoissonProcess"]:
+    def split(self, probability: float) -> tuple["PoissonProcess | _DegeneratePoissonProcess", "PoissonProcess | _DegeneratePoissonProcess"]:
         """Split the process using independent Bernoulli(p) labels."""
         if not np.isfinite(probability) or not 0.0 <= probability <= 1.0:
             raise ValueError("probability must lie in [0, 1]")
-        return (
-            PoissonProcess(self.rate * float(probability)) if probability > 0 else _DegeneratePoissonProcess(),
-            PoissonProcess(self.rate * (1.0 - float(probability))) if probability < 1 else _DegeneratePoissonProcess(),
-        )
+        first = PoissonProcess(self.rate * float(probability)) if probability > 0 else _DegeneratePoissonProcess()
+        second = PoissonProcess(self.rate * (1.0 - float(probability))) if probability < 1 else _DegeneratePoissonProcess()
+        return first, second
 
     @staticmethod
     def _count_probability_for_mean(n: int, mean: float) -> float:
@@ -154,22 +123,14 @@ class PoissonProcess:
 class NonHomogeneousPoissonProcess:
     """Non-homogeneous Poisson process defined by an intensity lambda(t)."""
 
-    def __init__(
-        self,
-        intensity: Callable[[float], float],
-        mean_function: Callable[[float], float] | None = None,
-    ) -> None:
+    def __init__(self, intensity: Callable[[float], float], mean_function: Callable[[float], float] | None = None) -> None:
         if not callable(intensity):
             raise TypeError("intensity must be callable")
         self.intensity = intensity
         self.mean_function = mean_function
 
     def mean(self, t: float) -> float:
-        """Return m(t)=integral_0^t lambda(x) dx.
-
-        A cumulative mean function may be supplied explicitly. Otherwise a
-        numerical trapezoidal integral is used for evaluation.
-        """
+        """Return m(t)=integral_0^t lambda(x) dx."""
         if not np.isfinite(t) or t < 0:
             raise ValueError("time must be finite and non-negative")
         t = float(t)
@@ -182,7 +143,7 @@ class NonHomogeneousPoissonProcess:
             values = np.asarray([self.intensity(x) for x in grid], dtype=float)
             if not np.all(np.isfinite(values)) or np.any(values < 0):
                 raise ValueError("intensity must return finite non-negative values")
-            value = float(np.trapezoid(values, grid))
+            value = float(np.trapz(values, grid))
         if not np.isfinite(value) or value < 0:
             raise ValueError("mean function must be finite and non-negative")
         return value
@@ -190,8 +151,7 @@ class NonHomogeneousPoissonProcess:
     def count_probability(self, n: int, t: float) -> float:
         """Return the Poisson count probability with parameter m(t)."""
         PoissonProcess._validate_count(n)
-        mean = self.mean(t)
-        return PoissonProcess._count_probability_for_mean(n, mean)
+        return PoissonProcess._count_probability_for_mean(n, self.mean(t))
 
     def increment_probability(self, n: int, s: float, t: float) -> float:
         """Return the increment count probability with mean m(t)-m(s)."""
