@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from math import comb, exp, factorial
 
 import numpy as np
@@ -136,13 +136,19 @@ class BirthDeathProcess:
             raise ValueError("stationary weights cannot be normalized")
         return weights / total
 
-    def pure_birth_explosion(self, n_terms: int = 10000) -> bool:
-        if n_terms < 0:
-            raise ValueError("n_terms must be non-negative")
+    def pure_birth_reciprocal_rate_sum(self, n_terms: int) -> float:
+        """Return the partial sum of 1/lambda_k used in the course explosion criterion.
+
+        The Chapter 3 theorem concerns the infinite series sum_k 1/lambda_k.
+        A finite computation can only return a partial sum; it must not claim
+        convergence or explosion from a finite truncation.
+        """
+        if isinstance(n_terms, bool) or n_terms < 0:
+            raise ValueError("n_terms must be a non-negative integer")
         rates = [self.birth_rate(k) for k in range(n_terms + 1)]
         if any(rate <= 0 for rate in rates):
-            return False
-        return bool(sum(1.0 / rate for rate in rates) < np.inf)
+            return float("inf")
+        return float(sum(1.0 / rate for rate in rates))
 
     @staticmethod
     def pure_birth_probability(n: int, t: float, *, rate: float) -> float:
