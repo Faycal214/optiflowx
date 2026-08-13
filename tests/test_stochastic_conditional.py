@@ -7,6 +7,13 @@ def make_space():
     return FiniteProbabilitySpace([0, 1, 2, 3], [0.25, 0.25, 0.25, 0.25])
 
 
+def test_conditioning_on_event():
+    space = make_space()
+    x = space.random_variable([1.0, 3.0, 5.0, 7.0], name="X")
+    assert space.conditional_probability_given_event({0, 1}, {1, 2}) == 0.5
+    assert space.conditional_expectation_given_event(x, {1, 2}) == 4.0
+
+
 def test_conditional_expectation_given_discrete_variable():
     space = make_space()
     x = space.random_variable([1.0, 3.0, 5.0, 7.0], name="X")
@@ -29,6 +36,17 @@ def test_total_expectation_and_tower_property():
     tower = space.tower(x, fine, coarse)
     np.testing.assert_allclose(tower.array(), cond.array())
     assert space.total_expectation(x, coarse) == x.expectation()
+
+
+def test_pull_out_and_conditional_covariance():
+    space = make_space()
+    x = space.random_variable([1.0, 2.0, 3.0, 4.0])
+    y = space.random_variable([5.0, 5.0, 9.0, 9.0])
+    partition = space.partition([{0, 1}, {2, 3}])
+    residual = space.pull_out(y, x, partition)
+    np.testing.assert_allclose(residual.array(), 0.0)
+    covariance = space.conditional_covariance(x, y, partition)
+    np.testing.assert_allclose(covariance.array(), [0.0, 0.0])
 
 
 def test_indicator_conditional_probability_and_conditional_variance():
