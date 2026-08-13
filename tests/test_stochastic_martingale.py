@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from optiflowx.stochastic import FiniteProbabilitySpace, Filtration, Martingale, StoppingTime
+from optiflowx.stochastic import Filtration, FiniteProbabilitySpace, Martingale, StoppingTime
 
 
 def fair_coin_space():
@@ -27,7 +27,8 @@ def test_stopping_time_and_stopped_process():
     space = fair_coin_space()
     x0 = space.random_variable([0.0, 0.0])
     x1 = space.random_variable([1.0, -1.0])
-    filtration = Filtration.natural([x0, x1])
+    full = space.partition([{0}, {1}])
+    filtration = Filtration([full, full])
     stopping = StoppingTime.from_values(space, {0: 1, 1: 0}, filtration)
     stopped = Martingale([x0, x1], filtration).stopped(stopping)
     np.testing.assert_allclose(stopped.values(1).array(), [1.0, 0.0])
