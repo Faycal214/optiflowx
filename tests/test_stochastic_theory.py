@@ -41,8 +41,8 @@ def test_multiple_stationary_distributions_for_reducible_chain():
     chain = MarkovChain([[1.0, 0.0], [0.0, 1.0]])
     laws = stationary_distributions(chain)
     assert len(laws) == 2
-    np.testing.assert_allclose(laws[0], [1.0, 0.0])
-    np.testing.assert_allclose(laws[1], [0.0, 1.0])
+    actual = {tuple(np.round(law, 12)) for law in laws}
+    assert actual == {(1.0, 0.0), (0.0, 1.0)}
 
 
 def test_empirical_state_frequencies():
