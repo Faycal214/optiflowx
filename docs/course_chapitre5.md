@@ -134,3 +134,39 @@ E[X_n\mid\mathcal F_m]=X_m.
 $$
 
 Le résultat est obtenu par récurrence et par emboîtement de l'espérance conditionnelle. fileciteturn408file0L398-L410
+
+## 7. Surmartingales et sous-martingales
+
+Un processus $(X_n)$ est une **surmartingale** relativement à $(\mathcal F_n)$ lorsqu'il est intégrable, adapté et satisfait
+
+$$
+E[X_{n+1}\mid\mathcal F_n]\le X_n\quad\text{p.s.}
+$$
+
+Il est une **sous-martingale** lorsque
+
+$$
+E[X_{n+1}\mid\mathcal F_n]\ge X_n\quad\text{p.s.}
+$$
+
+Une martingale est à la fois une surmartingale et une sous-martingale. fileciteturn424file1L127-L135
+
+### Marche biaisée
+
+Le cours considère une marche dont chaque incrément vaut $+1$ avec probabilité $p$ et $-1$ avec probabilité $1-p$. Il donne la classification suivante :
+
+- $p=1/2$ : martingale ;
+- $p<1/2$ : surmartingale ;
+- $p>1/2$ : sous-martingale.
+
+L'exemple est interprété comme la fortune d'un joueur qui gagne ou perd une unité à chaque lancer. fileciteturn424file2L146-L158
+
+## 8. Transformations par Jensen
+
+Le support énonce la proposition suivante. Si $(X_n)$ est une martingale et $\varphi$ est convexe, avec l'intégrabilité nécessaire, alors $(\varphi(X_n))$ est une sous-martingale. Dans les cas sous- et sur-martingale, la monotonicité de $\varphi$ intervient selon l'énoncé du cours. Pour les fonctions concaves, les rôles sont inversés. fileciteturn424file2L160-L182
+
+Le cours en déduit notamment que pour une martingale, $|X_n|$ et, lorsque l'intégrabilité est assurée, $X_n^2$ sont des sous-martingales. Pour une sous-martingale, $X_n^+=\max(X_n,0)$ est également une sous-martingale. fileciteturn424file2L184-L184
+
+### Monotonie des espérances
+
+Si $(X_n)$ est une surmartingale, alors $(E[X_n])$ est décroissante ; si $(X_n)$ est une sous-martingale, alors $(E[X_n])$ est croissante. Le support donne aussi les inégalités à plusieurs pas correspondantes. fileciteturn424file4L867-L873
