@@ -1,164 +1,202 @@
 # Processus de naissance et de mort
 
-## 1. Structure
+Cette page suit la partie **Processus de naissance et de mort** du Chapitre 3. Le processus est présenté dans le PDF comme une classe particulière de CMTC ; la documentation conserve donc cette relation.
 
-Le processus de naissance et de mort est un cas de CMTC à états dans $\mathbb N$ où, depuis l'état $k$, seuls les sauts
+## 1. Définition
 
-$$k\to k+1\quad\text{et}\quad k\to k-1$$
-
-sont possibles.
-
-On note $\lambda_k$ le taux de naissance et $\mu_k$ le taux de mort.
-
-La matrice génératrice possède donc les termes
+L'espace d'états est $\mathbb N$. Depuis l'état $k$, seuls deux sauts sont possibles :
 
 $$
-q_{k,k+1}=\lambda_k,\qquad q_{k,k-1}=\mu_k,
+k\longrightarrow k+1
+\qquad\text{et}\qquad
+k\longrightarrow k-1.
 $$
 
-et
+On note $\lambda_k$ le taux de naissance et $\mu_k$ le taux de mort. La matrice génératrice a alors la forme
 
 $$
-q_{kk}=-(\lambda_k+\mu_k).
+q_{k,k+1}=\lambda_k,
+\qquad
+q_{k,k-1}=\mu_k,
+\qquad
+q_{k,k}=-(\lambda_k+\mu_k),
 $$
+
+avec les ajustements nécessaires aux frontières.
 
 ```python
 from optiflowx.stochastic import BirthDeathProcess
-process = BirthDeathProcess(...)
+
+process = BirthDeathProcess(
+    birth_rates=lambda k: 0.4 * k,
+    death_rates=lambda k: 0.2 * k,
+)
 ```
 
-## 2. Générateur et chaîne des sauts
+## 2. Chaîne des sauts
+
+Lorsque $\lambda_k+\mu_k>0$, les probabilités de la chaîne des sauts sont
+
+$$
+\widetilde p_{k,k+1}
+=\frac{\lambda_k}{\lambda_k+\mu_k},
+\qquad
+\widetilde p_{k,k-1}
+=\frac{\mu_k}{\lambda_k+\mu_k}.
+$$
 
 Pour un modèle fini :
 
 ```python
-process.generator_matrix()
 process.jump_chain_matrix()
 process.to_ctmc()
 ```
 
-La chaîne des sauts utilise
-
-$$
-\tilde p_{k,k+1}=\frac{\lambda_k}{\lambda_k+\mu_k},
-\qquad
-\tilde p_{k,k-1}=\frac{\mu_k}{\lambda_k+\mu_k}
-$$
-
-lorsque le taux total est positif.
-
 ## 3. Équations de Kolmogorov
 
-Le vecteur des probabilités $p_k(t)=P(X_t=k)$ suit les équations de naissance et de mort obtenues à partir de la matrice $Q$.
+Si
 
-Pour un calcul fini, `kolmogorov_derivative(p)` retourne le vecteur $p'(t)=p(t)Q$ sous la convention ligne utilisée dans le package.
+$$
+p_k(t)=P(X_t=k),
+$$
+
+les probabilités vérifient les équations de naissance et de mort obtenues à partir de $Q$. Pour un modèle fini, `kolmogorov_derivative` représente le vecteur $p'(t)=p(t)Q$ selon la convention ligne du package.
+
+```python
+p_derivative = process.kolmogorov_derivative(probabilities)
+```
 
 ## 4. Distribution stationnaire
 
-Dans le cas où une distribution stationnaire existe et sous les conditions du chapitre, elle s'écrit à partir du produit
+Le chapitre construit les poids
 
 $$
 \rho_0=1,
 \qquad
-\rho_k=\rho_{k-1}\frac{\lambda_{k-1}}{\mu_k},
+\rho_k
+=\rho_{k-1}\frac{\lambda_{k-1}}{\mu_k}.
 $$
 
-puis par normalisation lorsque la somme des poids est finie.
+Lorsque la normalisation est possible, ces poids donnent la distribution stationnaire.
 
 ```python
-process.stationary_weights(n_terms)
+weights = process.stationary_weights(n_terms=20)
 ```
 
-Pour un espace fini, `stationary_distribution()` résout la relation stationnaire de la CMTC correspondante.
-
-## 5. Cas particuliers du chapitre
-
-### Immigration pure
-
-Avec
-
-$$\lambda_k=\lambda,\qquad \mu_k=0,$$
-
-le processus est un processus de Poisson dans le sens présenté dans le chapitre.
+Pour un modèle fini, la distribution stationnaire est obtenue via la CMTC correspondante :
 
 ```python
-BirthDeathProcess.pure_immigration_probability(n, t, rate=lam)
+pi = process.stationary_distribution()
 ```
 
-et
+## 5. Croissance pure par immigration
+
+Le chapitre considère
 
 $$
-P(X_t=n)=e^{-\lambda t}\frac{(\lambda t)^n}{n!}
+\lambda_k=\alpha>0,
+\qquad
+\mu_k=0.
 $$
 
-pour le cas correspondant.
+Il retrouve alors le processus de Poisson de paramètre $\alpha$ et
 
-### Naissance pure
-
-Avec
-
-$$\lambda_k=k\lambda,
 $$
-
-et sans morts, le chapitre donne les probabilités explicites du processus de naissance pure.
+P(X_t=n)=e^{-\alpha t}\frac{(\alpha t)^n}{n!}.
+$$
 
 ```python
-BirthDeathProcess.pure_birth_probability(n, t, rate=lam)
+BirthDeathProcess.pure_immigration_probability(
+    n=3,
+    t=2.0,
+    rate=alpha,
+)
 ```
 
-### Mort pure
+## 6. Croissance pure par naissance
 
-Avec
+Le chapitre traite le cas
 
-$$\mu_k=k\mu,
+$$
+\lambda_n=n\lambda,
+\qquad
+\mu_n=0.
 $$
 
-et sans naissances, le chapitre donne une loi binomiale pour la population restante à partir d'une population initiale donnée.
+La probabilité correspondante est exposée par :
 
 ```python
-BirthDeathProcess.pure_death_probability(...)
+BirthDeathProcess.pure_birth_probability(
+    n=4,
+    t=2.0,
+    rate=lam,
+)
 ```
 
-### Modèle linéaire avec immigration
+Le même chapitre relie ensuite la non-explosion du processus de naissance pure au comportement de la série des inverses des taux de naissance. Le package retourne seulement une somme partielle :
 
-Le chapitre étudie notamment des taux de la forme
+```python
+process.pure_birth_reciprocal_rate_sum(n_terms=100)
+```
+
+Une troncature numérique n'est pas présentée comme une preuve de convergence de la série infinie.
+
+## 7. Mort pure
+
+Dans le cas
+
+$$
+\lambda_n=0,
+\qquad
+\mu_n=n\mu,
+$$
+
+le chapitre donne une loi binomiale pour la population restante à partir d'une population initiale donnée.
+
+```python
+BirthDeathProcess.pure_death_probability(
+    n=3,
+    t=2.0,
+    initial_population=10,
+    rate=mu,
+)
+```
+
+## 8. Taux linéaires
+
+Le chapitre étudie notamment les taux
 
 $$
 \lambda_n=n\lambda+\alpha,
 \qquad
-\mu_n=n\mu.
+\mu_n=n\mu+\beta,
 $$
 
+où $\alpha$ représente l'immigration et $\beta$ l'émigration. fileciteturn324file7L472-L496
+
 ```python
-BirthDeathProcess.linear(
+process = BirthDeathProcess.linear(
     birth_rate=lam,
     death_rate=mu,
     immigration=alpha,
+    emigration=beta,
 )
 ```
 
-## 6. Explosion
+Le cas particulier de croissance pure par immigration est explicitement relié au processus de Poisson dans le chapitre. fileciteturn324file7L497-L507
 
-Pour un processus de naissance pure, le chapitre relie la non-explosion à la série des inverses des taux de naissance. OptiFlowX expose la somme partielle calculable :
+## 9. Correspondance cours → package
 
-```python
-process.pure_birth_reciprocal_rate_sum(n_terms)
-```
-
-Cette fonction ne prétend pas décider la convergence d'une série infinie à partir d'une troncature finie.
-
-## 7. Composants principaux
-
-| Mathématique | API |
+| Objet du chapitre | Composant OptiFlowX |
 |---|---|
-| Taux $\lambda_k$ | `birth_rate` |
-| Taux $\mu_k$ | `death_rate` |
-| Générateur | `generator_matrix` |
+| $\lambda_k$ | `birth_rate` |
+| $\mu_k$ | `death_rate` |
+| Générateur $Q$ | `generator_matrix` |
 | Chaîne des sauts | `jump_chain_matrix` |
 | CMTC associée | `to_ctmc` |
-| Équation de Kolmogorov | `kolmogorov_derivative` |
+| Équations de Kolmogorov | `kolmogorov_derivative` |
 | Poids stationnaires | `stationary_weights` |
 | Immigration pure | `pure_immigration_probability` |
 | Naissance pure | `pure_birth_probability` |
 | Mort pure | `pure_death_probability` |
-| Critère d'explosion, somme partielle | `pure_birth_reciprocal_rate_sum` |
+| Série de l'explosion | `pure_birth_reciprocal_rate_sum` |
