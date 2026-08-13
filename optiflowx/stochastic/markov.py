@@ -111,8 +111,11 @@ class MarkovChain:
         cls=self.classify_states(); return all(cls[s]=="recurrent" and self.period(s)==1 for s in self._states)
 
     def first_visit_probability(self, source: State, target: State, n: int) -> float:
+        """Return P_i(T_j = n), the first-hit probability at exactly step n."""
         self._positive_int(n, "n"); i,j=self._idx(source),self._idx(target)
-        killed=self._P.copy(); killed[j,:]=0.0; row=np.zeros(self.n_states); row[i]=1.0
+        if i == j:
+            return 1.0 if n == 0 else 0.0
+        killed=self._P.copy(); killed[:,j]=0.0; row=np.zeros(self.n_states); row[i]=1.0
         if n>1: row=row @ np.linalg.matrix_power(killed,n-1)
         return float(row @ self._P[:,j])
 
