@@ -1,40 +1,54 @@
-# OptiFlowX mathematical reference
+# OptiFlowX
 
-OptiFlowX is the computational implementation of the five supplied USTHB MSPRO **Processus Aléatoires** PDFs. The documentation follows the same mathematical scope.
+## An executable companion to the MSPRO stochastic-process course
+
+OptiFlowX is a Python library built around the five supplied USTHB MSPRO **Processus Aléatoires** course PDFs.
+
+The project has one strict documentation rule:
+
+> **First explain the mathematical object as it appears in the course. Then explain how OptiFlowX represents and computes that object.**
+
+This makes the site both a learning resource and a professional scientific-library reference.
+
+## The five course chapters
+
+| Chapter | Subject | Main package objects |
+|---|---|---|
+| 1 | CMTD | `MarkovChain` |
+| 2 | Processus de Poisson | `PoissonProcess`, `NonHomogeneousPoissonProcess` |
+| 3 | CMTC | `ContinuousTimeMarkovChain`, `CTMCPath` |
+| 3 | Naissance et mort | `BirthDeathProcess` |
+| 4 | Espérance conditionnelle | `FiniteProbabilitySpace`, `RandomVariable`, `Partition` |
+| 5 | Martingales à temps discret | `Filtration`, `Martingale`, `StoppingTime`, `StoppedProcess` |
+
+## How each page is organized
+
+Every mathematical topic follows the same structure:
+
+1. **Definition from the course**
+2. **Notation and formula**
+3. **Theorem / proposition and hypotheses**
+4. **Interpretation given by the course**
+5. **OptiFlowX implementation**
+6. **Worked example**
+7. **Numerical limitations and scope**
+
+For example, the stationary-distribution page does not start with `stationary_distribution()`. It first introduces the course definition
+
+$$
+\pi P=\pi,
+$$
+
+then explains the course's hypotheses and results, and only afterwards shows how the class computes the solution.
+
+## Navigate by concept or by implementation
+
+Use **Course material** when you are studying the mathematics.
+
+Use **Library design** when you want to understand how the classes and numerical implementation are structured.
+
+Use **Examples** when you want to run the concepts yourself.
 
 ## Source boundary
 
-The package contains only:
-
-1. Chaînes de Markov à temps discret (CMTD).
-2. Processus de Poisson.
-3. Chaînes de Markov à temps continu (CMTC).
-4. Processus de naissance et de mort, as presented in the CMTC chapter.
-5. Espérance conditionnelle.
-6. Martingales à temps discret.
-
-The implementation is intentionally finite/discrete when the corresponding course chapter uses finite or discrete objects. Numerical routines expose the formulas from the course; they are not intended as a replacement for a general symbolic probability system.
-
-## How to read the package
-
-Each mathematical component is documented in four layers:
-
-- **Mathematical object:** the definition used in the PDF.
-- **Result:** the proposition/theorem or formula used in the course.
-- **Computation:** the corresponding OptiFlowX object or function.
-- **Example:** a worked Python example under `examples/`.
-
-## Examples
-
-The repository contains one worked script per course chapter:
-
-- `examples/01_discrete_markov_chain.py`
-- `examples/02_poisson_process.py`
-- `examples/03_continuous_markov_chain.py`
-- `examples/04_birth_death_process.py`
-- `examples/05_conditional_expectation.py`
-- `examples/06_martingale.py`
-
-## Source discipline
-
-The mathematical explanations in this documentation are deliberately restricted to the definitions, propositions, theorems, examples, and constructions appearing in the five supplied PDFs.
+The five supplied PDFs are the primary mathematical source of the stochastic documentation. The implementation may use standard numerical tools such as NumPy and SciPy, but the educational pages do not silently replace a course definition with an unrelated external formulation.
