@@ -4,39 +4,35 @@
 >
 > Cette page appartient à **Course material**. Elle présente les notions et propriétés dans l'ordre du support. Les objets Python correspondants sont traités séparément dans **Package / API**.
 
-## 1. Introduction : estimer avec une information partielle
+## 1. Introduction
 
-L'espérance conditionnelle est introduite comme un outil permettant d'estimer une variable aléatoire lorsque seule une information partielle est disponible. Le support la relie notamment aux problèmes de prévision et à l'inférence lorsque certaines données sont non observées ou manquantes. fileciteturn471file0L21-L29
+L'espérance conditionnelle est introduite comme un outil d'estimation lorsqu'une information partielle est disponible, notamment en prévision et en présence de données non observées ou manquantes.
 
 ## 2. Conditionnement par rapport à un événement
 
-Sur un espace de probabilité \((\Omega,\mathcal F,P)\), soit \(B\in\mathcal F\) tel que \(P(B)>0\). La probabilité conditionnelle est définie par
+Pour \(B\in\mathcal F\) tel que \(P(B)>0\),
 
 \[
 P(A\mid B)=\frac{P(A\cap B)}{P(B)}.
 \]
 
-Pour une variable aléatoire intégrable \(X\), l'espérance conditionnelle sachant \(B\) est
+Pour \(X\in L^1\),
 
 \[
 \boxed{E(X\mid B)=\frac{E(X\mathbf 1_B)}{P(B)}}.
 \]
 
-Elle représente la moyenne de \(X\) lorsque l'événement \(B\) est réalisé. fileciteturn471file0L31-L51
+### Exemple du support
 
-### Exemple du cours
-
-Le support considère trois pièces de valeurs 10, 20 et 50 DA. Si \(X\) est la somme obtenue sur pile et si \(B\) est l'événement « exactement deux pièces donnent pile », alors les trois issues de \(B\) ont la même probabilité. Le calcul du cours aboutit à
+Trois pièces de valeurs 10, 20 et 50 DA sont lancées. Si \(X\) est le montant total obtenu sur pile et \(B\) l'événement « exactement deux pièces montrent pile », alors
 
 \[
 E(X\mid B)=\frac{160}{3}.
 \]
 
-fileciteturn471file0L93-L105 fileciteturn471file0L136-L170
-
 ## 3. Conditionnement par rapport à une variable discrète
 
-Soit \(Y\) une variable aléatoire à valeurs dans un espace dénombrable \(E\). On considère
+Soit \(Y\) à valeurs dans un espace dénombrable \(E\), et
 
 \[
 E_0=\{y\in E:P(Y=y)>0\}.
@@ -45,93 +41,72 @@ E_0=\{y\in E:P(Y=y)>0\}.
 Pour \(y\in E_0\),
 
 \[
-E(X\mid Y=y)
-=
-\frac{E(X\mathbf 1_{\{Y=y\}})}{P(Y=y)}.
+E(X\mid Y=y)=\frac{E(X\mathbf1_{\{Y=y\}})}{P(Y=y)}.
 \]
 
-Le support définit ensuite l'espérance conditionnelle sachant \(Y\) par une fonction de \(Y\) :
+On définit ensuite
 
 \[
 E(X\mid Y)=g(Y),
 \]
 
-avec
+où \(g(y)=E(X\mid Y=y)\) sur \(E_0\). La valeur de \(g\) hors de \(E_0\) est sans conséquence car cet ensemble a probabilité nulle.
 
-\[
-g(y)=E(X\mid Y=y)
-\quad\text{pour }y\in E_0.
-\]
-
-La valeur de \(g\) en dehors de \(E_0\) est arbitraire, car cet ensemble a probabilité nulle. fileciteturn471file0L237-L265 fileciteturn471file0L350-L375
-
-Ainsi, contrairement à \(E(X\mid B)\), qui est un nombre, \(E(X\mid Y)\) est une variable aléatoire et une fonction de \(Y\), donc \(\sigma(Y)\)-mesurable. fileciteturn471file0L408-L417
+Ainsi \(E(X\mid Y)\) est une variable aléatoire et une fonction de \(Y\), donc \(\sigma(Y)\)-mesurable.
 
 ### Exemple du dé
 
-Pour un dé équilibré, le support prend \(X(\omega)=\omega\) et une variable \(Y\) qui indique si le résultat est impair ou pair. On obtient alors une espérance conditionnelle constante sur chacune des deux classes d'information :
+Pour un dé équilibré, si \(X(\omega)=\omega\) et si \(Y\) indique si le résultat est impair ou pair, le cours obtient
 
 \[
-E(X\mid Y)=3\mathbf 1_{\{Y=1\}}+4\mathbf 1_{\{Y=0\}}.
+E(X\mid Y)=3\mathbf1_{\{Y=1\}}+4\mathbf1_{\{Y=0\}}.
 \]
 
-fileciteturn471file0L283-L304
+## 4. Cas absolument continu
 
-## 4. Formulation continue
-
-Dans le cas de variables absolument continues, le cours utilise une densité conditionnelle :
+Lorsque \(X\) et \(Y\) possèdent une densité conjointe,
 
 \[
 f_{Y\mid X=x}(y)=\frac{f_{X,Y}(x,y)}{f_X(x)}.
 \]
 
-Il calcule ensuite
+Alors
 
 \[
 E(Y\mid X=x)=\int y f_{Y\mid X=x}(y)\,dy.
 \]
 
-L'exemple développé dans le support conduit à
+Dans l'exemple développé par le support, cette procédure conduit à
 
 \[
-E(Y\mid X)=X
-\quad\text{p.s.}
+E(Y\mid X)=X\quad\text{p.s.}
 \]
-
-fileciteturn471file0L430-L453 fileciteturn471file0L455-L530
 
 ## 5. Propriétés dans le cas discret
 
-Le support établit notamment :
-
-- \(E(|E(X\mid Y)|)\le E(|X|)\) ;
-- la formule de l'espérance totale,
-  \[
-  E(X)=\sum_y E(X\mid Y=y)P(Y=y);
-  \]
-- si \(X\) et \(Y\) sont indépendantes, alors, pour les valeurs de \(y\) concernées,
-  \[
-  E(X\mid Y=y)=E(X);
-  \]
-- pour une fonction \(h\), on peut conditionner \(h(X,Y)\) à une valeur fixée de \(Y\).
-
-fileciteturn472file0L350-L367
-
-## 6. Caractérisation par la mesurabilité
-
-Pour une variable intégrable \(X\) et une variable discrète \(Y\), le cours donne la caractérisation suivante : \(E(X\mid Y)\) est \(\sigma(Y)\)-mesurable et satisfait, pour tout \(A\in\sigma(Y)\),
+Le support établit notamment
 
 \[
-\int_A E(X\mid Y)\,dP
-=
-\int_A X\,dP.
+E|E(X\mid Y)|\le E|X|,
 \]
 
-Cette formulation est le point de départ de l'extension à une variable aléatoire arbitraire. fileciteturn472file0L518-L533
+la formule de l'espérance totale
 
-## 7. Conditionnement par rapport à une variable arbitraire
+\[
+E(X)=\sum_yE(X\mid Y=y)P(Y=y),
+\]
 
-Pour une variable aléatoire intégrable \(X\) et une variable arbitraire \(Y\), le cours définit \(E(X\mid Y)\) comme une variable \(\sigma(Y)\)-mesurable vérifiant la même identité d'intégration sur les événements de \(\sigma(Y)\) :
+et, en cas d'indépendance,
+
+\[
+E(X\mid Y=y)=E(X).
+\]
+
+Pour une fonction \(h\), la valeur de \(Y\) peut être remplacée par la constante correspondante à l'intérieur du conditionnement.
+
+## 6. Caractérisation par \(\sigma(Y)\)
+
+Pour \(X\in L^1\) et \(Y\) discrète, \(E(X\mid Y)\) est l'unique objet, à un ensemble de probabilité nulle près, qui est \(\sigma(Y)\)-mesurable et vérifie
 
 \[
 \int_A E(X\mid Y)\,dP
@@ -140,7 +115,20 @@ Pour une variable aléatoire intégrable \(X\) et une variable arbitraire \(Y\),
 \qquad A\in\sigma(Y).
 \]
 
-Le support précise également que deux variables d'information \(Y\) et \(Y'\) engendrant la même tribu conduisent à la même espérance conditionnelle presque sûrement :
+Cette formulation sert de transition vers le conditionnement par une variable arbitraire puis par une tribu.
+
+## 7. Variable aléatoire arbitraire
+
+Pour \(X\in L^1\) et une variable aléatoire arbitraire \(Y\), l'espérance conditionnelle est définie par la même propriété : elle est \(\sigma(Y)\)-mesurable et
+
+\[
+\int_A E(X\mid Y)\,dP
+=
+\int_A X\,dP,
+\qquad A\in\sigma(Y).
+\]
+
+Le cours souligne que la tribu d'information est la notion pertinente. En particulier,
 
 \[
 \sigma(Y)=\sigma(Y')
@@ -148,39 +136,28 @@ Le support précise également que deux variables d'information \(Y\) et \(Y'\) 
 E(X\mid Y)=E(X\mid Y')\quad\text{p.s.}
 \]
 
-fileciteturn472file0L592-L607 fileciteturn472file0L678-L755
-
 ## 8. Conditionnement par rapport à une tribu
 
-Le chapitre passe ensuite du conditionnement par une variable au conditionnement par une sous-tribu \(\mathcal G\subseteq\mathcal F\).
-
-Pour \(X\in L^1\), la variable
+Soit \(\mathcal G\subseteq\mathcal F\) une sous-tribu. Pour \(X\in L^1\), l'espérance conditionnelle \(E(X\mid\mathcal G)\) est une variable \(\mathcal G\)-mesurable telle que
 
 \[
-E(X\mid\mathcal G)
+\int_AE(X\mid\mathcal G)\,dP
+=
+\int_AX\,dP,
+\qquad A\in\mathcal G.
 \]
 
-est caractérisée par deux propriétés :
-
-1. elle est \(\mathcal G\)-mesurable ;
-2. pour tout \(A\in\mathcal G\),
-   \[
-   \int_AE(X\mid\mathcal G)\,dP
-   =
-   \int_A X\,dP.
-   \]
-
-Dans le cas \(\mathcal G=\sigma(Y)\), on retrouve la notation \(E(X\mid Y)\). fileciteturn472file0L815-L886
+Dans le cas \(\mathcal G=\sigma(Y)\), on retrouve la notation \(E(X\mid Y)\).
 
 ## 9. Théorème de caractérisation
 
-Le cours donne une formulation par dualité : il existe une unique variable \(\mathcal G\)-mesurable intégrable \(Y\) telle que, pour toute variable \(Z\) bornée et \(\mathcal G\)-mesurable,
+Il existe une unique variable \(Y\in L^1(\Omega,\mathcal G,P)\) telle que, pour toute variable \(Z\) bornée et \(\mathcal G\)-mesurable,
 
 \[
 E(ZX)=E(ZY).
 \]
 
-Cette variable est précisément
+Cette variable est
 
 \[
 Y=E(X\mid\mathcal G).
@@ -189,137 +166,111 @@ Y=E(X\mid\mathcal G).
 En particulier,
 
 \[
-E(\mathbf 1_A X)
-=
-E\big(\mathbf 1_AE(X\mid\mathcal G)\big),
+E(\mathbf1_AX)=E\big(\mathbf1_AE(X\mid\mathcal G)\big),
 \qquad A\in\mathcal G.
 \]
 
-Le support souligne que ce théorème joue un rôle théorique central et que sa démonstration dépasse le cadre du cours. fileciteturn472file0L898-L975
+La démonstration d'existence du théorème dépasse le cadre du cours.
 
-## 10. Propriétés de l'espérance conditionnelle
+## 10. Propriétés fondamentales
 
-Le chapitre établit les propriétés suivantes :
-
-### Mesurabilité
 Si \(X\) est \(\mathcal G\)-mesurable,
 
 \[
 E(X\mid\mathcal G)=X\quad\text{p.s.}
 \]
 
-### Linéarité
+Linéarité :
 
 \[
 E(aX+bY\mid\mathcal G)
-=
-aE(X\mid\mathcal G)+bE(Y\mid\mathcal G).
+=aE(X\mid\mathcal G)+bE(Y\mid\mathcal G).
 \]
 
-### Positivité
+Positivité :
 
 \[
-X\ge0
-\Longrightarrow
-E(X\mid\mathcal G)\ge0.
+X\ge0\Rightarrow E(X\mid\mathcal G)\ge0.
 \]
 
-### Espérance totale
+Espérance totale :
 
 \[
 E(E(X\mid\mathcal G))=E(X).
 \]
 
-### Contrôle en valeur absolue
+Contrôle absolu :
 
 \[
-|E(X\mid\mathcal G)|\le E(|X|\mid\mathcal G)\quad\text{p.s.}
+|E(X\mid\mathcal G)|\le E(|X|\mid\mathcal G),
 \]
 
-et donc
+et donc \(E|E(X\mid\mathcal G)|\le E|X|\).
+
+Monotonie :
 
 \[
-E|E(X\mid\mathcal G)|\le E|X|.
+X\le X'\Rightarrow E(X\mid\mathcal G)\le E(X'\mid\mathcal G)\quad\text{p.s.}
 \]
 
-### Monotonie
-
-\[
-X\le X'
-\Longrightarrow
-E(X\mid\mathcal G)\le E(X'\mid\mathcal G)\quad\text{p.s.}
-\]
-
-### Indépendance
-
-Si \(X\) est indépendant de \(\mathcal G\), alors
+Indépendance : si \(X\) est indépendant de \(\mathcal G\),
 
 \[
 E(X\mid\mathcal G)=E(X)\quad\text{p.s.}
 \]
 
-fileciteturn472file1L1022-L1080
+## 11. Facteur mesurable
 
-## 11. Propriété de sortie d'un facteur mesurable
-
-Si \(Y\) est \(\mathcal G\)-mesurable et que les intégrabilités nécessaires sont satisfaites, alors
+Si \(Y\) est \(\mathcal G\)-mesurable et que les intégrabilités nécessaires sont satisfaites,
 
 \[
 \boxed{E(YX\mid\mathcal G)=Y\,E(X\mid\mathcal G).}
 \]
 
-Cette propriété est démontrée dans le support à partir du théorème de caractérisation. fileciteturn472file0L1605-L1612 fileciteturn472file0L1774-L1813
-
-## 12. Conditionnement successif : propriété de la tour
+## 12. Conditionnement successif
 
 Si \(\mathcal G_1\subseteq\mathcal G_2\), alors
 
 \[
 \boxed{
-E(E(X\mid\mathcal G_2)\mid\mathcal G_1)
-=
-E(X\mid\mathcal G_1).
+E(E(X\mid\mathcal G_2)\mid\mathcal G_1)=E(X\mid\mathcal G_1).
 }
 \]
 
-Le support donne également le cas particulier où \(B\in\mathcal G\) :
+Si \(B\in\mathcal G\), le cours donne également
 
 \[
 E(E(X\mid\mathcal G)\mid B)=E(X\mid B).
 \]
 
-fileciteturn472file0L1553-L1577 fileciteturn472file1L1863-L1873
-
 ## 13. Indépendance des tribus
 
-Le cours caractérise l'indépendance de deux sous-tribus \(\mathcal G_1\) et \(\mathcal G_2\) par le fait que, pour toute variable intégrable \(X\) mesurable par rapport à \(\mathcal G_2\),
+Deux sous-tribus \(\mathcal G_1\) et \(\mathcal G_2\) sont indépendantes si et seulement si, pour toute variable intégrable mesurable par rapport à \(\mathcal G_2\),
 
 \[
 E(X\mid\mathcal G_1)=E(X).
 \]
 
-Le support précise aussi qu'en particulier, pour des variables indépendantes \(X\) et \(Y\), on a \(E(X\mid Y)=E(X)\), mais que cette seule égalité ne suffit pas à elle seule pour conclure à l'indépendance. fileciteturn472file1L1817-L1843
+Pour des variables indépendantes \(X\) et \(Y\), on retrouve en particulier
 
-## 14. Synthèse du chapitre
+\[
+E(X\mid Y)=E(X).
+\]
 
-La progression du support est :
+Le cours souligne toutefois que cette dernière égalité, prise isolément, ne suffit pas à établir l'indépendance.
+
+## 14. Synthèse
 
 \[
 \text{événement}
-\rightarrow
-\text{variable discrète}
-\rightarrow
-\text{variable arbitraire}
-\rightarrow
-\text{tribu}
-\rightarrow
-\text{caractérisation}
-\rightarrow
-\text{propriétés}
-\rightarrow
-\text{indépendance et propriété de la tour}.
+\rightarrow\text{variable discrète}
+\rightarrow\text{variable arbitraire}
+\rightarrow\text{tribu}
 \]
 
-La notion centrale est que \(E(X\mid\mathcal G)\) est la variable intégrable qui représente l'information moyenne sur \(X\) disponible à travers la tribu \(\mathcal G\), avec la propriété de mesurabilité et l'égalité des intégrales sur tous les événements de \(\mathcal G\).
-
-Cette page reste limitée au contenu du chapitre 4 fourni.
+\[
+\rightarrow\text{caractérisation}
+\rightarrow\text{propriétés}
+\rightarrow\text{indépendance}
+\rightarrow\text{propriété de la tour}.
+\]
