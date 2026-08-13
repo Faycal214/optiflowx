@@ -6,16 +6,22 @@ repo_name: Faycal214/optiflowx
 nav:
   - Home: index.md
   - Course material:
+      - Overview: course_material.md
+      - Chapter 1 — CMTD: course_chapitre1.md
+      - Chapter 2 — Processus de Poisson: course_chapitre2.md
+      - Chapter 3 — CMTC: course_chapitre3.md
+      - Chapter 4 — Espérance conditionnelle: course_chapitre4.md
+      - Chapter 5 — Martingales à temps discret: course_chapitre5.md
+  - Package / API:
       - Course → API map: course-map.md
-      - CMTD: cmt_d.md
-      - Processus de Poisson: poisson.md
-      - CMTC: cmtc.md
-      - Processus de naissance et de mort: birth_death.md
-      - Espérance conditionnelle: conditional_expectation.md
-      - Martingales à temps discret: martingales.md
-  - Library design:
       - Architecture: architecture.md
       - API map: api.md
+      - CMTD API: cmt_d.md
+      - Processus de Poisson API: poisson.md
+      - CMTC API: cmtc.md
+      - Birth-death API: birth_death.md
+      - Espérance conditionnelle API: conditional_expectation.md
+      - Martingales API: martingales.md
   - Examples:
       - Worked examples: examples.md
 
