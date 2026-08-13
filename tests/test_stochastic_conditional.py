@@ -46,7 +46,9 @@ def test_pull_out_and_conditional_covariance():
     residual = space.pull_out(y, x, partition)
     np.testing.assert_allclose(residual.array(), 0.0)
     covariance = space.conditional_covariance(x, y, partition)
-    np.testing.assert_allclose(covariance.array(), [0.0, 0.0])
+    # Conditional covariance is a random variable on the original
+    # finite sample space, hence one value per outcome.
+    np.testing.assert_allclose(covariance.array(), [0.0, 0.0, 0.0, 0.0])
 
 
 def test_indicator_conditional_probability_and_conditional_variance():
