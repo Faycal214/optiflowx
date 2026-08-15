@@ -1,6 +1,6 @@
 # OptiFlowX
 
-**A Python library for stochastic processes, built from the MSPRO stochastic-process course.**
+**A Python library for stochastic processes and applied probability.**
 
 The library currently covers:
 
@@ -43,7 +43,7 @@ The documentation is divided into three parts.
 
 ### Course material
 
-The five course chapters present the mathematical definitions, notation, results, and hypotheses used in the stochastic-process course. The course material is kept separate from the software reference.
+The course chapters present the mathematical definitions, notation, results, and hypotheses used throughout the stochastic-process material. The mathematics is kept separate from the software reference.
 
 ### Package / API
 
