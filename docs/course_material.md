@@ -1,15 +1,13 @@
-# Course material
+# Course Material
 
-This section reproduces the five USTHB MSPRO **Processus Aléatoires** course PDFs supplied for this project.
+This section presents the mathematical foundations covered by the five stochastic-process chapters implemented in OptiFlowX.
 
 The course pages are intentionally kept separate from the OptiFlowX package/API documentation and from the worked examples.
 
 ## Chapters
 
-- [Chapter 1 — Chaînes de Markov à Temps Discret (CMTD)](course_chapitre1.md)
-- [Chapter 2 — Processus de Poisson (PP)](course_chapitre2.md)
-- [Chapter 3 — Chaînes de Markov à Temps Continu (CMTC)](course_chapitre3.md)
-- [Chapter 4 — Espérance conditionnelle](course_chapitre4.md)
-- [Chapter 5 — Généralités sur les martingales à temps discret](course_chapitre5.md)
-
-The five chapters are the source boundary for the mathematical scope of OptiFlowX.
+- [Chapter 1 — Discrete-Time Markov Chains (DTMC)](course_chapitre1.md)
+- [Chapter 2 — Poisson Processes](course_chapitre2.md)
+- [Chapter 3 — Continuous-Time Markov Chains and Birth-Death Processes (CTMC)](course_chapitre3.md)
+- [Chapter 4 — Conditional Expectation](course_chapitre4.md)
+- [Chapter 5 — Discrete-Time Martingales](course_chapitre5.md)
