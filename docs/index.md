@@ -1,54 +1,78 @@
 # OptiFlowX
 
-## An executable companion to the MSPRO stochastic-process course
+**A Python library for stochastic processes, built from the MSPRO stochastic-process course.**
 
-OptiFlowX is a Python library built around the five supplied USTHB MSPRO **Processus Aléatoires** course PDFs.
+OptiFlowX provides executable mathematical objects for the stochastic-process topics covered by the five supplied USTHB MSPRO *Processus Aléatoires* course PDFs.
 
-The project has one strict documentation rule:
+The library currently covers:
 
-> **First explain the mathematical object as it appears in the course. Then explain how OptiFlowX represents and computes that object.**
+- discrete-time Markov chains (CMTD);
+- continuous-time Markov chains (CMTC);
+- Poisson processes;
+- birth-death processes;
+- finite probability spaces, partitions, random variables, and conditional expectation;
+- filtrations, martingales, stopping times, and stopped processes.
 
-This makes the site both a learning resource and a professional scientific-library reference.
+## Installation
 
-## The five course chapters
+```bash
+pip install optiflowx
+```
 
-| Chapter | Subject | Main package objects |
-|---|---|---|
-| 1 | CMTD | `MarkovChain` |
-| 2 | Processus de Poisson | `PoissonProcess`, `NonHomogeneousPoissonProcess` |
-| 3 | CMTC | `ContinuousTimeMarkovChain`, `CTMCPath` |
-| 3 | Naissance et mort | `BirthDeathProcess` |
-| 4 | Espérance conditionnelle | `FiniteProbabilitySpace`, `RandomVariable`, `Partition` |
-| 5 | Martingales à temps discret | `Filtration`, `Martingale`, `StoppingTime`, `StoppedProcess` |
+## Quick example
 
-## How each page is organized
+Create a discrete-time Markov chain from its transition matrix:
 
-Every mathematical topic follows the same structure:
+```python
+import numpy as np
+from optiflowx.stochastic import MarkovChain
 
-1. **Definition from the course**
-2. **Notation and formula**
-3. **Theorem / proposition and hypotheses**
-4. **Interpretation given by the course**
-5. **OptiFlowX implementation**
-6. **Worked example**
-7. **Numerical limitations and scope**
+P = np.array([
+    [0.8, 0.2],
+    [0.3, 0.7],
+])
 
-For example, the stationary-distribution page does not start with `stationary_distribution()`. It first introduces the course definition
+chain = MarkovChain(P, states=["A", "B"])
 
-$$
-\pi P=\pi,
-$$
+print(chain.states)
+print(chain.transition_matrix)
+print(chain.stationary_distribution())
+```
 
-then explains the course's hypotheses and results, and only afterwards shows how the class computes the solution.
+## Documentation
 
-## Navigate by concept or by implementation
+The documentation is divided into three parts.
 
-Use **Course material** when you are studying the mathematics.
+### Course material
 
-Use **Library design** when you want to understand how the classes and numerical implementation are structured.
+The five course chapters present the mathematical definitions, notation, results, and hypotheses from the supplied USTHB MSPRO PDFs. The course material is kept separate from the software reference.
 
-Use **Examples** when you want to run the concepts yourself.
+### Package / API
 
-## Source boundary
+The API Reference documents the public OptiFlowX classes, functions, properties, methods, validation rules, and numerical behavior.
 
-The five supplied PDFs are the primary mathematical source of the stochastic documentation. The implementation may use standard numerical tools such as NumPy and SciPy, but the educational pages do not silently replace a course definition with an unrelated external formulation.
+### Examples
+
+Worked examples show how the mathematical objects are represented and used in Python.
+
+## Supported stochastic models
+
+| Model | Main class |
+|---|---|
+| Discrete-time Markov chain | `MarkovChain` |
+| Continuous-time Markov chain | `ContinuousTimeMarkovChain` |
+| Poisson process | `PoissonProcess` |
+| Birth-death process | `BirthDeathProcess` |
+| Finite probability space | `FiniteProbabilitySpace` |
+| Random variable | `RandomVariable` |
+| Partition | `Partition` |
+| Filtration | `Filtration` |
+| Martingale | `Martingale` |
+| Stopping time | `StoppingTime` |
+| Stopped process | `StoppedProcess` |
+
+## Source
+
+The mathematical documentation is based on the five supplied USTHB MSPRO *Processus Aléatoires* PDFs. The API documentation describes the corresponding OptiFlowX implementation separately.
+
+**OptiFlowX** — stochastic-process mathematics implemented as a Python library.
