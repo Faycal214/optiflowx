@@ -5,12 +5,15 @@ import pkgutil
 import optiflowx.stochastic as stochastic
 
 
+_INTERNAL_STOCHASTIC_MODULES = {"validation"}
+
 PUBLIC_STOCHASTIC_MODULES = tuple(
     info.name
     for info in pkgutil.iter_modules(
         stochastic.__path__, prefix=f"{stochastic.__name__}."
     )
-    if not info.name.rsplit(".", 1)[-1].startswith("_")
+    if info.name.rsplit(".", 1)[-1] not in _INTERNAL_STOCHASTIC_MODULES
+    and not info.name.rsplit(".", 1)[-1].startswith("_")
 )
 
 
