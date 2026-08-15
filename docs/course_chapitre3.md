@@ -1,12 +1,10 @@
-# Chapitre 3 — Chaînes de Markov à Temps Continu (CMTC)
+# Chapter 3 — Continuous-Time Markov Chains (CTMC)
 
-> **Cours de référence :** N. Boussaha, *Processus Aléatoires (3)*, Master Modélisation Stochastique et Prévision en Recherche Opérationnelle (MSPRO), USTHB, 2024–2025.
->
-> Cette page appartient à **Course material**. Elle suit le support du chapitre et reste séparée de la documentation Package / API.
+This page develops the mathematics of continuous-time Markov chains and birth-death processes. The mathematical discussion remains separate from the Python API and worked examples.
 
-## 1. Définition d'une CMTC
+## 1. Definition of a CTMC
 
-Sur un espace de probabilité, un processus \(X=(X_t)_{t\ge0}\) à espace d'états fini ou dénombrable est une chaîne de Markov à temps continu lorsque, pour des instants
+On a probability space, a process \(X=(X_t)_{t\ge0}\) with finite or countable state space is a continuous-time Markov chain when, for times
 
 \[
 0=t_0<t_1<\cdots<t_n<t_{n+1},
@@ -17,30 +15,30 @@ P(X_{t_{n+1}}=j_{n+1}\mid X_{t_n}=j_n,\ldots,X_{t_0}=j_0)
 =P(X_{t_{n+1}}=j_{n+1}\mid X_{t_n}=j_n).
 \]
 
-Dans le cas homogène,
+In the homogeneous case,
 
 \[
 P(X_{s+t}=j\mid X_s=i)=p_{ij}(t),
 \]
 
-la transition dépendant uniquement de la durée \(t\). On note
+so the transition depends only on the elapsed time \(t\). We write
 
 \[
 P(t)=(p_{ij}(t)),
 \qquad p_{ij}(0)=\delta_{ij}.
 \]
 
-Chaque ligne de \(P(t)\) est une distribution de probabilité.
+Each row of \(P(t)\) is a probability distribution.
 
-## 2. Générateur infinitésimal
+## 2. Infinitesimal generator
 
-Le générateur \(Q=(q_{ij})\) décrit le comportement pendant une durée infinitésimale \(h\). Pour \(i\ne j\),
+The generator \(Q=(q_{ij})\) describes behavior over an infinitesimal interval \(h\). For \(i\ne j\),
 
 \[
 q_{ij}=\lim_{h\to0}\frac{p_{ij}(h)}{h},
 \]
 
-et
+and
 
 \[
 p_{ij}(h)=q_{ij}h+o(h),
@@ -48,7 +46,7 @@ p_{ij}(h)=q_{ij}h+o(h),
 p_{ii}(h)=1+q_{ii}h+o(h).
 \]
 
-Les lignes de \(Q\) ont somme nulle :
+The rows of \(Q\) sum to zero:
 
 \[
 \sum_jq_{ij}=0,
@@ -56,56 +54,56 @@ Les lignes de \(Q\) ont somme nulle :
 q_{ii}=-\sum_{j\ne i}q_{ij}.
 \]
 
-La probabilité d'effectuer deux transitions ou plus sur un intervalle infinitésimal est d'ordre \(o(h)\).
+The probability of making two or more transitions over an infinitesimal interval is of order \(o(h)\).
 
-## 3. Processus de Poisson comme CMTC
+## 3. Poisson process as a CTMC
 
-Pour un processus de Poisson de taux \(\lambda\), les transitions possibles sont \(i\to i+1\) avec taux \(\lambda\), et la diagonale de \(Q\) compense les taux de sortie. Le processus de Poisson fournit ainsi un exemple élémentaire de CMTC.
+For a Poisson process with rate \(\lambda\), transitions are possible from \(i\) to \(i+1\) with rate \(\lambda\), while the diagonal of \(Q\) compensates for the total exit rate. Thus the Poisson process is an elementary example of a CTMC.
 
-## 4. Équations de Kolmogorov
+## 4. Kolmogorov equations
 
-Le générateur gouverne l'évolution de la matrice de transition. Dans le cas matriciel fini, l'équation backward s'écrit
+The generator governs the evolution of the transition matrix. In the finite matrix case, the backward equation is
 
 \[
 P'(t)=QP(t),
 \qquad P(0)=I,
 \]
 
-et donne
+which gives
 
 \[
 \boxed{P(t)=e^{tQ}}.
 \]
 
-L'exponentielle matricielle est définie par
+The matrix exponential is defined by
 
 \[
 e^{tQ}=I+tQ+\frac{t^2Q^2}{2!}+\cdots
 =\sum_{k=0}^{\infty}\frac{t^kQ^k}{k!}.
 \]
 
-Dans le cas général, surtout lorsque l'espace des états est infini, une expression explicite de \(P(t)\) peut ne pas être disponible.
+In the general case, especially for an infinite state space, an explicit expression for \(P(t)\) may not be available.
 
-## 5. Loi de l'état
+## 5. State distribution
 
-Si \(\mu_0\) est la loi initiale sous forme de vecteur ligne,
+If \(\mu_0\) is the initial law written as a row vector,
 
 \[
 \boxed{\mu_t=\mu_0P(t)}.
 \]
 
-C'est l'analogue continu de \(\mu_n=\mu_0P^n\) pour les chaînes à temps discret.
+This is the continuous-time analogue of \(\mu_n=\mu_0P^n\) for discrete-time chains.
 
-## 6. Distribution stationnaire
+## 6. Stationary distribution
 
-Une distribution \(\pi\) est stationnaire si
+A distribution \(\pi\) is stationary if
 
 \[
 \pi P(t)=\pi,
 \qquad \forall t\ge0.
 \]
 
-Le support établit la caractérisation par le générateur :
+The generator characterization is
 
 \[
 \boxed{\pi Q=0},
@@ -115,101 +113,101 @@ Le support établit la caractérisation par le générateur :
 \sum_i\pi_i=1.
 \]
 
-Cette équation permet de trouver une distribution stationnaire sans calculer explicitement toute la matrice \(P(t)\).
+This equation can be used to find a stationary distribution without explicitly computing the complete matrix \(P(t)\).
 
-## 7. Temps de séjour
+## 7. Holding times
 
-Le processus reste pendant un temps aléatoire dans son état courant avant de sauter vers un nouvel état. Les temps de séjour successifs décrivent la trajectoire entre les instants de saut.
+The process remains in its current state for a random amount of time before jumping to a new state. The successive holding times describe the path between jump times.
 
-Le taux total de sortie de l'état \(i\) est
+The total exit rate from state \(i\) is
 
 \[
 -q_{ii}=\sum_{j\ne i}q_{ij}.
 \]
 
-## 8. Chaîne embarquée
+## 8. Embedded jump chain
 
-Les états observés aux instants de saut constituent une chaîne de Markov à temps discret, appelée chaîne embarquée. Lorsque \(-q_{ii}>0\), la probabilité que le prochain saut depuis \(i\) conduise à \(j\ne i\) est
+The states observed at jump times form a discrete-time Markov chain, called the embedded jump chain. When \(-q_{ii}>0\), the probability that the next jump from \(i\) goes to \(j\ne i\) is
 
 \[
 r_{ij}=\frac{q_{ij}}{-q_{ii}}.
 \]
 
-Cette construction relie les propriétés de la CMTC à celles des CMTD.
+This construction connects CTMC properties with DTMC properties.
 
-## 9. Retour, occupation et comportement asymptotique
+## 9. Return, occupation, and asymptotic behavior
 
-Le chapitre étudie les temps de retour et les proportions de temps passées dans les états. Si chaque unité de temps passée dans l'état \(i\) engendre un coût \(h(i)\), alors sous une distribution stationnaire \(\pi\), le coût moyen est
+The chapter studies return times and the proportions of time spent in states. If each unit of time spent in state \(i\) generates a cost \(h(i)\), then under a stationary distribution \(\pi\), the mean cost is
 
 \[
 \sum_i\pi_i h(i).
 \]
 
-Pour une CMTC irréductible non explosive et récurrente positive, le support donne une distribution stationnaire unique \(\pi\) telle que
+For an irreducible, non-explosive, positive-recurrent CTMC, there is a unique stationary distribution \(\pi\) satisfying
 
 \[
 \pi Q=0,
 \]
 
-et
+and
 
 \[
 \lim_{t\to\infty}p_{ij}(t)=\pi_j.
 \]
 
-Il relie également le temps moyen de retour à la distribution stationnaire par une formule faisant intervenir le taux de sortie \(-q_{ii}\) et \(\pi_i\).
+The mean return time is also related to the stationary distribution through a formula involving the exit rate \(-q_{ii}\) and \(\pi_i\).
 
-Le cours traite aussi la non-explosion, c'est-à-dire l'absence d'une infinité de sauts en temps fini.
+Non-explosion means that infinitely many jumps do not occur in finite time.
 
-# 10. Processus de naissance et de mort
+# 10. Birth-death processes
 
-Un processus de naissance et de mort est un cas particulier de CMTC où les seuls sauts possibles sont
-
-\[
-i\to i+1 \quad\text{(naissance)},
-\]
-
-et, pour \(i>0\),
+A birth-death process is a special CTMC in which the only possible jumps are
 
 \[
-i\to i-1 \quad\text{(mort)}.
+i\to i+1 \quad\text{(birth)},
 \]
 
-On introduit les taux de naissance \(\lambda_i\) et de mort \(\mu_i\). Le générateur est alors tridiagonal et le diagramme de transition porte ces taux.
-
-## 10.1. Équations de Kolmogorov
-
-En posant
+and, for \(i>0\),
 
 \[
-p_k(t)=P(X_t=k),
+i\to i-1 \quad\text{(death)}.
 \]
 
-les équations de Kolmogorov décrivent le bilan des flux entrants et sortants de chaque état \(k\).
+Introduce birth rates \(\lambda_i\) and death rates \(\mu_i\). The generator is tridiagonal and its transition diagram is labeled by these rates.
 
-## 10.2. Distribution stationnaire
+## 10.1. Kolmogorov equations
 
-Lorsque la distribution stationnaire existe, les probabilités stationnaires sont liées aux taux successifs par une relation récursive de la forme
+Let
+
+\[
+p_k(t)=P(X_t=k).
+\]
+
+The Kolmogorov equations describe the balance between incoming and outgoing probability flux for each state \(k\).
+
+## 10.2. Stationary distribution
+
+When a stationary distribution exists, the stationary probabilities are related to successive rates by a recursive relation of the form
 
 \[
 \pi_n\propto\prod_{k=0}^{n-1}\frac{\lambda_k}{\mu_{k+1}},
 \]
 
-suivie d'une normalisation lorsque la somme des masses est finie.
+followed by normalization when the sum of the masses is finite.
 
-## 10.3. Taux linéaires
+## 10.3. Linear rates
 
-Le support étudie notamment
+A common model is
 
 \[
 \lambda_n=n\lambda+\alpha,
 \]
 
-où \(\alpha\ge0\) représente l'immigration et \(\lambda\ge0\) le taux de naissance par individu. Le taux de mort est proportionnel au nombre d'individus : avec \(n\) individus, une mort pendant \([t,t+h[\) est de probabilité de l'ordre de \(n\mu h\).
+where \(\alpha\ge0\) represents immigration and \(\lambda\ge0\) is the birth rate per individual. The death rate is proportional to the population size: with \(n\) individuals, a death during \([t,t+h[\) has probability of order \(n\mu h\).
 
 ## 10.4. Non-explosion
 
-Le cours étudie le temps d'explosion \(\zeta\). Pour une naissance pure, un critère présenté est
+Let \(\zeta\) be the explosion time. For a pure-birth process, one criterion is
 
 \[
 \sum_k\frac1{\lambda_k}=\infty
@@ -217,27 +215,27 @@ Le cours étudie le temps d'explosion \(\zeta\). Pour une naissance pure, un cri
 P(\zeta=\infty)=1.
 \]
 
-## 11. Synthèse
+## 11. Summary
 
 \[
-\text{CMTC}
+\text{CTMC}
 \rightarrow P(t)
 \rightarrow Q
 \rightarrow\text{Kolmogorov}
 \rightarrow\mu_t
-\rightarrow\text{stationnarité}
-\rightarrow\text{séjours}
-\rightarrow\text{chaîne embarquée}
-\rightarrow\text{long terme}
+\rightarrow\text{stationarity}
+\rightarrow\text{holding times}
+\rightarrow\text{embedded jump chain}
+\rightarrow\text{long-term behavior}
 \]
 
-puis
+then
 
 \[
-\text{naissance--mort}
-\rightarrow\text{générateur}
+\text{birth-death}
+\rightarrow\text{generator}
 \rightarrow\text{Kolmogorov}
-\rightarrow\text{stationnarité}
-\rightarrow\text{taux particuliers}
+\rightarrow\text{stationarity}
+\rightarrow\text{special rates}
 \rightarrow\text{non-explosion}.
 \]
