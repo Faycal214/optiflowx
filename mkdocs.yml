@@ -1,19 +1,19 @@
 site_name: OptiFlowX
-site_description: Executable stochastic-process course material based on the five USTHB MSPRO Processus Aléatoires PDFs.
+site_description: Executable stochastic-process course material based on the five USTHB MSPRO stochastic-process PDFs.
 repo_url: https://github.com/Faycal214/optiflowx
 repo_name: Faycal214/optiflowx
 
 nav:
   - Home: index.md
-  - Course material:
+  - Course Material:
       - Overview: course_material.md
-      - Chapter 1 — CMTD: course_chapitre1.md
-      - Chapter 2 — Processus de Poisson: course_chapitre2.md
-      - Chapter 3 — CMTC: course_chapitre3.md
-      - Chapter 4 — Espérance conditionnelle: course_chapitre4.md
-      - Chapter 5 — Martingales à temps discret: course_chapitre5.md
+      - Chapter 1 — Discrete-Time Markov Chains: course_chapitre1.md
+      - Chapter 2 — Poisson Processes: course_chapitre2.md
+      - Chapter 3 — Continuous-Time Markov Chains: course_chapitre3.md
+      - Chapter 4 — Conditional Expectation: course_chapitre4.md
+      - Chapter 5 — Discrete-Time Martingales: course_chapitre5.md
   - Package / API:
-      - Course → API map: course-map.md
+      - Course → API Map: course-map.md
       - Architecture: architecture.md
       - API Reference:
           - Overview: api/index.md
@@ -28,11 +28,11 @@ nav:
           - Martingale: api/martingale.md
           - StoppingTime: api/stopping_time.md
           - StoppedProcess: api/stopped_process.md
-          - Analysis utilities: api/analysis.md
+          - Analysis Utilities: api/analysis.md
           - Exceptions: api/exceptions.md
-      - API map: api.md
+      - API Map: api.md
   - Examples:
-      - Worked examples: examples.md
+      - Worked Examples: examples.md
 
 theme:
   name: readthedocs
