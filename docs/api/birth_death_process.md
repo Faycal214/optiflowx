@@ -47,7 +47,8 @@ BirthDeathProcess(birth_rates, death_rates, *, max_state=None)
 - `pure_birth_probability(n, t, rate=...)` — pure-birth probability formula.
 - `pure_death_probability(n, t, initial_population=..., rate=...)` — pure-death probability formula.
 - `pure_birth_reciprocal_rate_sum(n_terms)` — partial reciprocal-rate sum for the pure-birth model.
-- `simulate(...)` — simulate the process where supported by the implementation.
+
+`BirthDeathProcess` does not currently expose a general `simulate()` method; simulations are represented through the corresponding finite `ContinuousTimeMarkovChain` when conversion is supported.
 
 ## Example
 
