@@ -35,6 +35,30 @@ class CTMCPath:
         idx = max(0, min(idx, len(self.states) - 1))
         return self.states[idx]
 
+    def occupation_time(self, state: State, horizon: float) -> float:
+        """Return the time spent in ``state`` on ``[0, horizon]``."""
+        if not np.isfinite(horizon) or horizon < 0:
+            raise ValueError("horizon must be finite and non-negative")
+        if len(self.times) == 0 or self.times[0] != 0.0:
+            raise ValueError("CTMC path must start at time 0")
+        if horizon == 0:
+            return 0.0
+        total = 0.0
+        times = np.asarray(self.times, dtype=float)
+        for i, start in enumerate(times):
+            if start >= horizon:
+                break
+            end = horizon if i + 1 == len(times) else min(float(times[i + 1]), horizon)
+            if self.states[i] == state:
+                total += max(0.0, end - float(start))
+        return float(total)
+
+    def occupation_fraction(self, state: State, horizon: float) -> float:
+        """Return the occupation fraction of ``state`` on ``[0, horizon]``."""
+        if horizon <= 0 or not np.isfinite(horizon):
+            raise ValueError("horizon must be strictly positive and finite")
+        return self.occupation_time(state, horizon) / float(horizon)
+
 
 class ContinuousTimeMarkovChain:
     """Finite-state homogeneous CTMC represented by its generator ``Q``."""
@@ -147,6 +171,28 @@ class ContinuousTimeMarkovChain:
             raise ValueError("no non-negative stationary distribution found")
         pi[np.abs(pi) < self._tolerance] = 0.0
         return pi / pi.sum()
+
+    def communicating_classes(self) -> list[tuple[State, ...]]:
+        """Return communication classes through the embedded jump chain."""
+        return self.jump_chain().communicating_classes()
+
+    def stationary_distribution_from_jump_chain(self) -> np.ndarray:
+        """Recover the CTMC stationary law from its jump-chain stationary law."""
+        rates = -np.diag(self._Q)
+        if np.any(rates <= 0):
+            raise ValueError("positive holding rates are required in every state")
+        phi = self.jump_chain().stationary_distribution()
+        weights = phi / rates
+        return weights / weights.sum()
+
+    def mean_return_time(self, state: State) -> float:
+        """Return the mean continuous-time return time for ``state``."""
+        pi = self.stationary_distribution()
+        i = self._idx(state)
+        rate = -self._Q[i, i]
+        if rate <= self._tolerance or pi[i] <= 0:
+            return float("inf")
+        return float(1.0 / (rate * pi[i]))
 
     def long_run_cost(self, costs: Sequence[float]) -> float:
         """Return the stationary mean of a state-cost function."""
