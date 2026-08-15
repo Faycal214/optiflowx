@@ -1,33 +1,33 @@
-# Course → API map
+# Course → API Map
 
-This page maps the main course concepts to the corresponding OptiFlowX API components.
+This page connects the mathematical concepts in the five chapters with the corresponding OptiFlowX API components.
 
 ## Chapter 1 — Discrete-Time Markov Chains
 
-| Course concept | OptiFlowX | Documentation |
+| Concept | OptiFlowX | Documentation |
 |---|---|---|
-| one-step transition matrix `P` | `MarkovChain` | `cmt_d.md` §2 |
-| transition in `n` steps `P^(n)` | `n_step_transition` | `cmt_d.md` §3 |
-| law `mu_n = mu_0 P^n` | `state_distribution` | `cmt_d.md` §4 |
-| Chapman–Kolmogorov | `chapman_kolmogorov` | `cmt_d.md` §3 |
-| accessibility | `accessible` | `cmt_d.md` §5 |
-| communication | `communicate` | `cmt_d.md` §5 |
-| communication classes | `communicating_classes` | `cmt_d.md` §5 |
-| closed classes | `closed_classes` | `cmt_d.md` §5 |
-| recurrent/transient classification | `classify_states` | `cmt_d.md` §6 |
-| period | `period` | `cmt_d.md` §8 |
-| stationary distribution | `stationary_distribution` | `cmt_d.md` §9 |
-| limiting distribution | `limiting_distribution` | `cmt_d.md` §10 |
-| absorption probability | `absorption_probability` | `cmt_d.md` §11 |
+| one-step transition matrix `P` | `MarkovChain` | `cmt_d.md` |
+| transition in `n` steps `P^(n)` | `n_step_transition` | `cmt_d.md` |
+| law `mu_n = mu_0 P^n` | `state_distribution` | `cmt_d.md` |
+| Chapman–Kolmogorov | `chapman_kolmogorov` | `cmt_d.md` |
+| accessibility | `accessible` | `cmt_d.md` |
+| communication | `communicate` | `cmt_d.md` |
+| communication classes | `communicating_classes` | `cmt_d.md` |
+| closed classes | `closed_classes` | `cmt_d.md` |
+| recurrent/transient classification | `classify_states` | `cmt_d.md` |
+| period | `period` | `cmt_d.md` |
+| stationary distribution | `stationary_distribution` | `cmt_d.md` |
+| limiting distribution | `limiting_distribution` | `cmt_d.md` |
+| absorption probability | `absorption_probability` | `cmt_d.md` |
 
 ## Chapter 2 — Poisson Processes
 
-| Course concept | OptiFlowX | Documentation |
+| Concept | OptiFlowX | Documentation |
 |---|---|---|
 | homogeneous Poisson process | `PoissonProcess` | `poisson.md` |
 | Poisson counting law | `count_probability` | `poisson.md` |
 | independent increments | increment utilities | `poisson.md` |
-| interarrival times | `interarrival_samples` | `poisson.md` |
+| inter-arrival times | `interarrival_samples` | `poisson.md` |
 | arrival times | `arrival_times` | `poisson.md` |
 | simulation | `simulate` | `poisson.md` |
 | conditioning on counts | `conditional_first_arrival_cdf`, `conditional_arrival_times` | `poisson.md` |
@@ -37,34 +37,34 @@ This page maps the main course concepts to the corresponding OptiFlowX API compo
 
 ## Chapter 3 — Continuous-Time Markov Chains
 
-| Course concept | OptiFlowX | Documentation |
+| Concept | OptiFlowX | Documentation |
 |---|---|---|
 | infinitesimal generator `Q` | `ContinuousTimeMarkovChain` | `cmtc.md` |
-| transition matrix `P(t)` | `transition_matrix` | `cmtc.md` |
+| transition matrix `P(t)` | `transition_matrix_at` | `cmtc.md` |
 | infinitesimal transition approximation | `infinitesimal_transition_matrix` | `cmtc.md` |
 | Chapman–Kolmogorov | `chapman_kolmogorov` | `cmtc.md` |
 | Kolmogorov equations | `forward_derivative`, `backward_derivative` | `cmtc.md` |
-| matrix exponential | `transition_matrix` | `cmtc.md` |
+| matrix exponential | `transition_matrix_at` | `cmtc.md` |
 | stationary law | `stationary_distribution` | `cmtc.md` |
 | holding rate / waiting time | `holding_rate`, `holding_time` | `cmtc.md` |
 | embedded jump chain | `jump_chain_matrix`, `jump_chain` | `cmtc.md` |
 | simulated trajectory | `CTMCPath`, `simulate` | `cmtc.md` |
 
-## Birth-Death Processes
+## Birth-death processes
 
-| Course concept | OptiFlowX | Documentation |
+| Concept | OptiFlowX | Documentation |
 |---|---|---|
 | birth/death rates | `BirthDeathProcess` | `birth_death.md` |
 | finite generator | `generator_matrix` | `birth_death.md` |
 | embedded jump chain | `jump_chain_matrix` | `birth_death.md` |
 | Kolmogorov evolution | `kolmogorov_derivative` | `birth_death.md` |
 | stationary product weights | `stationary_weights` | `birth_death.md` |
-| pure birth/death/immigration examples | class constructors and formulas | `birth_death.md` |
+| pure birth/death/immigration models | class constructors and formulas | `birth_death.md` |
 | explosion criterion | `pure_birth_reciprocal_rate_sum` | `birth_death.md` |
 
 ## Chapter 4 — Conditional Expectation
 
-| Course concept | OptiFlowX | Documentation |
+| Concept | OptiFlowX | Documentation |
 |---|---|---|
 | finite probability space | `FiniteProbabilitySpace` | `conditional_expectation.md` |
 | random variable | `RandomVariable` | `conditional_expectation.md` |
@@ -79,7 +79,7 @@ This page maps the main course concepts to the corresponding OptiFlowX API compo
 
 ## Chapter 5 — Discrete-Time Martingales
 
-| Course concept | OptiFlowX | Documentation |
+| Concept | OptiFlowX | Documentation |
 |---|---|---|
 | filtration | `Filtration` | `martingales.md` |
 | adapted process | `is_adapted` | `martingales.md` |
