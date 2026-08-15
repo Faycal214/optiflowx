@@ -2,13 +2,12 @@ name: Release package
 
 on:
   push:
-    branches: [main]
     tags:
       - "v*.*.*"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
 
 jobs:
@@ -52,20 +51,6 @@ jobs:
 
       - name: Validate distributions
         run: python -m twine check dist/*
-
-      - name: Create v0.1.0 tag after successful verification
-        if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release v0.1.0]')
-        run: |
-          VERSION=$(python -c "import optiflowx; print(optiflowx.__version__)")
-          test "$VERSION" = "0.1.0"
-          if git ls-remote --exit-code --tags origin "refs/tags/v${VERSION}" >/dev/null 2>&1; then
-            echo "Tag v${VERSION} already exists; nothing to create."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "v${VERSION}" -m "OptiFlowX v${VERSION}"
-          git push origin "v${VERSION}"
 
       - name: Upload distributions
         uses: actions/upload-artifact@v4
