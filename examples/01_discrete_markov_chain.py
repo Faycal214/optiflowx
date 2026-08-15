@@ -1,13 +1,13 @@
 """Chapter 1: discrete-time Markov chain example.
 
-The matrix P is the one-step transition matrix.  P**n gives n-step
+The matrix P is the one-step transition matrix. P**n gives n-step
 transition probabilities and a stationary distribution pi satisfies pi P=pi.
 """
 
 import numpy as np
 
-from optiflowx.stochastic import MarkovChain, empirical_state_frequencies, mean_return_time
-
+from optiflowx.stochastic import MarkovChain
+from optiflowx.stochastic.analysis import empirical_state_frequencies
 
 chain = MarkovChain(
     [[0.7, 0.3], [0.4, 0.6]],
@@ -16,7 +16,7 @@ chain = MarkovChain(
 
 print("P^5:\n", chain.n_step_transition(5))
 print("stationary distribution:", chain.stationary_distribution())
-print("mean return time to A:", mean_return_time(chain, "A"))
+print("mean return time to A:", chain.mean_return_time("A"))
 
 path = chain.simulate(
     10_000,
