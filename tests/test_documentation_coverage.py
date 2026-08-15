@@ -10,9 +10,9 @@ REQUIRED_DOCUMENTATION = (
     "course_chapitre3.md",
     "course_chapitre4.md",
     "course_chapitre5.md",
+    "architecture.md",
     "api.md",
     "api/index.md",
-    "api/architecture.md",
     "examples.md",
 )
 
