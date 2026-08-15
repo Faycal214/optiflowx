@@ -20,13 +20,51 @@ TransitionMethod = Literal["expm", "uniformization"]
 
 @dataclass(frozen=True)
 class CTMCPath:
-    """A simulated path represented by jump times and visited states."""
+    """A simulated path represented by jump times and visited states.
+    
+    Mathematical object
+    ------------------
+    Public stochastic object exposed by the OptiFlowX API.
+    
+    Course basis
+    ------------
+    The implementation follows the corresponding MSPRO course material documented by OptiFlowX.
+    
+    Parameters
+    ----------
+    times : np.ndarray
+        Jump times.
+    states : tuple[State, ...]
+        State labels in matrix order.
+    
+    Examples
+    --------
+    See the executable examples for `continuous_time_markov_chain.py` and the API reference."""
 
     times: np.ndarray
     states: tuple[State, ...]
 
     def state_at(self, t: float) -> State:
-        """Return the state occupied at time ``t``."""
+        """Return the state occupied at time ``t``.
+        
+        Parameters
+        ----------
+        t : float
+            Non-negative time.
+        
+        Returns
+        -------
+        State
+            Result produced by the operation.
+        
+        Raises
+        ------
+        ValueError
+            Raised when an input or mathematical precondition is violated.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `state_at`."""
         if not np.isfinite(t) or t < 0:
             raise ValueError("t must be finite and non-negative")
         idx = int(np.searchsorted(self.times, t, side="right") - 1)
@@ -34,7 +72,28 @@ class CTMCPath:
         return self.states[idx]
 
     def occupation_time(self, state: State, horizon: float) -> float:
-        """Return the time spent in ``state`` on ``[0, horizon]``."""
+        """Return the time spent in ``state`` on ``[0, horizon]``.
+        
+        Parameters
+        ----------
+        state : State
+            State label.
+        horizon : float
+            Observation horizon.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Raises
+        ------
+        ValueError
+            Raised when an input or mathematical precondition is violated.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `occupation_time`."""
         if not np.isfinite(horizon) or horizon < 0:
             raise ValueError("horizon must be finite and non-negative")
         if len(self.times) == 0 or self.times[0] != 0.0:
@@ -52,14 +111,56 @@ class CTMCPath:
         return float(total)
 
     def occupation_fraction(self, state: State, horizon: float) -> float:
-        """Return the occupation fraction of ``state`` on ``[0, horizon]``."""
+        """Return the occupation fraction of ``state`` on ``[0, horizon]``.
+        
+        Parameters
+        ----------
+        state : State
+            State label.
+        horizon : float
+            Observation horizon.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Raises
+        ------
+        ValueError
+            Raised when an input or mathematical precondition is violated.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `occupation_fraction`."""
         if horizon <= 0 or not np.isfinite(horizon):
             raise ValueError("horizon must be strictly positive and finite")
         return self.occupation_time(state, horizon) / float(horizon)
 
 
 class ContinuousTimeMarkovChain:
-    """Finite-state homogeneous CTMC represented by its generator ``Q``."""
+    """Finite-state homogeneous CTMC represented by its generator ``Q``.
+    
+    Mathematical object
+    ------------------
+    Public stochastic object exposed by the OptiFlowX API.
+    
+    Course basis
+    ------------
+    The implementation follows the corresponding MSPRO course material documented by OptiFlowX.
+    
+    Parameters
+    ----------
+    generator : Sequence[Sequence[float]]
+        Infinitesimal generator matrix.
+    states : Sequence[State] | None
+        State labels in matrix order.
+    tolerance : float, default None
+        Numerical tolerance.
+    
+    Examples
+    --------
+    See the executable examples for `continuous_time_markov_chain.py` and the API reference."""
 
     def __init__(
         self,
@@ -68,7 +169,20 @@ class ContinuousTimeMarkovChain:
         *,
         tolerance: float = 1e-12,
     ) -> None:
-        """Create a homogeneous CTMC from its infinitesimal generator ``Q``."""
+        """Create a homogeneous CTMC from its infinitesimal generator ``Q``.
+        
+        Parameters
+        ----------
+        generator : Sequence[Sequence[float]]
+            Infinitesimal generator matrix.
+        states : Sequence[State] | None
+            State labels in matrix order.
+        tolerance : float, default None
+            Numerical tolerance.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `__init__`."""
         self._tolerance = validate_tolerance(tolerance)
         q = validate_generator(generator, tolerance=self._tolerance)
         labels = validate_states(states, q.shape[0])
@@ -78,26 +192,80 @@ class ContinuousTimeMarkovChain:
 
     @property
     def generator_matrix(self) -> np.ndarray:
-        """Return a copy of the infinitesimal generator ``Q``."""
+        """Return a copy of the infinitesimal generator ``Q``.
+        
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `generator_matrix`."""
         return self._Q.copy()
 
     @property
     def generator(self) -> np.ndarray:
-        """Return the infinitesimal generator ``Q``."""
+        """Return the infinitesimal generator ``Q``.
+        
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `generator`."""
         return self.generator_matrix
 
     @property
     def states(self) -> tuple[State, ...]:
-        """Return the ordered state labels."""
+        """Return the ordered state labels.
+        
+        
+        Returns
+        -------
+        tuple[State, ...]
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `states`."""
         return self._states
 
     @property
     def n_states(self) -> int:
-        """Return the number of states."""
+        """Return the number of states.
+        
+        
+        Returns
+        -------
+        int
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `n_states`."""
         return len(self._states)
 
     def infinitesimal_transition_matrix(self, h: float) -> np.ndarray:
-        """Return the first-order matrix ``I+hQ``."""
+        """Return the first-order matrix ``I+hQ``.
+        
+        Parameters
+        ----------
+        h : float
+            Non-negative time increment.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `infinitesimal_transition_matrix`."""
         self._validate_time(h)
         return np.eye(self.n_states) + float(h) * self._Q
 
@@ -109,17 +277,29 @@ class ContinuousTimeMarkovChain:
         max_terms: int = 100_000,
     ) -> np.ndarray:
         """Return ``P(t)`` using SciPy ``expm`` or CTMC uniformization.
-
+        
         Parameters
         ----------
-        t:
+        t : float
             Non-negative time.
-        method:
-            ``"expm"`` uses the matrix exponential. ``"uniformization"``
-            uses Jensen's uniformization series.
-        max_terms:
-            Maximum Poisson-series terms for uniformization.
-        """
+        method : TransitionMethod
+            Numerical method selector.
+        max_terms : int
+            Maximum number of numerical-series terms.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Raises
+        ------
+        ValueError
+            Raised when an input or mathematical precondition is violated.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `transition_matrix`."""
         self._validate_time(t)
         if method == "expm":
             return expm(self._Q * float(t))
@@ -139,46 +319,201 @@ class ContinuousTimeMarkovChain:
         method: TransitionMethod = "expm",
         max_terms: int = 100_000,
     ) -> np.ndarray:
-        """Return ``P(t)`` using the canonical transition-matrix API."""
+        """Return ``P(t)`` using the canonical transition-matrix API.
+        
+        Parameters
+        ----------
+        t : float
+            Non-negative time.
+        method : TransitionMethod
+            Numerical method selector.
+        max_terms : int
+            Maximum number of numerical-series terms.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `transition_matrix_at`."""
         return self.transition_matrix(t, method=method, max_terms=max_terms)
 
     def transition_matrix_uniformized(self, t: float, *, max_terms: int = 100_000) -> np.ndarray:
-        """Return ``P(t)`` explicitly through Jensen uniformization."""
+        """Return ``P(t)`` explicitly through Jensen uniformization.
+        
+        Parameters
+        ----------
+        t : float
+            Non-negative time.
+        max_terms : int
+            Maximum number of numerical-series terms.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `transition_matrix_uniformized`."""
         return self.transition_matrix(t, method="uniformization", max_terms=max_terms)
 
     def transition_probability(self, source: State, target: State, t: float) -> float:
-        """Return ``p_ij(t)=P(X_t=j | X_0=i)``."""
+        """Return ``p_ij(t)=P(X_t=j | X_0=i)``.
+        
+        Parameters
+        ----------
+        source : State
+            Source state label.
+        target : State
+            Target state label.
+        t : float
+            Non-negative time.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `transition_probability`."""
         return float(self.transition_matrix(t)[self._idx(source), self._idx(target)])
 
     def state_distribution(self, initial_distribution: Sequence[float], t: float) -> np.ndarray:
-        """Return ``mu_t=mu_0 P(t)`` for a row-vector initial law."""
+        """Return ``mu_t=mu_0 P(t)`` for a row-vector initial law.
+        
+        Parameters
+        ----------
+        initial_distribution : Sequence[float]
+            Initial probability distribution.
+        t : float
+            Non-negative time.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `state_distribution`."""
         mu = validate_probability_vector(initial_distribution, self.n_states, tolerance=self._tolerance, name="initial_distribution")
         return mu @ self.transition_matrix(t)
 
     def chapman_kolmogorov(self, s: float, t: float) -> np.ndarray:
-        """Return ``P(s)P(t)=P(s+t)``."""
+        """Return ``P(s)P(t)=P(s+t)``.
+        
+        Parameters
+        ----------
+        s : float
+            Non-negative initial time.
+        t : float
+            Non-negative time.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `chapman_kolmogorov`."""
         self._validate_time(s)
         self._validate_time(t)
         return self.transition_matrix(s) @ self.transition_matrix(t)
 
     def forward_derivative(self, t: float) -> np.ndarray:
-        """Return the forward Kolmogorov derivative ``P(t)Q``."""
+        """Return the forward Kolmogorov derivative ``P(t)Q``.
+        
+        Parameters
+        ----------
+        t : float
+            Non-negative time.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `forward_derivative`."""
         return self.transition_matrix(t) @ self._Q
 
     def forward_equation(self, t: float) -> np.ndarray:
-        """Return the forward Kolmogorov derivative ``P(t)Q``."""
+        """Return the forward Kolmogorov derivative ``P(t)Q``.
+        
+        Parameters
+        ----------
+        t : float
+            Non-negative time.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `forward_equation`."""
         return self.forward_derivative(t)
 
     def backward_derivative(self, t: float) -> np.ndarray:
-        """Return the backward Kolmogorov derivative ``QP(t)``."""
+        """Return the backward Kolmogorov derivative ``QP(t)``.
+        
+        Parameters
+        ----------
+        t : float
+            Non-negative time.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `backward_derivative`."""
         return self._Q @ self.transition_matrix(t)
 
     def backward_equation(self, t: float) -> np.ndarray:
-        """Return the backward Kolmogorov derivative ``QP(t)``."""
+        """Return the backward Kolmogorov derivative ``QP(t)``.
+        
+        Parameters
+        ----------
+        t : float
+            Non-negative time.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `backward_equation`."""
         return self.backward_derivative(t)
 
     def stationary_distribution(self) -> np.ndarray:
-        """Return a stationary law solving ``pi Q=0`` and ``sum(pi)=1``."""
+        """Return a stationary law solving ``pi Q=0`` and ``sum(pi)=1``.
+        
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Raises
+        ------
+        ValueError
+            Raised when an input or mathematical precondition is violated.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `stationary_distribution`."""
         n = self.n_states
         a = self._Q.T.copy()
         a[-1] = 1.0
@@ -194,11 +529,36 @@ class ContinuousTimeMarkovChain:
         return pi / pi.sum()
 
     def communicating_classes(self) -> list[tuple[State, ...]]:
-        """Return communication classes through the embedded jump chain."""
+        """Return communication classes through the embedded jump chain.
+        
+        
+        Returns
+        -------
+        list[tuple[State, ...]]
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `communicating_classes`."""
         return self.jump_chain().communicating_classes()
 
     def stationary_distribution_from_jump_chain(self) -> np.ndarray:
-        """Recover the CTMC stationary law from its jump-chain stationary law."""
+        """Recover the CTMC stationary law from its jump-chain stationary law.
+        
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Raises
+        ------
+        GeneratorValidationError
+            Raised when an input or mathematical precondition is violated.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `stationary_distribution_from_jump_chain`."""
         rates = -np.diag(self._Q)
         if np.any(rates <= self._tolerance):
             raise GeneratorValidationError("positive holding rates are required in every state")
@@ -207,7 +567,21 @@ class ContinuousTimeMarkovChain:
         return weights / weights.sum()
 
     def mean_return_time(self, state: State) -> float:
-        """Return the mean continuous-time return time for ``state``."""
+        """Return the mean continuous-time return time for ``state``.
+        
+        Parameters
+        ----------
+        state : State
+            State label.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `mean_return_time`."""
         pi = self.stationary_distribution()
         i = self._idx(state)
         rate = -self._Q[i, i]
@@ -216,14 +590,43 @@ class ContinuousTimeMarkovChain:
         return float(1.0 / (rate * pi[i]))
 
     def long_run_cost(self, costs: Sequence[float]) -> float:
-        """Return the stationary mean of a state-cost function."""
+        """Return the stationary mean of a state-cost function.
+        
+        Parameters
+        ----------
+        costs : Sequence[float]
+            Finite state-cost vector.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Raises
+        ------
+        ValueError
+            Raised when an input or mathematical precondition is violated.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `long_run_cost`."""
         costs = np.asarray(costs, dtype=float)
         if costs.shape != (self.n_states,) or not np.all(np.isfinite(costs)):
             raise ValueError("costs must have one finite value per state")
         return float(self.stationary_distribution() @ costs)
 
     def jump_chain_matrix(self) -> np.ndarray:
-        """Return the transition matrix of the embedded jump chain."""
+        """Return the transition matrix of the embedded jump chain.
+        
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `jump_chain_matrix`."""
         transition = np.zeros_like(self._Q)
         for i in range(self.n_states):
             rate = -self._Q[i, i]
@@ -235,15 +638,55 @@ class ContinuousTimeMarkovChain:
         return transition
 
     def jump_chain(self) -> MarkovChain:
-        """Return the embedded discrete-time Markov chain."""
+        """Return the embedded discrete-time Markov chain.
+        
+        
+        Returns
+        -------
+        MarkovChain
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `jump_chain`."""
         return MarkovChain(self.jump_chain_matrix(), self._states, tolerance=self._tolerance)
 
     def holding_rate(self, state: State) -> float:
-        """Return the exit rate ``q_i=-q_ii``."""
+        """Return the exit rate ``q_i=-q_ii``.
+        
+        Parameters
+        ----------
+        state : State
+            State label.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `holding_rate`."""
         return float(-self._Q[self._idx(state), self._idx(state)])
 
     def holding_time(self, state: State, *, rng: np.random.Generator | None = None) -> float:
-        """Sample the exponential holding time in ``state``."""
+        """Sample the exponential holding time in ``state``.
+        
+        Parameters
+        ----------
+        state : State
+            State label.
+        rng : np.random.Generator | None
+            Optional NumPy random generator.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `holding_time`."""
         rate = self.holding_rate(state)
         if rate <= self._tolerance:
             return float("inf")
@@ -257,7 +700,25 @@ class ContinuousTimeMarkovChain:
         initial_state: State | None = None,
         rng: np.random.Generator | None = None,
     ) -> CTMCPath:
-        """Simulate the holding-time/jump-chain construction up to ``t_max``."""
+        """Simulate the holding-time/jump-chain construction up to ``t_max``.
+        
+        Parameters
+        ----------
+        t_max : float
+            Simulation horizon.
+        initial_state : State | None
+            Optional initial state.
+        rng : np.random.Generator | None
+            Optional NumPy random generator.
+        
+        Returns
+        -------
+        CTMCPath
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `simulate`."""
         self._validate_time(t_max)
         generator = rng if rng is not None else np.random.default_rng()
         current = 0 if initial_state is None else self._idx(initial_state)

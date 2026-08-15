@@ -14,9 +14,44 @@ State = Hashable
 
 
 class MarkovChain:
-    """Finite-state homogeneous discrete-time Markov chain."""
+    """Finite-state homogeneous discrete-time Markov chain.
+    
+    Mathematical object
+    ------------------
+    Public stochastic object exposed by the OptiFlowX API.
+    
+    Course basis
+    ------------
+    The implementation follows the corresponding MSPRO course material documented by OptiFlowX.
+    
+    Parameters
+    ----------
+    transition_matrix : Sequence[Sequence[float]]
+        Transition probability matrix.
+    states : Sequence[State] | None
+        State labels in matrix order.
+    tolerance : float, default None
+        Numerical tolerance.
+    
+    Examples
+    --------
+    See the executable examples for `markov_chain.py` and the API reference."""
 
     def __init__(self, transition_matrix: Sequence[Sequence[float]], states: Sequence[State] | None = None, *, tolerance: float = 1e-12) -> None:
+        """Public stochastic operation.
+        
+        Parameters
+        ----------
+        transition_matrix : Sequence[Sequence[float]]
+            Transition probability matrix.
+        states : Sequence[State] | None
+            State labels in matrix order.
+        tolerance : float, default None
+            Numerical tolerance.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `__init__`."""
         tolerance = validate_tolerance(tolerance)
         matrix = validate_stochastic_matrix(transition_matrix, tolerance=tolerance)
         labels = validate_states(states, matrix.shape[0])
@@ -27,45 +62,161 @@ class MarkovChain:
 
     @property
     def transition_matrix(self) -> np.ndarray:
-        """Return the one-step transition matrix ``P`` as a copy."""
+        """Return the one-step transition matrix ``P`` as a copy.
+        
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `transition_matrix`."""
         return self._P.copy()
 
     @property
     def states(self) -> tuple[State, ...]:
-        """Return the ordered state labels."""
+        """Return the ordered state labels.
+        
+        
+        Returns
+        -------
+        tuple[State, ...]
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `states`."""
         return self._states
 
     @property
     def n_states(self) -> int:
-        """Return the number of states."""
+        """Return the number of states.
+        
+        
+        Returns
+        -------
+        int
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `n_states`."""
         return len(self._states)
 
     def n_step_transition(self, n: int) -> np.ndarray:
-        """Compute the ``n``-step transition matrix ``P^n``."""
+        """Compute the ``n``-step transition matrix ``P^n``.
+        
+        Parameters
+        ----------
+        n : int
+            Integer index required by the operation.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `n_step_transition`."""
         self._nonnegative_int(n, "n")
         return np.linalg.matrix_power(self._P, int(n))
 
     def transition_matrix_at(self, n: int) -> np.ndarray:
-        """Return the canonical ``n``-step transition matrix ``P^n``."""
+        """Return the canonical ``n``-step transition matrix ``P^n``.
+        
+        Parameters
+        ----------
+        n : int
+            Integer index required by the operation.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `transition_matrix_at`."""
         return self.n_step_transition(n)
 
     def state_distribution(self, initial_distribution: Sequence[float], n: int) -> np.ndarray:
-        """Return ``mu_n = mu_0 P^n``."""
+        """Return ``mu_n = mu_0 P^n``.
+        
+        Parameters
+        ----------
+        initial_distribution : Sequence[float]
+            Initial probability distribution.
+        n : int
+            Integer index required by the operation.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `state_distribution`."""
         self._nonnegative_int(n, "n")
         return self._distribution(initial_distribution) @ self.n_step_transition(n)
 
     def chapman_kolmogorov(self, m: int, n: int) -> np.ndarray:
-        """Evaluate ``P^m P^n = P^(m+n)``."""
+        """Evaluate ``P^m P^n = P^(m+n)``.
+        
+        Parameters
+        ----------
+        m : int
+            Non-negative integer time step.
+        n : int
+            Integer index required by the operation.
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `chapman_kolmogorov`."""
         self._nonnegative_int(m, "m")
         self._nonnegative_int(n, "n")
         return self.n_step_transition(m) @ self.n_step_transition(n)
 
     def transition_graph(self) -> dict[State, tuple[State, ...]]:
-        """Return the directed graph induced by positive transitions."""
+        """Return the directed graph induced by positive transitions.
+        
+        
+        Returns
+        -------
+        dict[State, tuple[State, ...]]
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `transition_graph`."""
         return {state: tuple(self._states[j] for j, p in enumerate(self._P[i]) if p > self._tolerance) for i, state in enumerate(self._states)}
 
     def accessible(self, source: State, target: State) -> bool:
-        """Return whether target is accessible from source."""
+        """Return whether target is accessible from source.
+        
+        Parameters
+        ----------
+        source : State
+            Source state label.
+        target : State
+            Target state label.
+        
+        Returns
+        -------
+        bool
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `accessible`."""
         start, goal = self._idx(source), self._idx(target)
         seen, stack = {start}, [start]
         while stack:
@@ -77,11 +228,37 @@ class MarkovChain:
         return goal in seen
 
     def communicate(self, source: State, target: State) -> bool:
-        """Return whether source and target communicate."""
+        """Return whether source and target communicate.
+        
+        Parameters
+        ----------
+        source : State
+            Source state label.
+        target : State
+            Target state label.
+        
+        Returns
+        -------
+        bool
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `communicate`."""
         return self.accessible(source, target) and self.accessible(target, source)
 
     def communicating_classes(self) -> list[tuple[State, ...]]:
-        """Return the communicating classes of the transition graph."""
+        """Return the communicating classes of the transition graph.
+        
+        
+        Returns
+        -------
+        list[tuple[State, ...]]
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `communicating_classes`."""
         graph = [[j for j, p in enumerate(row) if p > self._tolerance] for row in self._P]
         reverse = [[] for _ in graph]
         for i, neighbours in enumerate(graph):
@@ -91,6 +268,16 @@ class MarkovChain:
         order: list[int] = []
 
         def dfs(v: int) -> None:
+            """Public stochastic operation.
+            
+            Parameters
+            ----------
+            v : int
+                Input argument.
+            
+            Examples
+            --------
+            See the executable examples and API reference for `dfs`."""
             seen[v] = True
             for w in graph[v]:
                 if not seen[w]:
@@ -104,6 +291,18 @@ class MarkovChain:
         classes: list[tuple[State, ...]] = []
 
         def rdfs(v: int, component: list[int]) -> None:
+            """Public stochastic operation.
+            
+            Parameters
+            ----------
+            v : int
+                Input argument.
+            component : list[int]
+                Input argument.
+            
+            Examples
+            --------
+            See the executable examples and API reference for `rdfs`."""
             seen[v] = True
             component.append(v)
             for w in reverse[v]:
@@ -118,11 +317,31 @@ class MarkovChain:
         return classes
 
     def is_irreducible(self) -> bool:
-        """Return whether all states communicate."""
+        """Return whether all states communicate.
+        
+        
+        Returns
+        -------
+        bool
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `is_irreducible`."""
         return len(self.communicating_classes()) == 1
 
     def closed_classes(self) -> list[tuple[State, ...]]:
-        """Return communicating classes from which no transition leaves."""
+        """Return communicating classes from which no transition leaves.
+        
+        
+        Returns
+        -------
+        list[tuple[State, ...]]
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `closed_classes`."""
         graph = self.transition_graph()
         result: list[tuple[State, ...]] = []
         for component in self.communicating_classes():
@@ -132,12 +351,36 @@ class MarkovChain:
         return result
 
     def is_absorbing_state(self, state: State) -> bool:
-        """Return whether ``p_ii=1``."""
+        """Return whether ``p_ii=1``.
+        
+        Parameters
+        ----------
+        state : State
+            State label.
+        
+        Returns
+        -------
+        bool
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `is_absorbing_state`."""
         i = self._idx(state)
         return abs(self._P[i, i] - 1.0) <= self._tolerance
 
     def classify_states(self) -> dict[State, str]:
-        """Classify finite-chain states as recurrent or transient."""
+        """Classify finite-chain states as recurrent or transient.
+        
+        
+        Returns
+        -------
+        dict[State, str]
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `classify_states`."""
         graph = [{j for j, p in enumerate(row) if p > self._tolerance} for row in self._P]
         classification: dict[State, str] = {}
         for component in self.communicating_classes():
@@ -148,7 +391,25 @@ class MarkovChain:
         return classification
 
     def first_visit_probability(self, source: State, target: State, n: int) -> float:
-        """Return ``P_i(T_j=n)``."""
+        """Return ``P_i(T_j=n)``.
+        
+        Parameters
+        ----------
+        source : State
+            Source state label.
+        target : State
+            Target state label.
+        n : int
+            Integer index required by the operation.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `first_visit_probability`."""
         self._positive_int(n, "n")
         i, j = self._idx(source), self._idx(target)
         if i == j:
@@ -162,16 +423,68 @@ class MarkovChain:
         return float(row @ self._P[:, j])
 
     def first_passage_probability(self, source: State, target: State, n: int) -> float:
-        """Return the canonical first-passage probability ``P_i(T_j=n)``."""
+        """Return the canonical first-passage probability ``P_i(T_j=n)``.
+        
+        Parameters
+        ----------
+        source : State
+            Source state label.
+        target : State
+            Target state label.
+        n : int
+            Integer index required by the operation.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `first_passage_probability`."""
         return self.first_visit_probability(source, target, n)
 
     def visit_probability(self, source: State, target: State, n: int) -> float:
-        """Return ``sum_{k=1}^n P_i(T_j=k)``."""
+        """Return ``sum_{k=1}^n P_i(T_j=k)``.
+        
+        Parameters
+        ----------
+        source : State
+            Source state label.
+        target : State
+            Target state label.
+        n : int
+            Integer index required by the operation.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `visit_probability`."""
         self._positive_int(n, "n")
         return float(sum(self.first_visit_probability(source, target, k) for k in range(1, n + 1)))
 
     def hitting_probability(self, source: State, target: State) -> float:
-        """Return the probability of ever reaching target from source."""
+        """Return the probability of ever reaching target from source.
+        
+        Parameters
+        ----------
+        source : State
+            Source state label.
+        target : State
+            Target state label.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `hitting_probability`."""
         i, j = self._idx(source), self._idx(target)
         if i == j:
             return 1.0
@@ -185,7 +498,23 @@ class MarkovChain:
         return float(solution[ids.index(i)])
 
     def expected_hitting_time(self, source: State, target: State) -> float:
-        """Return the expected hitting time of target from source."""
+        """Return the expected hitting time of target from source.
+        
+        Parameters
+        ----------
+        source : State
+            Source state label.
+        target : State
+            Target state label.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `expected_hitting_time`."""
         i, j = self._idx(source), self._idx(target)
         if i == j:
             return 0.0
@@ -196,11 +525,43 @@ class MarkovChain:
         return float(solution[ids.index(i)])
 
     def mean_hitting_time(self, source: State, target: State) -> float:
-        """Return the canonical mean first-hitting time."""
+        """Return the canonical mean first-hitting time.
+        
+        Parameters
+        ----------
+        source : State
+            Source state label.
+        target : State
+            Target state label.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `mean_hitting_time`."""
         return self.expected_hitting_time(source, target)
 
     def first_return_probability(self, state: State, n: int) -> float:
-        """Return the first-return probability ``P_i(T_i=n)``."""
+        """Return the first-return probability ``P_i(T_i=n)``.
+        
+        Parameters
+        ----------
+        state : State
+            State label.
+        n : int
+            Integer index required by the operation.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `first_return_probability`."""
         self._positive_int(n, "n")
         i = self._idx(state)
         killed = self._P.copy()
@@ -212,11 +573,39 @@ class MarkovChain:
         return float(row @ self._P[:, i])
 
     def return_probability(self, state: State) -> float:
-        """Return ``P_i(T_i<infinity)`` from recurrence classification."""
+        """Return ``P_i(T_i<infinity)`` from recurrence classification.
+        
+        Parameters
+        ----------
+        state : State
+            State label.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `return_probability`."""
         return 1.0 if self.classify_states()[state] == "recurrent" else 0.0
 
     def mean_return_time(self, state: State) -> float:
-        """Return the mean return time ``mu_i`` in a recurrent class."""
+        """Return the mean return time ``mu_i`` in a recurrent class.
+        
+        Parameters
+        ----------
+        state : State
+            State label.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `mean_return_time`."""
         if self.classify_states()[state] != "recurrent":
             return float("inf")
         component = next(c for c in self.communicating_classes() if state in c)
@@ -225,7 +614,21 @@ class MarkovChain:
         return float(1.0 / local[ids.index(self._idx(state))])
 
     def period(self, state: State) -> int | float:
-        """Return the period of a state."""
+        """Return the period of a state.
+        
+        Parameters
+        ----------
+        state : State
+            State label.
+        
+        Returns
+        -------
+        int | float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `period`."""
         root = self._idx(state)
         graph = [[j for j, p in enumerate(row) if p > self._tolerance] for row in self._P]
         distances = {root: 0}
@@ -242,22 +645,67 @@ class MarkovChain:
         return float("inf") if d == 0 else abs(d)
 
     def is_aperiodic(self) -> bool:
-        """Return whether every state has period one."""
+        """Return whether every state has period one.
+        
+        
+        Returns
+        -------
+        bool
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `is_aperiodic`."""
         return all(self.period(state) == 1 for state in self._states)
 
     def is_ergodic(self) -> bool:
-        """Return whether the finite chain is recurrent and aperiodic."""
+        """Return whether the finite chain is recurrent and aperiodic.
+        
+        
+        Returns
+        -------
+        bool
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `is_ergodic`."""
         classification = self.classify_states()
         return all(classification[s] == "recurrent" and self.period(s) == 1 for s in self._states)
 
     def stationary_distribution(self) -> np.ndarray:
-        """Return the unique stationary distribution for an irreducible finite chain."""
+        """Return the unique stationary distribution for an irreducible finite chain.
+        
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Raises
+        ------
+        ValueError
+            Raised when an input or mathematical precondition is violated.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `stationary_distribution`."""
         if not self.is_irreducible():
             raise ValueError("stationary_distribution() requires an irreducible finite chain")
         return self._stationary(self._P)
 
     def stationary_distributions(self) -> tuple[np.ndarray, ...]:
-        """Return one stationary law for each closed recurrent class."""
+        """Return one stationary law for each closed recurrent class.
+        
+        
+        Returns
+        -------
+        tuple[np.ndarray, ...]
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `stationary_distributions`."""
         vectors = []
         for component in self.closed_classes():
             ids = [self._idx(s) for s in component]
@@ -268,7 +716,22 @@ class MarkovChain:
         return tuple(vectors)
 
     def limiting_distribution(self) -> np.ndarray:
-        """Return the transition-matrix limit in the finite course cases."""
+        """Return the transition-matrix limit in the finite course cases.
+        
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Raises
+        ------
+        ValueError
+            Raised when an input or mathematical precondition is violated.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `limiting_distribution`."""
         if self.is_ergodic():
             return np.tile(self.stationary_distribution(), (self.n_states, 1))
         closed = self.closed_classes()
@@ -286,7 +749,28 @@ class MarkovChain:
         return result
 
     def absorption_probability(self, source: State, absorbing_class: Sequence[State]) -> float:
-        """Return the probability of eventual absorption in a closed class."""
+        """Return the probability of eventual absorption in a closed class.
+        
+        Parameters
+        ----------
+        source : State
+            Source state label.
+        absorbing_class : Sequence[State]
+            Input argument.
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Raises
+        ------
+        ValueError
+            Raised when an input or mathematical precondition is violated.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `absorption_probability`."""
         target = set(absorbing_class)
         if not target or not any(set(component) == target for component in self.closed_classes()):
             raise ValueError("absorbing_class must be a closed communicating class")
@@ -303,7 +787,32 @@ class MarkovChain:
         return float(solution[transient_ids.index(source_index)])
 
     def simulate(self, n_steps: int, *, initial_state: State | None = None, initial_distribution: Sequence[float] | None = None, rng: np.random.Generator | None = None) -> list[State]:
-        """Simulate a path ``X_0,...,X_n`` from the transition matrix."""
+        """Simulate a path ``X_0,...,X_n`` from the transition matrix.
+        
+        Parameters
+        ----------
+        n_steps : int
+            Number of discrete transitions.
+        initial_state : State | None
+            Optional initial state.
+        initial_distribution : Sequence[float] | None
+            Initial probability distribution.
+        rng : np.random.Generator | None
+            Optional NumPy random generator.
+        
+        Returns
+        -------
+        list[State]
+            Result produced by the operation.
+        
+        Raises
+        ------
+        ValueError
+            Raised when an input or mathematical precondition is violated.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `simulate`."""
         self._nonnegative_int(n_steps, "n_steps")
         if initial_state is not None and initial_distribution is not None:
             raise ValueError("provide only one initial condition")
@@ -321,7 +830,17 @@ class MarkovChain:
         return path
 
     def jump_chain(self) -> "MarkovChain":
-        """Return this chain; a discrete-time chain is already an embedded chain."""
+        """Return this chain; a discrete-time chain is already an embedded chain.
+        
+        
+        Returns
+        -------
+        'MarkovChain'
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `jump_chain`."""
         return self
 
     def _idx(self, state: State) -> int:

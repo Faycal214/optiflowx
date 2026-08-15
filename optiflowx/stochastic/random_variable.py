@@ -13,7 +13,28 @@ Outcome = Hashable
 
 @dataclass(frozen=True)
 class RandomVariable:
-    """A finite-valued random variable defined on a finite probability space."""
+    """A finite-valued random variable defined on a finite probability space.
+    
+    Mathematical object
+    ------------------
+    Public stochastic object exposed by the OptiFlowX API.
+    
+    Course basis
+    ------------
+    The implementation follows the corresponding MSPRO course material documented by OptiFlowX.
+    
+    Parameters
+    ----------
+    space : 'FiniteProbabilitySpace'
+        Input argument.
+    values : Mapping[Outcome, float]
+        Values or mapping.
+    name : str | None
+        Optional display name.
+    
+    Examples
+    --------
+    See the executable examples for `random_variable.py` and the API reference."""
 
     space: "FiniteProbabilitySpace"
     values: Mapping[Outcome, float]
@@ -27,27 +48,99 @@ class RandomVariable:
 
     @property
     def support(self) -> tuple[float, ...]:
-        """Return the distinct values taken by the random variable."""
+        """Return the distinct values taken by the random variable.
+        
+        
+        Returns
+        -------
+        tuple[float, ...]
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `support`."""
         return tuple(dict.fromkeys(float(v) for v in self.values.values()))
 
     def array(self) -> np.ndarray:
-        """Return values in the probability-space outcome order."""
+        """Return values in the probability-space outcome order.
+        
+        
+        Returns
+        -------
+        np.ndarray
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `array`."""
         return np.asarray([self.values[o] for o in self.space.outcomes], dtype=float)
 
     def expectation(self) -> float:
-        """Return ``E(X) = sum X(omega) P({omega})``."""
+        """Return ``E(X) = sum X(omega) P({omega})``.
+        
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `expectation`."""
         return float(np.dot(self.array(), self.space.probabilities_array))
 
     def expected_value(self) -> float:
-        """Return ``E(X)`` using the canonical API spelling."""
+        """Return ``E(X)`` using the canonical API spelling.
+        
+        
+        Returns
+        -------
+        float
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `expected_value`."""
         return self.expectation()
 
     def transform(self, function: Callable[[float], float], *, name: str | None = None) -> "RandomVariable":
-        """Return the pointwise transformation ``g(X)``."""
+        """Return the pointwise transformation ``g(X)``.
+        
+        Parameters
+        ----------
+        function : Callable[[float], float]
+            Callable transformation.
+        name : str | None
+            Optional display name.
+        
+        Returns
+        -------
+        'RandomVariable'
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `transform`."""
         return RandomVariable(self.space, {o: float(function(v)) for o, v in self.values.items()}, name=name)
 
     def apply(self, function: Callable[[float], float], *, name: str | None = None) -> "RandomVariable":
-        """Apply a scalar function pointwise to the random variable."""
+        """Apply a scalar function pointwise to the random variable.
+        
+        Parameters
+        ----------
+        function : Callable[[float], float]
+            Callable transformation.
+        name : str | None
+            Optional display name.
+        
+        Returns
+        -------
+        'RandomVariable'
+            Result produced by the operation.
+        
+        Examples
+        --------
+        See the executable examples and API reference for `apply`."""
         return self.transform(function, name=name)
 
     def _binary(self, other: float | "RandomVariable", op: Callable[[float, float], float]) -> "RandomVariable":
