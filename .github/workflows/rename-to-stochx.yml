@@ -51,7 +51,7 @@ jobs:
           assert data['tool']['hatch']['version']['path'] == 'stochx/__init__.py'
           assert data['tool']['hatch']['build']['targets']['wheel']['packages'] == ['stochx']
 
-          text_files = []
+          legacy = []
           for path in Path('.').rglob('*'):
               if not path.is_file() or '.git' in path.parts:
                   continue
@@ -60,9 +60,9 @@ jobs:
               except UnicodeDecodeError:
                   continue
               if 'optiflowx' in text.lower() or 'OptiFlowX' in text:
-                  text_files.append(str(path))
+                  legacy.append(str(path))
 
-          assert not text_files, f'Legacy identity remains in: {text_files}'
+          assert not legacy, f'Legacy identity remains in: {legacy}'
           print('StochX migration identity checks passed.')
           PY
 
