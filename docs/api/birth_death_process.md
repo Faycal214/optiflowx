@@ -5,51 +5,68 @@
 ## Constructor
 
 ```python
-BirthDeathProcess(birth_rate, death_rate, max_state=None, tolerance=1e-12)
+BirthDeathProcess(birth_rates, death_rates, *, max_state=None)
 ```
 
-### Properties
+### Parameters
+
+| Parameter | Description |
+|---|---|
+| `birth_rates` | Sequence or callable specification for $\lambda_k$. |
+| `death_rates` | Sequence or callable specification for $\mu_k$. |
+| `max_state` | Optional upper state bound required for finite matrix construction. |
+
+## Properties
 
 | Property | Meaning |
 |---|---|
-| `generator` | Generator matrix built from the birth/death rates. |
-| `generator_matrix` | Alias for `generator`. |
-| `jump_chain_matrix` | Embedded jump-chain matrix. |
 | `max_state` | Optional finite state-space bound. |
+| `generator` | Generator matrix $Q$ for a finite bounded model. |
+| `jump_chain_matrix` | Embedded jump-chain matrix for a finite bounded model. |
+
+## Class methods
+
+- `finite(birth_rates, death_rates)` — construct a finite process from equally sized rate sequences.
+- `linear(birth_rate, death_rate, immigration=0.0, emigration=0.0, max_state=None)` — construct linear rates.
+- `pure_immigration(rate)` — construct the pure-immigration case.
+- `pure_birth(rate)` — construct the pure-birth case.
+- `pure_death(rate)` — construct the pure-death case.
 
 ## Methods
 
 - `birth_rate(k)` — return $\lambda_k$.
 - `death_rate(k)` — return $\mu_k$.
-- `generator()` — construct the birth-death generator when a callable form is used.
-- `jump_chain()` — return the embedded DTMC.
-- `kolmogorov_derivative(probabilities)` — derivative of the state-probability vector under the birth-death generator.
-- `stationary_weights(...)` — compute proportional stationary weights.
-- `stationary_distribution(...)` — normalize stationary weights when the finite model admits one.
-- `pure_immigration_probability(...)` — probability for the pure-immigration case covered by the implementation.
-- `pure_birth_probability(...)` — probability for the pure-birth case.
-- `pure_death_probability(...)` — probability for the pure-death case.
-- `pure_birth_reciprocal_rate_sum(...)` — reciprocal-rate quantity used for the pure-birth model.
-- `simulate(...)` — simulate the birth-death process subject to the supplied horizon/bound.
+- `generator_matrix()` — build the finite generator $Q$.
+- `to_ctmc()` — convert a finite birth-death model into `ContinuousTimeMarkovChain`.
+- `jump_chain_matrix()` — construct the embedded DTMC matrix.
+- `jump_chain()` — return the embedded `MarkovChain`.
+- `kolmogorov_derivative(probabilities)` — evaluate the birth-death form of $p'(t)=p(t)Q$.
+- `stationary_weights(n_terms)` — compute the finite product weights used by the stationary law.
+- `stationary_weights_at(n_terms)` — canonical alias for the stationary product weights.
+- `stationary_distribution(n_terms=None)` — normalize the stationary weights or derive the finite stationary law.
+- `pure_birth_probability(n, t, rate=...)` — pure-birth probability formula.
+- `pure_death_probability(n, t, initial_population=..., rate=...)` — pure-death probability formula.
+- `pure_birth_reciprocal_rate_sum(n_terms)` — partial reciprocal-rate sum for the pure-birth model.
+- `simulate(...)` — simulate the process where supported by the implementation.
 
 ## Example
 
 ```python
 from optiflowx.stochastic import BirthDeathProcess
 
-process = BirthDeathProcess(
-    birth_rate=lambda k: 2.0,
-    death_rate=lambda k: 1.0 if k > 0 else 0.0,
+process = BirthDeathProcess.linear(
+    birth_rate=0.8,
+    death_rate=0.6,
     max_state=10,
 )
 
-print(process.generator())
-print(process.stationary_distribution())
+print(process.generator)
+print(process.to_ctmc().states)
 ```
 
 ## Relationship with CMTC
 
-A birth-death process is represented through the same $Q$-matrix framework as a finite CMTC. The API keeps the specialized rate representation while allowing conversion to the general continuous-time Markov-chain object where supported.
+A birth-death process is represented through the same $Q$-matrix framework as a finite CMTC. The specialized class keeps birth/death rates explicit and exposes conversion to the general CTMC object.
 
 ## Related course material
 
