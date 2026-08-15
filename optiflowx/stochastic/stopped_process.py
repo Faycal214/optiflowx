@@ -1,4 +1,4 @@
-"""Public API for stopped processes from MSPRO Chapter 5."""
+"""Public stopped-process API for MSPRO Chapter 5."""
 
 from .martingale import StoppedProcess
 
