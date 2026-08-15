@@ -33,6 +33,7 @@ nav:
       - API Map: api.md
   - Examples:
       - Worked Examples: examples.md
+  - About: about.md
 
 theme:
   name: readthedocs
