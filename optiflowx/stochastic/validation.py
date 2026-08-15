@@ -18,10 +18,10 @@ State = Hashable
 
 
 def validate_tolerance(tolerance: float) -> float:
-    """Validate and return a finite, strictly positive numerical tolerance."""
+    """Validate a finite probability-scale tolerance in ``(0, 1)``."""
     value = float(tolerance)
-    if not np.isfinite(value) or value <= 0.0:
-        raise ValueError("tolerance must be finite and strictly positive")
+    if not np.isfinite(value) or not 0.0 < value < 1.0:
+        raise ValueError("tolerance must be finite and strictly between 0 and 1")
     return value
 
 
@@ -45,7 +45,7 @@ def validate_stochastic_matrix(
     tolerance: float = DEFAULT_TOLERANCE,
     name: str = "transition_matrix",
 ) -> np.ndarray:
-    """Validate a finite row-stochastic matrix and return a copy."""
+    """Validate a finite row-stochastic matrix and return a normalized copy."""
     tol = validate_tolerance(tolerance)
     array = as_finite_square_matrix(matrix, name=name)
     if np.any(array < -tol):
@@ -62,7 +62,7 @@ def normalize_stochastic_matrix(
     *,
     tolerance: float = DEFAULT_TOLERANCE,
 ) -> np.ndarray:
-    """Clean tiny floating-point drift and renormalize stochastic rows."""
+    """Clean floating-point drift and renormalize stochastic rows."""
     tol = validate_tolerance(tolerance)
     array = as_finite_square_matrix(matrix, name="stochastic matrix")
     if np.any(array < -tol):
@@ -119,10 +119,8 @@ def validate_generator(
     if not np.allclose(array.sum(axis=1), 0.0, atol=tol, rtol=0.0):
         raise GeneratorValidationError(f"{name} rows must sum to zero within tolerance")
     array[np.abs(array) < tol] = 0.0
-    array[array < 0.0] = 0.0
-    # Restore the diagonal from the validated row sums after tiny cleanup.
-    for i in range(array.shape[0]):
-        array[i, i] = -float(np.sum(array[i]) + array[i, i])
+    off_diag_sum = array.sum(axis=1) - np.diag(array)
+    array[np.diag_indices_from(array)] = -off_diag_sum
     return array
 
 
