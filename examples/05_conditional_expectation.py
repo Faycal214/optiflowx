@@ -1,12 +1,6 @@
 """Chapter 4: conditional expectation on a finite probability space."""
 
-from optiflowx.stochastic import (
-    FiniteProbabilitySpace,
-    Partition,
-    conditional_expectation_given_event,
-    conditional_probability_given_event,
-)
-
+from optiflowx.stochastic import FiniteProbabilitySpace, Partition
 
 space = FiniteProbabilitySpace(
     outcomes=[0, 1, 2, 3],
@@ -21,7 +15,8 @@ print("E[X|Y]:", space.conditional_expectation_given(X, Y).array())
 
 G = Partition.generated_by(Y)
 print("E[X|G]:", space.conditional_expectation(X, G).array())
-print("E[X|{1,2}]:", conditional_expectation_given_event(space, X, {1, 2}))
-print("P({1,2}|{1,3}):", conditional_probability_given_event(space, {1, 2}, {1, 3}))
+print("E[X|{1,2}]:", space.conditional_expectation_given_event(X, {1, 2}))
+print("P({1,2}|{1,3}):", space.conditional_probability_given_event({1, 2}, {1, 3}))
 print("total variance:", space.total_variance(X, G))
 print("total covariance:", space.total_covariance(X, Y, G))
+print("X independent of Y:", space.are_independent(X, Y))
