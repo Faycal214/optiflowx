@@ -111,7 +111,6 @@ def birth_death_examples() -> None:
     print(process.kolmogorov_derivative([1.0] + [0.0] * 6))
     print(process.stationary_weights(6), process.stationary_weights_at(6))
     print(process.stationary_distribution())
-    print(process.simulate(3.0, initial_state=0, rng=np.random.default_rng(3)))
 
     finite = BirthDeathProcess.finite([0.5, 0.7, 0.9], [0.0, 0.2, 0.4])
     print(finite.generator_matrix())
