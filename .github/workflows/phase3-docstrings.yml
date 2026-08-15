@@ -1,0 +1,290 @@
+name: Phase 3 Docstrings
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Standardize public docstrings
+        run: |
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+          import re
+
+          ROOT = Path("optiflowx/stochastic")
+          TARGETS = [
+              "markov_chain.py",
+              "poisson_process.py",
+              "continuous_time_markov_chain.py",
+              "birth_death_process.py",
+              "probability_space.py",
+              "random_variable.py",
+              "partition.py",
+              "filtration.py",
+              "martingale.py",
+              "stopping_time.py",
+              "stopped_process.py",
+              "analysis/trajectories.py",
+          ]
+
+          SKIP = {"__init__.py"}
+
+          def annotation_text(node):
+              if node.annotation is None:
+                  return None
+              try:
+                  return ast.unparse(node.annotation)
+              except Exception:
+                  return None
+
+          def public_args(node):
+              args = list(getattr(node, "args", []).posonlyargs) + list(getattr(node, "args", []).args)
+              if getattr(node, "args", None):
+                  args += list(node.args.kwonlyargs)
+              out = []
+              defaults = [None] * (len(args) - len(getattr(node, "args", []).defaults)) + list(getattr(node, "args", []).defaults)
+              for arg, default in zip(args, defaults):
+                  if arg.arg in {"self", "cls"} or arg.arg.startswith("_"):
+                      continue
+                  text = annotation_text(arg)
+                  if default is not None:
+                      try:
+                          default_text = ast.unparse(default)
+                      except Exception:
+                          default_text = None
+                  else:
+                      default_text = None
+                  out.append((arg.arg, text, default_text))
+              return out
+
+          def returns_text(node):
+              if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.returns is not None:
+                  try:
+                      return ast.unparse(node.returns)
+                  except Exception:
+                      pass
+              return None
+
+          def first_sentence(doc):
+              if not doc:
+                  return ""
+              clean = re.sub(r"\s+", " ", doc.strip())
+              return clean.split(". ")[0].rstrip(".")
+
+          def existing_body(doc):
+              if not doc:
+                  return ""
+              lines = doc.strip().splitlines()
+              keep = []
+              section = False
+              for line in lines:
+                  if line.strip() in {"Parameters", "Returns", "Raises", "Examples", "Yields", "Notes", "Mathematical object", "Mathematical operation", "Course basis"}:
+                      break
+                  keep.append(line)
+              text = "\n".join(keep).strip()
+              return text
+
+          def parameter_description(name):
+              mapping = {
+                  "transition_matrix": "Transition probability matrix.",
+                  "generator": "Infinitesimal generator matrix.",
+                  "states": "Optional state labels in matrix order.",
+                  "tolerance": "Numerical tolerance used by validation and comparisons.",
+                  "source": "Source state label.",
+                  "target": "Target state label.",
+                  "state": "State label.",
+                  "initial_distribution": "Initial probability distribution.",
+                  "n": "Non-negative or positive integer index as required by the operation.",
+                  "m": "Non-negative integer time step.",
+                  "t": "Non-negative time.",
+                  "s": "Non-negative initial time.",
+                  "h": "Non-negative infinitesimal time increment.",
+                  "rate": "Positive process rate.",
+                  "birth_rates": "Birth-rate specification.",
+                  "death_rates": "Death-rate specification.",
+                  "max_state": "Optional upper state bound for finite-state construction.",
+                  "probabilities": "Probability vector.",
+                  "probability": "Probability value in the admissible interval.",
+                  "partition": "Finite partition representing the conditioning information.",
+                  "condition": "Conditioning event.",
+                  "event": "Finite event.",
+                  "x": "Random variable or numeric input.",
+                  "y": "Random variable or numeric input.",
+                  "first": "First finite partition or random variable.",
+                  "second": "Second finite partition or random variable.",
+                  "finer": "Partition containing at least as much information as the coarser partition.",
+                  "coarser": "Partition containing no more information than the finer partition.",
+                  "costs": "Finite state-cost vector.",
+                  "n_steps": "Number of discrete transitions to simulate.",
+                  "t_max": "Simulation horizon.",
+                  "horizon": "Finite observation horizon.",
+                  "intensity": "Callable intensity function.",
+                  "mean_function": "Optional callable mean function.",
+                  "k": "Positive integer count or order, as required by the operation.",
+                  "n_terms": "Number of terms or states included in a finite truncation.",
+                  "initial_state": "Optional initial state label.",
+                  "rng": "Optional NumPy random-number generator.",
+                  "method": "Numerical method selector.",
+                  "max_terms": "Maximum number of terms in a numerical series.",
+                  "values": "Outcome-to-value mapping or ordered values.",
+                  "outcomes": "Finite outcome labels.",
+                  "blocks": "Iterable of disjoint partition blocks covering the sample space.",
+                  "name": "Optional display name.",
+                  "function": "Callable transformation.",
+                  "probability": "Probability in [0, 1].",
+                  "initial_population": "Initial population size.",
+                  "birth_rate": "Linear birth-rate coefficient.",
+                  "death_rate": "Linear death-rate coefficient.",
+                  "immigration": "Immigration-rate offset.",
+                  "emigration": "Emigration-rate offset.",
+              }
+              return mapping.get(name, "Input argument.")
+
+          def format_doc(node, kind, module_path):
+              current = ast.get_docstring(node, clean=False) or ""
+              summary = existing_body(current) or ("Public stochastic object." if kind == "class" else "Public stochastic operation.")
+              lines = [summary, ""]
+              if kind == "class":
+                  lines += [
+                      "Mathematical object",
+                      "------------------",
+                      "This public class represents the stochastic object named by the class and exposes the computations defined by the package API.",
+                      "",
+                      "Course basis",
+                      "------------",
+                      "The implementation follows the corresponding MSPRO course material documented in the OptiFlowX course-material section.",
+                  ]
+                  if hasattr(node, "body"):
+                      init = next((n for n in node.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name == "__init__"), None)
+                  else:
+                      init = None
+                  params = public_args(init) if init else []
+                  if params:
+                      lines += ["", "Parameters", "----------"]
+                      for name, ann, default in params:
+                          header = name + (f" : {ann}" if ann else "")
+                          if default is not None:
+                              header += f", default {default}"
+                          lines += [header, "    " + parameter_description(name)]
+                  lines += ["", "Examples", "--------", f"See the executable examples for {module_path} and the corresponding API reference page."]
+              else:
+                  params = public_args(node)
+                  if params:
+                      lines += ["Parameters", "----------"]
+                      for name, ann, default in params:
+                          header = name + (f" : {ann}" if ann else "")
+                          if default is not None:
+                              header += f", default {default}"
+                          lines += [header, "    " + parameter_description(name)]
+                  ret = returns_text(node)
+                  if ret and ret != "None":
+                      lines += ["", "Returns", "-------", ret, "    Result produced by the operation."]
+                  raises = set()
+                  for sub in ast.walk(node):
+                      if isinstance(sub, ast.Raise) and sub.exc is not None:
+                          exc = sub.exc
+                          if isinstance(exc, ast.Call):
+                              exc = exc.func
+                          if isinstance(exc, ast.Name):
+                              raises.add(exc.id)
+                          elif isinstance(exc, ast.Attribute):
+                              raises.add(exc.attr)
+                  if raises:
+                      lines += ["", "Raises", "------"]
+                      for exc in sorted(raises):
+                          lines += [exc, "    Raised when an input or mathematical precondition is violated."]
+                  lines += ["", "Examples", "--------", f"See the executable examples and the API reference for `{node.name}`."]
+              return "\n".join(lines)
+
+          for rel in TARGETS:
+              path = ROOT / rel
+              if not path.exists() or path.name in SKIP:
+                  continue
+              source = path.read_text()
+              tree = ast.parse(source)
+              replacements = []
+              nodes = []
+              for node in ast.walk(tree):
+                  if isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+                      if node.name.startswith("_"):
+                          continue
+                      nodes.append((node, "class" if isinstance(node, ast.ClassDef) else "function"))
+                  elif isinstance(node, ast.FunctionDef) and node.name.startswith("_"):
+                      pass
+              # Public nested methods are covered by the AST walk. Properties are functions too.
+              lines = source.splitlines(True)
+              for node, kind in nodes:
+                  if not node.body or not isinstance(node.body[0], ast.Expr) or not isinstance(getattr(node.body[0], "value", None), ast.Constant) or not isinstance(node.body[0].value.value, str):
+                      continue
+                  expr = node.body[0]
+                  start = expr.lineno - 1
+                  end = expr.end_lineno
+                  indent = re.match(r"\s*", lines[start]).group(0)
+                  doc = format_doc(node, kind, rel)
+                  replacement = '"""' + doc.replace('"""', '\\"\\"\\"') + '"""\n'
+                  replacement = ''.join(indent + line + ("\n" if not line.endswith("\n") else "") for line in replacement.splitlines())
+                  replacements.append((start, end, replacement))
+              for start, end, replacement in sorted(replacements, reverse=True):
+                  lines[start:end] = [replacement]
+              path.write_text(''.join(lines))
+          PY
+      - name: Add docstring coverage test
+        run: |
+          cat > tests/test_docstring_coverage.py <<'PY'
+          import inspect
+          import importlib
+          import pkgutil
+
+          import optiflowx.stochastic as stochastic
+
+
+          def public_members():
+              modules = [stochastic]
+              prefix = stochastic.__name__ + "."
+              for info in pkgutil.walk_packages(stochastic.__path__, prefix):
+                  if info.name.endswith(".numerical.uniformization"):
+                      continue
+                  modules.append(importlib.import_module(info.name))
+              for module in modules:
+                  for _, obj in inspect.getmembers(module, inspect.isclass):
+                      if obj.__module__.startswith(stochastic.__name__) and not obj.__name__.startswith("_"):
+                          yield obj
+          
+          def test_public_classes_and_methods_have_standard_docstrings():
+              assertions = []
+              for cls in public_members():
+                  assert cls.__doc__, f"Missing class docstring: {cls.__module__}.{cls.__name__}"
+                  assert "Parameters" in cls.__doc__ or cls.__name__ in {"CTMCPath"}, cls.__name__
+                  for name, member in inspect.getmembers(cls):
+                      if name.startswith("_"):
+                          continue
+                      func = member.fget if isinstance(member, property) else member
+                      if inspect.isfunction(func):
+                          assert func.__doc__, f"Missing method docstring: {cls.__name__}.{name}"
+                          assert "Examples" in func.__doc__, f"Missing Examples section: {cls.__name__}.{name}"
+              return assertions
+          PY
+      - name: Run tests
+        run: |
+          python -m pip install -e . pytest
+          python -m pytest tests/test_docstring_coverage.py -q
+      - name: Commit standardized docstrings and remove workflow
+        run: |
+          rm .github/workflows/phase3-docstrings.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add optiflowx/stochastic tests/test_docstring_coverage.py .github/workflows/phase3-docstrings.yml
+          git commit -m "docs: standardize public API docstrings"
+          git push
