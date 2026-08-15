@@ -26,7 +26,7 @@ jobs:
 
           while IFS= read -r -d '' file; do
             case "$file" in
-              .git/*) continue ;;
+              .git/*|.github/workflows/*) continue ;;
             esac
             if file "$file" | grep -qE 'text|JSON|XML|YAML|ASCII'; then
               sed -i \
@@ -37,8 +37,6 @@ jobs:
                 "$file"
             fi
           done < <(git ls-files -z)
-
-          rm -f .github/workflows/rename-to-stochx.yml
 
           python - <<'PY'
           from pathlib import Path
@@ -53,7 +51,7 @@ jobs:
 
           legacy = []
           for path in Path('.').rglob('*'):
-              if not path.is_file() or '.git' in path.parts:
+              if not path.is_file() or '.git' in path.parts or '.github' in path.parts and 'workflows' in path.parts:
                   continue
               try:
                   text = path.read_text(encoding='utf-8')
@@ -62,8 +60,8 @@ jobs:
               if 'optiflowx' in text.lower() or 'OptiFlowX' in text:
                   legacy.append(str(path))
 
-          assert not legacy, f'Legacy identity remains in: {legacy}'
-          print('StochX migration identity checks passed.')
+          assert not legacy, f'Legacy identity remains outside workflows: {legacy}'
+          print('StochX migration identity checks passed outside workflow files.')
           PY
 
       - name: Commit migration
@@ -71,6 +69,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add -A -- ':!.github/workflows/*'
           git commit -m "refactor: rename project to StochX"
           git push origin main
