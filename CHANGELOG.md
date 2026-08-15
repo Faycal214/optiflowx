@@ -2,6 +2,23 @@
 
 All notable changes to StochX are documented here.
 
+## [0.2.0] - 2026-08-15
+
+### Added
+
+- First release under the StochX project identity and `stochx` Python import namespace.
+- Repository-wide migration of package imports, documentation, examples, tests, CI, release metadata, and citation metadata from the former project identity.
+- Clean release verification covering the renamed package, full test suite, executable examples, strict documentation build, distribution build, and Twine metadata validation.
+
+### Changed
+
+- Promoted the package version from `0.1.0` to `0.2.0` for the first StochX release.
+- Standardized the project, package, documentation, and release surfaces around `stochx` / StochX.
+
+### Notes
+
+- This is an early development release; public APIs may continue to evolve before the first stable `1.0.0` release.
+
 ## [0.1.0] - 2026-08-15
 
 ### Added
