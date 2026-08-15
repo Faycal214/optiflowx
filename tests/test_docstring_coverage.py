@@ -31,5 +31,4 @@ def test_public_classes_and_methods_have_standard_docstrings():
             func = member.fget if isinstance(member, property) else member
             if inspect.isfunction(func):
                 assert func.__doc__, f"Missing method docstring: {obj.__name__}.{method_name}"
-                assert "Examples" in func.__doc__, f"Missing Examples section: {obj.__name__}.{method_name}
-"
+                assert "Examples" in func.__doc__, f"Missing Examples section: {obj.__name__}.{method_name}"
