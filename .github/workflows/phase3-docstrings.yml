@@ -22,172 +22,102 @@ jobs:
           import ast
           from pathlib import Path
           import re
-
           ROOT = Path("optiflowx/stochastic")
-          TARGETS = [
-              "markov_chain.py", "poisson_process.py", "continuous_time_markov_chain.py",
-              "birth_death_process.py", "probability_space.py", "random_variable.py",
-              "partition.py", "filtration.py", "martingale.py", "stopping_time.py",
-              "stopped_process.py", "analysis/trajectories.py"
-          ]
-          SECTION_NAMES = {"Parameters", "Returns", "Raises", "Examples", "Yields", "Notes", "Mathematical object", "Mathematical operation", "Course basis"}
-          MAPPING = {
-              "transition_matrix": "Transition probability matrix.", "generator": "Infinitesimal generator matrix.",
-              "states": "State labels in matrix order.", "tolerance": "Numerical tolerance.", "source": "Source state label.",
-              "target": "Target state label.", "state": "State label.", "initial_distribution": "Initial probability distribution.",
-              "n": "Integer index required by the operation.", "m": "Non-negative integer time step.", "t": "Non-negative time.",
-              "s": "Non-negative initial time.", "h": "Non-negative time increment.", "rate": "Process rate.",
-              "birth_rates": "Birth-rate specification.", "death_rates": "Death-rate specification.", "max_state": "Optional upper state bound.",
-              "probabilities": "Probability vector.", "probability": "Probability value.", "partition": "Conditioning partition.",
-              "condition": "Conditioning event.", "event": "Finite event.", "x": "Random variable or numeric input.",
-              "y": "Random variable or numeric input.", "first": "First partition or random variable.", "second": "Second partition or random variable.",
-              "finer": "Finer partition.", "coarser": "Coarser partition.", "costs": "Finite state-cost vector.",
-              "n_steps": "Number of discrete transitions.", "t_max": "Simulation horizon.", "horizon": "Observation horizon.",
-              "intensity": "Callable intensity function.", "mean_function": "Optional callable mean function.", "k": "Count or order.",
-              "n_terms": "Number of truncated terms or states.", "initial_state": "Optional initial state.", "rng": "Optional NumPy random generator.",
-              "method": "Numerical method selector.", "max_terms": "Maximum number of numerical-series terms.", "values": "Values or mapping.",
-              "outcomes": "Finite outcome labels.", "blocks": "Partition blocks.", "name": "Optional display name.", "function": "Callable transformation.",
-              "initial_population": "Initial population size.", "birth_rate": "Linear birth-rate coefficient.", "death_rate": "Linear death-rate coefficient.",
-              "immigration": "Immigration-rate offset.", "emigration": "Emigration-rate offset.", "times": "Jump times.",
-              "max_events": "Optional maximum number of events."
-          }
-
-          def ann(node):
-              try: return ast.unparse(node.annotation) if node.annotation is not None else None
-              except Exception: return None
-
-          def args(node):
-              if node is None: return []
-              all_args = list(node.args.posonlyargs) + list(node.args.args) + list(node.args.kwonlyargs)
-              defaults = [None] * (len(all_args) - len(node.args.defaults)) + list(node.args.defaults)
-              out = []
-              for a, d in zip(all_args, defaults):
-                  if a.arg in {"self", "cls"} or a.arg.startswith("_"): continue
-                  out.append((a.arg, ann(a), ast.unparse(d) if d is not None else None))
+          TARGETS = ["markov_chain.py","poisson_process.py","continuous_time_markov_chain.py","birth_death_process.py","probability_space.py","random_variable.py","partition.py","filtration.py","martingale.py","stopping_time.py","stopped_process.py","analysis/trajectories.py"]
+          SECTION_NAMES={"Parameters","Returns","Raises","Examples","Yields","Notes","Mathematical object","Mathematical operation","Course basis"}
+          MAPPING={"transition_matrix":"Transition probability matrix.","generator":"Infinitesimal generator matrix.","states":"State labels in matrix order.","tolerance":"Numerical tolerance.","source":"Source state label.","target":"Target state label.","state":"State label.","initial_distribution":"Initial probability distribution.","n":"Integer index required by the operation.","m":"Non-negative integer time step.","t":"Non-negative time.","s":"Non-negative initial time.","h":"Non-negative time increment.","rate":"Process rate.","birth_rates":"Birth-rate specification.","death_rates":"Death-rate specification.","max_state":"Optional upper state bound.","probabilities":"Probability vector.","probability":"Probability value.","partition":"Conditioning partition.","condition":"Conditioning event.","event":"Finite event.","x":"Random variable or numeric input.","y":"Random variable or numeric input.","first":"First partition or random variable.","second":"Second partition or random variable.","finer":"Finer partition.","coarser":"Coarser partition.","costs":"Finite state-cost vector.","n_steps":"Number of discrete transitions.","t_max":"Simulation horizon.","horizon":"Observation horizon.","intensity":"Callable intensity function.","mean_function":"Optional callable mean function.","k":"Count or order.","n_terms":"Number of truncated terms or states.","initial_state":"Optional initial state.","rng":"Optional NumPy random generator.","method":"Numerical method selector.","max_terms":"Maximum number of numerical-series terms.","values":"Values or mapping.","outcomes":"Finite outcome labels.","blocks":"Partition blocks.","name":"Optional display name.","function":"Callable transformation.","initial_population":"Initial population size.","birth_rate":"Linear birth-rate coefficient.","death_rate":"Linear death-rate coefficient.","immigration":"Immigration-rate offset.","emigration":"Emigration-rate offset.","times":"Jump times.","max_events":"Optional maximum number of events."}
+          def ann(n):
+              try:return ast.unparse(n.annotation) if n.annotation is not None else None
+              except Exception:return None
+          def args(n):
+              if n is None:return []
+              xs=list(n.args.posonlyargs)+list(n.args.args)+list(n.args.kwonlyargs); ds=[None]*(len(xs)-len(n.args.defaults))+list(n.args.defaults); out=[]
+              for a,d in zip(xs,ds):
+                  if a.arg in {"self","cls"} or a.arg.startswith("_"):continue
+                  out.append((a.arg,ann(a),ast.unparse(d) if d is not None else None))
               return out
-
-          def class_params(node):
-              init = next((n for n in node.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name == "__init__"), None)
-              params = args(init)
-              if params: return params
-              params = []
-              for child in node.body:
-                  if isinstance(child, ast.AnnAssign) and isinstance(child.target, ast.Name):
-                      params.append((child.target.id, ast.unparse(child.annotation), None))
-              return params
-
-          def returns(node):
-              try: return ast.unparse(node.returns) if node.returns is not None else None
-              except Exception: return None
-
-          def summary(doc, fallback):
-              if not doc: return fallback
-              parts=[]
+          def class_params(n):
+              init=next((x for x in n.body if isinstance(x,(ast.FunctionDef,ast.AsyncFunctionDef)) and x.name=="__init__"),None); p=args(init)
+              if p:return p
+              return [(x.target.id,ast.unparse(x.annotation),None) for x in n.body if isinstance(x,ast.AnnAssign) and isinstance(x.target,ast.Name)]
+          def returns(n):
+              try:return ast.unparse(n.returns) if n.returns is not None else None
+              except Exception:return None
+          def summary(doc,fallback):
+              if not doc:return fallback
+              out=[]
               for line in doc.strip().splitlines():
-                  if line.strip() in SECTION_NAMES: break
-                  parts.append(line)
-              text="\n".join(parts).strip()
-              return text or fallback
-
-          def desc(name): return MAPPING.get(name, "Input argument.")
-
-          def format_doc(node, kind, module_path):
-              text = ast.get_docstring(node, clean=False)
-              out = [summary(text, "Public stochastic object." if kind == "class" else "Public stochastic operation."), ""]
-              if kind == "class":
-                  out += ["Mathematical object", "------------------", "Public stochastic object exposed by the OptiFlowX API.", "", "Course basis", "------------", "The implementation follows the corresponding MSPRO course material documented by OptiFlowX."]
-                  params = class_params(node)
-                  if params:
-                      out += ["", "Parameters", "----------"]
-                      for name, typ, default in params:
-                          head = name + (f" : {typ}" if typ else "") + (f", default {default}" if default is not None else "")
-                          out += [head, "    " + desc(name)]
-                  out += ["", "Examples", "--------", f"See the executable examples for `{module_path}` and the API reference."]
+                  if line.strip() in SECTION_NAMES:break
+                  out.append(line)
+              return "\n".join(out).strip() or fallback
+          def desc(name):return MAPPING.get(name,"Input argument.")
+          def fmt(n,kind,rel):
+              out=[summary(ast.get_docstring(n,clean=False),"Public stochastic object." if kind=="class" else "Public stochastic operation."),""]
+              if kind=="class":
+                  out += ["Mathematical object","------------------","Public stochastic object exposed by the OptiFlowX API.","","Course basis","------------","The implementation follows the corresponding MSPRO course material documented by OptiFlowX."]
+                  ps=class_params(n)
+                  if ps:
+                      out += ["","Parameters","----------"]
+                      for name,typ,default in ps: out += [name+(f" : {typ}" if typ else "")+(f", default {default}" if default is not None else ""),"    "+desc(name)]
+                  out += ["","Examples","--------",f"See the executable examples for `{rel}` and the API reference."]
               else:
-                  params = args(node)
-                  if params:
-                      out += ["Parameters", "----------"]
-                      for name, typ, default in params:
-                          head = name + (f" : {typ}" if typ else "") + (f", default {default}" if default is not None else "")
-                          out += [head, "    " + desc(name)]
-                  ret = returns(node)
-                  if ret and ret != "None":
-                      out += ["", "Returns", "-------", ret, "    Result produced by the operation."]
-                  raises = set()
-                  for sub in ast.walk(node):
-                      if isinstance(sub, ast.Raise) and sub.exc is not None:
-                          ex = sub.exc.func if isinstance(sub.exc, ast.Call) else sub.exc
-                          if isinstance(ex, ast.Name): raises.add(ex.id)
-                          elif isinstance(ex, ast.Attribute): raises.add(ex.attr)
+                  ps=args(n)
+                  if ps:
+                      out += ["Parameters","----------"]
+                      for name,typ,default in ps: out += [name+(f" : {typ}" if typ else "")+(f", default {default}" if default is not None else ""),"    "+desc(name)]
+                  ret=returns(n)
+                  if ret and ret!="None":out += ["","Returns","-------",ret,"    Result produced by the operation."]
+                  raises=set()
+                  for sub in ast.walk(n):
+                      if isinstance(sub,ast.Raise) and sub.exc is not None:
+                          ex=sub.exc.func if isinstance(sub.exc,ast.Call) else sub.exc
+                          if isinstance(ex,ast.Name):raises.add(ex.id)
+                          elif isinstance(ex,ast.Attribute):raises.add(ex.attr)
                   if raises:
-                      out += ["", "Raises", "------"]
-                      for ex in sorted(raises): out += [ex, "    Raised when an input or mathematical precondition is violated."]
-                  out += ["", "Examples", "--------", f"See the executable examples and API reference for `{node.name}`."]
+                      out += ["","Raises","------"]
+                      for ex in sorted(raises):out += [ex,"    Raised when an input or mathematical precondition is violated."]
+                  out += ["","Examples","--------",f"See the executable examples and API reference for `{n.name}`."]
               return "\n".join(out)
-
           for rel in TARGETS:
-              path = ROOT / rel
-              if not path.exists(): continue
-              source = path.read_text()
-              tree = ast.parse(source)
-              lines = source.splitlines(True)
-              replacements = []
-              for node in ast.walk(tree):
-                  if isinstance(node, ast.ClassDef):
-                      include = not node.name.startswith("_")
-                  elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                      include = (node.name == "__init__" or not node.name.startswith("_"))
+              p=ROOT/rel
+              if not p.exists():continue
+              src=p.read_text(); tree=ast.parse(src); lines=src.splitlines(True); reps=[]
+              for n in ast.walk(tree):
+                  include=(isinstance(n,ast.ClassDef) and not n.name.startswith("_")) or (isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and (n.name=="__init__" or not n.name.startswith("_")))
+                  if not include or not n.body:continue
+                  first=n.body[0]; has= isinstance(first,ast.Expr) and isinstance(first.value,ast.Constant) and isinstance(first.value.value,str); doc=fmt(n,"class" if isinstance(n,ast.ClassDef) else "function",rel)
+                  if has:
+                      a,b=first.lineno-1,first.end_lineno; indent=re.match(r"\s*",lines[a]).group(0); block="\n".join(indent+x for x in ('\"\"\"'+doc.replace('"""','\\"\\"\\"')+'\"\"\"').splitlines())+"\n"; reps.append((a,b,block))
                   else:
-                      continue
-                  if not include or not node.body: continue
-                  first = node.body[0]
-                  has_doc = isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str)
-                  doc = format_doc(node, "class" if isinstance(node, ast.ClassDef) else "function", rel)
-                  if has_doc:
-                      start, end = first.lineno - 1, first.end_lineno
-                      indent = re.match(r"\s*", lines[start]).group(0)
-                      block = "\n".join(indent + x for x in ('\"\"\"' + doc.replace('"""', '\\"\\"\\"') + '\"\"\"').splitlines()) + "\n"
-                      replacements.append((start, end, block))
-                  else:
-                      insert = first.lineno - 1
-                      body_indent = re.match(r"\s*", lines[insert]).group(0)
-                      block = "\n".join(body_indent + x for x in ('\"\"\"' + doc.replace('"""', '\\"\\"\"') + '\"\"\"').splitlines()) + "\n"
-                      replacements.append((insert, insert, block))
-              for start, end, block in sorted(replacements, reverse=True):
-                  lines[start:end] = [block]
-              path.write_text(''.join(lines))
+                      a=first.lineno-1; indent=re.match(r"\s*",lines[a]).group(0); block="\n".join(indent+x for x in ('\"\"\"'+doc.replace('"""','\\"\\"\\"')+'\"\"\"').splitlines())+"\n"; reps.append((a,a,block))
+              for a,b,r in sorted(reps,reverse=True):lines[a:b]=[r]
+              p.write_text(''.join(lines))
           PY
       - name: Add docstring coverage test
         run: |
           cat > tests/test_docstring_coverage.py <<'PY'
           import inspect
           import optiflowx.stochastic as stochastic
-
           def test_public_classes_and_methods_have_standard_docstrings():
               for name in stochastic.__all__:
-                  obj = getattr(stochastic, name)
-                  if not isinstance(obj, type):
-                      continue
-                  assert obj.__doc__, f"Missing class docstring: {obj.__module__}.{obj.__name__}"
-                  if obj.__module__.endswith(".exceptions"):
-                      continue
-                  assert "Mathematical object" in obj.__doc__
-                  assert "Course basis" in obj.__doc__
-                  assert "Examples" in obj.__doc__
+                  obj=getattr(stochastic,name)
+                  if not isinstance(obj,type):continue
+                  assert obj.__doc__,f"Missing class docstring: {obj.__module__}.{obj.__name__}"
+                  if obj.__module__.endswith('.exceptions'):continue
+                  assert 'Mathematical object' in obj.__doc__
+                  assert 'Course basis' in obj.__doc__
+                  assert 'Examples' in obj.__doc__
                   try:
-                      signature = inspect.signature(obj.__init__)
-                      has_public_parameters = any(p.name not in {"self", "cls"} and not p.name.startswith("_") for p in signature.parameters.values())
-                  except (TypeError, ValueError):
-                      has_public_parameters = False
-                  if has_public_parameters:
-                      assert "Parameters" in obj.__doc__, obj.__name__
-                  for method_name, member in inspect.getmembers(obj):
-                      if method_name.startswith("_") and method_name != "__init__":
-                          continue
-                      func = member.fget if isinstance(member, property) else member
+                      sig=inspect.signature(obj.__init__); has_params=any(p.name not in {'self','cls'} and not p.name.startswith('_') for p in sig.parameters.values())
+                  except (TypeError,ValueError):has_params=False
+                  if has_params:assert 'Parameters' in obj.__doc__,obj.__name__
+                  for method_name,member in inspect.getmembers(obj):
+                      if method_name.startswith('_') and method_name!='__init__':continue
+                      if method_name=='__init__' and hasattr(obj,'__dataclass_fields__'):continue
+                      func=member.fget if isinstance(member,property) else member
                       if inspect.isfunction(func):
-                          assert func.__doc__, f"Missing method docstring: {obj.__name__}.{method_name}"
-                          assert "Examples" in func.__doc__, f"Missing Examples section: {obj.__name__}.{method_name}"
+                          assert func.__doc__,f"Missing method docstring: {obj.__name__}.{method_name}"
+                          assert 'Examples' in func.__doc__,f"Missing Examples section: {obj.__name__}.{method_name}"
           PY
       - name: Run focused test
         run: |
