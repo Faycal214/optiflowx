@@ -15,13 +15,21 @@ nav:
   - Package / API:
       - Course → API map: course-map.md
       - Architecture: architecture.md
+      - API Reference:
+          - Overview: api/index.md
+          - MarkovChain: api/markov_chain.md
+          - PoissonProcess: api/poisson_process.md
+          - ContinuousTimeMarkovChain: api/continuous_time_markov_chain.md
+          - BirthDeathProcess: api/birth_death_process.md
+          - FiniteProbabilitySpace: api/probability_space.md
+          - RandomVariable: api/random_variable.md
+          - Partition: api/partition.md
+          - Filtration: api/filtration.md
+          - Martingale: api/martingale.md
+          - StoppingTime: api/stopping_time.md
+          - StoppedProcess: api/stopped_process.md
+          - Analysis utilities: api/analysis.md
       - API map: api.md
-      - CMTD API: cmt_d.md
-      - Processus de Poisson API: poisson.md
-      - CMTC API: cmtc.md
-      - Birth-death API: birth_death.md
-      - Espérance conditionnelle API: conditional_expectation.md
-      - Martingales API: martingales.md
   - Examples:
       - Worked examples: examples.md
 
