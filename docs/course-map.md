@@ -1,12 +1,8 @@
-# Course → API traceability
+# Course → API map
 
-This page is the bridge between the five MSPRO PDFs and the OptiFlowX public API.
+This page maps the main course concepts to the corresponding OptiFlowX API components.
 
-The purpose is not to reproduce the PDFs. It is to make the correspondence explicit: **where the course introduces a concept, which Python object represents it, and where the documentation explains it.**
-
-## Chapter 1 — CMTD
-
-**Source:** `Chapitre1_CMTD_2024-2025 (2)-1.pdf`
+## Chapter 1 — Discrete-Time Markov Chains
 
 | Course concept | OptiFlowX | Documentation |
 |---|---|---|
@@ -24,11 +20,7 @@ The purpose is not to reproduce the PDFs. It is to make the correspondence expli
 | limiting distribution | `limiting_distribution` | `cmt_d.md` §10 |
 | absorption probability | `absorption_probability` | `cmt_d.md` §11 |
 
-The course gives the stationary relation `pi_j = 1 / mu_j` in the irreducible positive-recurrent case and interprets `pi_j` as long-run time proportion. See Chapter 1, pp. 44–48. It treats the finite-chain closed-class result on p. 48. The limiting-distribution theorem appears on pp. 52–54, with the periodic counterexample on pp. 57–58.
-
-## Chapter 2 — Poisson processes
-
-**Source:** `Chapitre2_Processus de Poisson_2024-2025-1.pdf`
+## Chapter 2 — Poisson Processes
 
 | Course concept | OptiFlowX | Documentation |
 |---|---|---|
@@ -43,9 +35,7 @@ The course gives the stationary relation `pi_j = 1 / mu_j` in the irreducible po
 | thinning | `split` | `poisson.md` |
 | non-homogeneous process | `NonHomogeneousPoissonProcess` | `poisson.md` |
 
-## Chapter 3 — CMTC
-
-**Source:** `Chapitre3_CMTC_2024-2025-2.pdf`
+## Chapter 3 — Continuous-Time Markov Chains
 
 | Course concept | OptiFlowX | Documentation |
 |---|---|---|
@@ -60,11 +50,7 @@ The course gives the stationary relation `pi_j = 1 / mu_j` in the irreducible po
 | embedded jump chain | `jump_chain_matrix`, `jump_chain` | `cmtc.md` |
 | simulated trajectory | `CTMCPath`, `simulate` | `cmtc.md` |
 
-The course defines stationarity by `pi P(t) = pi` and proves the finite-state criterion `pi Q = 0` together with normalization. See Chapter 3, pp. 27–29. The course introduces the holding-time description on p. 30.
-
-## Chapter 3 — Birth-death processes
-
-**Source:** `Chapitre3_CMTC_2024-2025-2.pdf`
+## Birth-Death Processes
 
 | Course concept | OptiFlowX | Documentation |
 |---|---|---|
@@ -76,9 +62,7 @@ The course defines stationarity by `pi P(t) = pi` and proves the finite-state cr
 | pure birth/death/immigration examples | class constructors and formulas | `birth_death.md` |
 | explosion criterion | `pure_birth_reciprocal_rate_sum` | `birth_death.md` |
 
-## Chapter 4 — Conditional expectation
-
-**Source:** `Chapitre4_Esperance conditionne_2024-2025.pdf`
+## Chapter 4 — Conditional Expectation
 
 | Course concept | OptiFlowX | Documentation |
 |---|---|---|
@@ -93,11 +77,7 @@ The course defines stationarity by `pi P(t) = pi` and proves the finite-state cr
 | conditional variance/covariance | `conditional_variance`, `conditional_covariance` | `conditional_expectation.md` |
 | `L^2` projection | `l2_projection` | `conditional_expectation.md` |
 
-The PDF defines `E(X|Y)` through measurability with respect to `sigma(Y)` and equality of integrals on every event of `sigma(Y)`, then generalizes to an arbitrary sub-tribe. See Chapter 4, p. 23 and following.
-
-## Chapter 5 — Discrete-time martingales
-
-**Source:** `Chapitre5_Martingales_2024-2025-1.pdf`
+## Chapter 5 — Discrete-Time Martingales
 
 | Course concept | OptiFlowX | Documentation |
 |---|---|---|
@@ -109,5 +89,3 @@ The PDF defines `E(X|Y)` through measurability with respect to `sigma(Y)` and eq
 | Doob martingale | `Martingale.doob` | `martingales.md` |
 | stopping time | `StoppingTime` | `martingales.md` |
 | stopped process | `StoppedProcess` | `martingales.md` |
-
-The course defines a filtration as an increasing sequence of sub-tribes and defines adaptedness by measurability with respect to the corresponding filtration term. See Chapter 5, pp. 4–5.
