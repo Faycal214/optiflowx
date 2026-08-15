@@ -62,7 +62,7 @@ class FiniteProbabilitySpace:
         return self.probability(event)
 
     def conditional_probability_given_event(self, event: Iterable[Outcome], condition: Iterable[Outcome]) -> float:
-        """Return ``P(A|B)=P(A intersection B)/P(B)`` when ``P(B)>0``."""
+        """Return ``P(A|B)=P(A intersect B)/P(B)`` when ``P(B)>0``."""
         a = set(event)
         b = set(condition)
         if not a.issubset(self.outcomes) or not b.issubset(self.outcomes):
@@ -136,6 +136,29 @@ class FiniteProbabilitySpace:
     def conditional_covariance(self, x: RandomVariable, y: RandomVariable, partition: Partition) -> RandomVariable:
         """Return ``Cov(X,Y|G)``."""
         return self.conditional_expectation(x * y, partition) - self.conditional_expectation(x, partition) * self.conditional_expectation(y, partition)
+
+    def are_partitions_independent(self, first: Partition, second: Partition, *, atol: float = 1e-12) -> bool:
+        """Check independence of two finite partitions."""
+        for a in first.blocks:
+            for b in second.blocks:
+                if not np.isclose(self.probability(a & b), self.probability(a) * self.probability(b), atol=atol, rtol=0.0):
+                    return False
+        return True
+
+    def are_independent(self, first: RandomVariable, second: RandomVariable, *, atol: float = 1e-12) -> bool:
+        """Check independence of two finite random variables."""
+        if first.space is not self or second.space is not self:
+            raise ValueError("random variables must belong to this probability space")
+        return self.are_partitions_independent(Partition.generated_by(first), Partition.generated_by(second), atol=atol)
+
+    def conditional_characterization_error(self, x: RandomVariable, partition: Partition) -> float:
+        """Return the maximum finite-space characterization error for ``E(X|G)``."""
+        ce = self.conditional_expectation(x, partition)
+        error = 0.0
+        for block in partition.blocks:
+            indicator = self.random_variable({o: float(o in block) for o in self.outcomes}, name="1_A")
+            error = max(error, abs((indicator * x).expectation() - (indicator * ce).expectation()))
+        return float(error)
 
     def variance(self, x: RandomVariable) -> float:
         """Return the ordinary variance of ``x``."""
