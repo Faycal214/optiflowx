@@ -11,7 +11,19 @@ def test_conditioning_on_event():
     space = make_space()
     x = space.random_variable([1.0, 3.0, 5.0, 7.0], name="X")
     assert space.conditional_probability_given_event({0, 1}, {1, 2}) == 0.5
-    assert space.conditional_expectation_given_event(x, {1, 2}) == 4.0
+    conditional_value = space.conditional_expectation_given_event(x, {1, 2})
+    assert isinstance(conditional_value, float)
+    assert conditional_value == 4.0
+
+
+def test_conditioning_on_full_space_returns_scalar_expectation():
+    space = make_space()
+    x = space.random_variable([1.0, 3.0, 5.0, 7.0], name="X")
+
+    conditional_value = space.conditional_expectation_given_event(x, {0, 1, 2, 3})
+
+    assert isinstance(conditional_value, float)
+    assert conditional_value == x.expectation() == 4.0
 
 
 def test_conditional_expectation_given_discrete_variable():
