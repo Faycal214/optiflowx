@@ -1,54 +1,292 @@
+/*
+ * OptiFlowX documentation theme
+ *
+ * The layout intentionally follows the visual language of the PyDTMC /
+ * Read the Docs reference style: white content, a light neutral navigation
+ * rail, restrained blue links, compact typography, and plain technical
+ * code/table presentation. No PyDTMC branding or assets are used.
+ */
+
 :root {
-  --ofx-radius: 0.7rem;
+  --ofx-link: #2980b9;
+  --ofx-link-hover: #1f618d;
+  --ofx-sidebar: #f3f3f3;
+  --ofx-sidebar-border: #e5e5e5;
+  --ofx-border: #e1e4e5;
+  --ofx-code-bg: #f7f7f7;
+  --ofx-code-border: #e5e5e5;
+  --ofx-muted: #6b6b6b;
+  --ofx-heading: #222;
 }
 
-.md-typeset h1 {
-  font-weight: 700;
-  letter-spacing: -0.02em;
+html {
+  scroll-behavior: smooth;
 }
 
-.md-typeset h2 {
-  margin-top: 2.2rem;
-  font-weight: 650;
+body {
+  color: #404040;
+  background: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.65;
 }
 
-.md-typeset h3 {
-  margin-top: 1.5rem;
+/* Read-the-Docs style navigation rail. */
+.wy-nav-side {
+  background: var(--ofx-sidebar);
+  border-right: 1px solid var(--ofx-sidebar-border);
+  box-shadow: none;
 }
 
-.md-typeset .admonition,
-.md-typeset details {
-  border-radius: var(--ofx-radius);
+.wy-side-nav-search {
+  background: #fff;
+  border-bottom: 1px solid var(--ofx-sidebar-border);
+  padding: 1.2rem 1rem;
 }
 
-.md-typeset table:not([class]) {
+.wy-side-nav-search > a {
+  color: var(--ofx-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-shadow: none;
+}
+
+.wy-side-nav-search > a:hover {
+  background: transparent;
+  color: var(--ofx-link-hover);
+}
+
+.wy-side-nav-search input[type="text"] {
+  border: 1px solid #d9d9d9;
+  border-radius: 2px;
+  box-shadow: none;
+  color: #404040;
+  background: #fff;
+}
+
+.wy-menu-vertical {
+  font-size: 13px;
+}
+
+.wy-menu-vertical a {
+  color: #444;
+  border-bottom: 1px solid transparent;
+}
+
+.wy-menu-vertical a:hover {
+  background: #e9e9e9;
+  color: #222;
+}
+
+.wy-menu-vertical li.current > a,
+.wy-menu-vertical li.on a {
+  background: #e6e6e6;
+  border-right: 2px solid var(--ofx-link);
+  color: #222;
+}
+
+.wy-menu-vertical li.current > a:hover,
+.wy-menu-vertical li.on a:hover {
+  background: #e1e1e1;
+}
+
+.wy-menu-vertical li.current ul {
+  background: #f7f7f7;
+}
+
+.wy-menu-vertical li.toctree-l1 > a {
+  font-weight: 600;
+}
+
+/* Main content: compact reference-document proportions. */
+.wy-nav-content-wrap {
+  background: #fff;
+}
+
+.wy-nav-content {
+  max-width: 1100px;
+  padding: 2.5rem 3rem 4rem;
+}
+
+.rst-content h1,
+.rst-content h2,
+.rst-content h3,
+.rst-content h4,
+.rst-content h5,
+.rst-content h6 {
+  color: var(--ofx-heading);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.rst-content h1 {
+  font-size: 2rem;
+  margin-bottom: 1.4rem;
+}
+
+.rst-content h2 {
+  border-bottom: 1px solid var(--ofx-border);
+  font-size: 1.45rem;
+  margin-top: 2.4rem;
+  padding-bottom: 0.35rem;
+}
+
+.rst-content h3 {
+  font-size: 1.15rem;
+  margin-top: 1.8rem;
+}
+
+.rst-content h4 {
+  font-size: 1rem;
+}
+
+.rst-content a,
+.rst-content a:visited {
+  color: var(--ofx-link);
+  text-decoration: none;
+}
+
+.rst-content a:hover {
+  color: var(--ofx-link-hover);
+  text-decoration: underline;
+}
+
+/* PyDTMC-style API signatures. */
+.rst-content .sig,
+.rst-content code.literal,
+.rst-content tt {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.rst-content .highlight,
+.rst-content pre {
+  background: var(--ofx-code-bg);
+  border: 1px solid var(--ofx-code-border);
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+.rst-content .highlight pre {
+  border: 0;
+  margin: 0;
+  padding: 0.9rem 1rem;
+}
+
+.rst-content code,
+.rst-content tt,
+.rst-content kbd {
+  background: #f2f2f2;
+  border: 1px solid #e1e1e1;
+  border-radius: 2px;
+  color: #333;
+  font-size: 0.9em;
+  padding: 0.08em 0.28em;
+}
+
+.rst-content pre code,
+.rst-content .highlight code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+/* Tables: restrained borders and compact cells. */
+.rst-content table.docutils,
+.rst-content table.field-list,
+.rst-content table:not(.footnote) {
+  border: 1px solid var(--ofx-border);
+  border-collapse: collapse;
+  box-shadow: none;
   width: 100%;
 }
 
-.md-typeset code {
-  border-radius: 0.3rem;
+.rst-content table.docutils th,
+.rst-content table.docutils td,
+.rst-content table.field-list th,
+.rst-content table.field-list td {
+  border: 1px solid var(--ofx-border);
+  padding: 0.55rem 0.75rem;
+  vertical-align: top;
 }
 
-.md-typeset .highlight {
-  border-radius: var(--ofx-radius);
-  overflow: hidden;
+.rst-content table.docutils th {
+  background: #f5f5f5;
+  color: #333;
+  font-weight: 600;
 }
 
+.rst-content table.docutils tr:nth-child(even) td {
+  background: #fafafa;
+}
+
+/* Parameter / return / exception blocks used throughout the API reference. */
+.rst-content dl:not(.docutils) dt,
+.rst-content .field-list dt {
+  color: #333;
+  font-weight: 600;
+}
+
+.rst-content .field-list {
+  margin: 1rem 0 1.5rem;
+}
+
+.rst-content .field-list dd {
+  margin-left: 1.5rem;
+}
+
+/* Admonitions stay neutral rather than adopting a saturated app palette. */
+.rst-content .admonition,
+.rst-content details {
+  border: 1px solid var(--ofx-border);
+  border-radius: 2px;
+  box-shadow: none;
+}
+
+/* Course/source blocks retain a restrained project accent. */
 .course-source {
-  border-left: 0.2rem solid var(--md-primary-fg-color);
+  border-left: 3px solid var(--ofx-link);
   padding: 0.7rem 1rem;
   margin: 1rem 0 1.5rem;
-  background: var(--md-code-bg-color);
-  border-radius: 0 var(--ofx-radius) var(--ofx-radius) 0;
+  background: #f7f7f7;
+  border-radius: 0 2px 2px 0;
 }
 
 .math-contract {
-  border: 1px solid var(--md-default-fg-color--lightest);
-  border-radius: var(--ofx-radius);
+  border: 1px solid var(--ofx-border);
+  border-radius: 2px;
   padding: 1rem 1.1rem;
   margin: 1rem 0 1.5rem;
+  background: #fff;
 }
 
 .api-map {
-  font-size: 0.92rem;
+  font-size: 0.94rem;
+}
+
+/* Keep footer and navigation controls quiet like a reference manual. */
+.rst-footer-buttons a {
+  background: #f3f3f3;
+  border: 1px solid var(--ofx-border);
+  color: #444;
+  text-shadow: none;
+}
+
+.rst-footer-buttons a:hover {
+  background: #e9e9e9;
+  color: #222;
+}
+
+@media screen and (max-width: 768px) {
+  .wy-nav-content {
+    padding: 1.5rem 1.2rem 3rem;
+  }
+
+  .wy-nav-side {
+    border-right: 0;
+  }
+
+  .rst-content h1 {
+    font-size: 1.7rem;
+  }
 }
