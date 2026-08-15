@@ -34,5 +34,49 @@ class RandomVariable(_RandomVariable):
         """Apply ``function`` pointwise and return a canonical ``RandomVariable``."""
         return self.transform(function, name=name)
 
+    def _binary(self, other, operation):
+        """Apply a binary operation while preserving the public RV type."""
+        if isinstance(other, _RandomVariable):
+            if other.space is not self.space:
+                raise ValueError("random variables must belong to the same probability space")
+            values = {
+                outcome: float(operation(self.values[outcome], other.values[outcome]))
+                for outcome in self.space.outcomes
+            }
+        else:
+            values = {
+                outcome: float(operation(self.values[outcome], float(other)))
+                for outcome in self.space.outcomes
+            }
+        return RandomVariable(self.space, values)
+
+    def __add__(self, other):
+        """Return the pointwise sum ``X+Y`` or ``X+c``."""
+        return self._binary(other, lambda a, b: a + b)
+
+    def __sub__(self, other):
+        """Return the pointwise difference ``X-Y`` or ``X-c``."""
+        return self._binary(other, lambda a, b: a - b)
+
+    def __mul__(self, other):
+        """Return the pointwise product ``XY`` or ``cX``."""
+        return self._binary(other, lambda a, b: a * b)
+
+    def __radd__(self, other):
+        """Return ``other + X``."""
+        return self.__add__(other)
+
+    def __rsub__(self, other):
+        """Return ``other - X``."""
+        return self._binary(other, lambda a, b: b - a)
+
+    def __rmul__(self, other):
+        """Return ``other * X``."""
+        return self.__mul__(other)
+
+    def __neg__(self):
+        """Return the pointwise negation ``-X``."""
+        return self.transform(lambda value: -value)
+
 
 __all__ = ["RandomVariable"]
