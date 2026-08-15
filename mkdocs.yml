@@ -35,31 +35,14 @@ nav:
       - Worked examples: examples.md
 
 theme:
-  name: material
-  features:
-    - navigation.instant
-    - navigation.instant.progress
-    - navigation.sections
-    - navigation.top
-    - toc.follow
-    - search.highlight
-    - search.share
-    - content.code.copy
-    - content.code.annotate
-  palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      toggle:
-        icon: material/weather-sunny
-        name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      toggle:
-        icon: material/weather-night
-        name: Switch to light mode
-  font:
-    text: Inter
-    code: JetBrains Mono
+  name: readthedocs
+  locale: en
+  sticky_navigation: true
+  navigation_depth: 4
+  collapse_navigation: false
+  titles_only: false
+  include_search_page: true
+  prev_next_buttons_location: bottom
 
 markdown_extensions:
   - admonition
