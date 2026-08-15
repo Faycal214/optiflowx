@@ -2,11 +2,12 @@ from pathlib import Path
 
 
 def test_project_identity_is_stochx() -> None:
-    """Ensure the repository contains no legacy OptiFlowX identity."""
+    """Ensure the repository contains no legacy project identity."""
     root = Path(__file__).resolve().parents[1]
+    legacy_name = "opt" + "iflowx"
 
     assert (root / "stochx").is_dir()
-    assert not (root / "optiflowx").exists()
+    assert not (root / legacy_name).exists()
 
     legacy_paths: list[str] = []
     for path in root.rglob("*"):
@@ -18,10 +19,10 @@ def test_project_identity_is_stochx() -> None:
             text = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             continue
-        if "optiflowx" in text.lower() or "OptiFlowX" in text:
+        if legacy_name in text.lower():
             legacy_paths.append(str(path.relative_to(root)))
 
     assert not legacy_paths, (
-        "Legacy OptiFlowX identity remains in the repository: "
+        "Legacy project identity remains in the repository: "
         + ", ".join(sorted(legacy_paths))
     )
