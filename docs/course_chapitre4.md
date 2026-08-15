@@ -1,125 +1,110 @@
-# Chapitre 4 — Espérance conditionnelle
+# Chapter 4 — Conditional Expectation
 
-> **Cours de référence :** N. Boussaha, *Processus Aléatoires (4)*, Master Modélisation Stochastique et Prévision en Recherche Opérationnelle (MSPRO), USTHB, 2024–2025.
->
-> Cette page appartient à **Course material**. Elle présente les notions et propriétés dans l'ordre du support. Les objets Python correspondants sont traités séparément dans **Package / API**.
+This page develops conditional expectation from event conditioning through conditioning on random variables and sigma-fields. The mathematical discussion is separate from the Python API and worked examples.
 
 ## 1. Introduction
 
-L'espérance conditionnelle est introduite comme un outil d'estimation lorsqu'une information partielle est disponible, notamment en prévision et en présence de données non observées ou manquantes.
+Conditional expectation is introduced as a tool for estimation when partial information is available, especially in prediction and when some data are unobserved or missing.
 
-## 2. Conditionnement par rapport à un événement
+## 2. Conditioning on an event
 
-Pour \(B\in\mathcal F\) tel que \(P(B)>0\),
+For \(B\in\mathcal F\) such that \(P(B)>0\),
 
 \[
 P(A\mid B)=\frac{P(A\cap B)}{P(B)}.
 \]
 
-Pour \(X\in L^1\),
+For \(X\in L^1\),
 
 \[
 \boxed{E(X\mid B)=\frac{E(X\mathbf 1_B)}{P(B)}}.
 \]
 
-### Exemple du support
+### Example
 
-Trois pièces de valeurs 10, 20 et 50 DA sont lancées. Si \(X\) est le montant total obtenu sur pile et \(B\) l'événement « exactement deux pièces montrent pile », alors
+Three coins with values 10, 20, and 50 are tossed. If \(X\) is the total amount obtained on heads and \(B\) is the event that exactly two coins show heads, then
 
 \[
 E(X\mid B)=\frac{160}{3}.
 \]
 
-## 3. Conditionnement par rapport à une variable discrète
+## 3. Conditioning on a discrete random variable
 
-Soit \(Y\) à valeurs dans un espace dénombrable \(E\), et
+Let \(Y\) take values in a countable space \(E\), and define
 
 \[
 E_0=\{y\in E:P(Y=y)>0\}.
 \]
 
-Pour \(y\in E_0\),
+For \(y\in E_0\),
 
 \[
 E(X\mid Y=y)=\frac{E(X\mathbf1_{\{Y=y\}})}{P(Y=y)}.
 \]
 
-On définit ensuite
+Then define
 
 \[
 E(X\mid Y)=g(Y),
 \]
 
-où \(g(y)=E(X\mid Y=y)\) sur \(E_0\). La valeur de \(g\) hors de \(E_0\) est sans conséquence car cet ensemble a probabilité nulle.
+where \(g(y)=E(X\mid Y=y)\) on \(E_0\). The value of \(g\) outside \(E_0\) is irrelevant because that set has probability zero.
 
-Ainsi \(E(X\mid Y)\) est une variable aléatoire et une fonction de \(Y\), donc \(\sigma(Y)\)-mesurable.
+Thus \(E(X\mid Y)\) is a random variable and a function of \(Y\), so it is \(\sigma(Y)\)-measurable.
 
-### Exemple du dé
+### Example with a die
 
-Pour un dé équilibré, si \(X(\omega)=\omega\) et si \(Y\) indique si le résultat est impair ou pair, le cours obtient
+For a fair die, let \(X(\omega)=\omega\), and let \(Y\) indicate whether the result is odd or even. Then
 
 \[
 E(X\mid Y)=3\mathbf1_{\{Y=1\}}+4\mathbf1_{\{Y=0\}}.
 \]
 
-## 4. Cas absolument continu
+## 4. Absolutely continuous case
 
-Lorsque \(X\) et \(Y\) possèdent une densité conjointe,
+When \(X\) and \(Y\) have a joint density,
 
 \[
 f_{Y\mid X=x}(y)=\frac{f_{X,Y}(x,y)}{f_X(x)}.
 \]
 
-Alors
+Then
 
 \[
 E(Y\mid X=x)=\int y f_{Y\mid X=x}(y)\,dy.
 \]
 
-Dans l'exemple développé par le support, cette procédure conduit à
+In the corresponding example, this procedure gives
 
 \[
-E(Y\mid X)=X\quad\text{p.s.}
+E(Y\mid X)=X\quad\text{a.s.}
 \]
 
-## 5. Propriétés dans le cas discret
+## 5. Properties in the discrete case
 
-Le support établit notamment
+The main properties include
 
 \[
 E|E(X\mid Y)|\le E|X|,
 \]
 
-la formule de l'espérance totale
+the law of total expectation
 
 \[
 E(X)=\sum_yE(X\mid Y=y)P(Y=y),
 \]
 
-et, en cas d'indépendance,
+and, under independence,
 
 \[
 E(X\mid Y=y)=E(X).
 \]
 
-Pour une fonction \(h\), la valeur de \(Y\) peut être remplacée par la constante correspondante à l'intérieur du conditionnement.
+For a function \(h\), the value of \(Y\) may be replaced by the corresponding constant inside the conditioning relation when appropriate.
 
-## 6. Caractérisation par \(\sigma(Y)\)
+## 6. Characterization through \(\sigma(Y)\)
 
-Pour \(X\in L^1\) et \(Y\) discrète, \(E(X\mid Y)\) est l'unique objet, à un ensemble de probabilité nulle près, qui est \(\sigma(Y)\)-mesurable et vérifie
-
-\[
-\int_A E(X\mid Y)\,dP
-=
-\int_A X\,dP,
-\qquad A\in\sigma(Y).
-\]
-
-Cette formulation sert de transition vers le conditionnement par une variable arbitraire puis par une tribu.
-
-## 7. Variable aléatoire arbitraire
-
-Pour \(X\in L^1\) et une variable aléatoire arbitraire \(Y\), l'espérance conditionnelle est définie par la même propriété : elle est \(\sigma(Y)\)-mesurable et
+For \(X\in L^1\) and discrete \(Y\), \(E(X\mid Y)\) is, up to a null set, the unique \(\sigma(Y)\)-measurable random variable satisfying
 
 \[
 \int_A E(X\mid Y)\,dP
@@ -128,17 +113,30 @@ Pour \(X\in L^1\) et une variable aléatoire arbitraire \(Y\), l'espérance cond
 \qquad A\in\sigma(Y).
 \]
 
-Le cours souligne que la tribu d'information est la notion pertinente. En particulier,
+This formulation leads to conditioning with respect to an arbitrary random variable and then with respect to a sigma-field.
+
+## 7. Arbitrary random variable
+
+For \(X\in L^1\) and an arbitrary random variable \(Y\), conditional expectation is defined by the same property: it is \(\sigma(Y)\)-measurable and
+
+\[
+\int_A E(X\mid Y)\,dP
+=
+\int_A X\,dP,
+\qquad A\in\sigma(Y).
+\]
+
+The relevant object is the information sigma-field. In particular,
 
 \[
 \sigma(Y)=\sigma(Y')
 \Longrightarrow
-E(X\mid Y)=E(X\mid Y')\quad\text{p.s.}
+E(X\mid Y)=E(X\mid Y')\quad\text{a.s.}
 \]
 
-## 8. Conditionnement par rapport à une tribu
+## 8. Conditioning with respect to a sigma-field
 
-Soit \(\mathcal G\subseteq\mathcal F\) une sous-tribu. Pour \(X\in L^1\), l'espérance conditionnelle \(E(X\mid\mathcal G)\) est une variable \(\mathcal G\)-mesurable telle que
+Let \(\mathcal G\subseteq\mathcal F\) be a sub-sigma-field. For \(X\in L^1\), the conditional expectation \(E(X\mid\mathcal G)\) is a \(\mathcal G\)-measurable random variable such that
 
 \[
 \int_AE(X\mid\mathcal G)\,dP
@@ -147,89 +145,89 @@ Soit \(\mathcal G\subseteq\mathcal F\) une sous-tribu. Pour \(X\in L^1\), l'esp�
 \qquad A\in\mathcal G.
 \]
 
-Dans le cas \(\mathcal G=\sigma(Y)\), on retrouve la notation \(E(X\mid Y)\).
+When \(\mathcal G=\sigma(Y)\), this gives the notation \(E(X\mid Y)\).
 
-## 9. Théorème de caractérisation
+## 9. Characterization theorem
 
-Il existe une unique variable \(Y\in L^1(\Omega,\mathcal G,P)\) telle que, pour toute variable \(Z\) bornée et \(\mathcal G\)-mesurable,
+There exists a unique variable \(Y\in L^1(\Omega,\mathcal G,P)\) such that, for every bounded \(\mathcal G\)-measurable variable \(Z\),
 
 \[
 E(ZX)=E(ZY).
 \]
 
-Cette variable est
+This variable is
 
 \[
 Y=E(X\mid\mathcal G).
 \]
 
-En particulier,
+In particular,
 
 \[
 E(\mathbf1_AX)=E\big(\mathbf1_AE(X\mid\mathcal G)\big),
 \qquad A\in\mathcal G.
 \]
 
-La démonstration d'existence du théorème dépasse le cadre du cours.
+The existence proof is beyond the scope of this finite framework.
 
-## 10. Propriétés fondamentales
+## 10. Fundamental properties
 
-Si \(X\) est \(\mathcal G\)-mesurable,
+If \(X\) is \(\mathcal G\)-measurable,
 
 \[
-E(X\mid\mathcal G)=X\quad\text{p.s.}
+E(X\mid\mathcal G)=X\quad\text{a.s.}
 \]
 
-Linéarité :
+Linearity:
 
 \[
 E(aX+bY\mid\mathcal G)
 =aE(X\mid\mathcal G)+bE(Y\mid\mathcal G).
 \]
 
-Positivité :
+Positivity:
 
 \[
 X\ge0\Rightarrow E(X\mid\mathcal G)\ge0.
 \]
 
-Espérance totale :
+Total expectation:
 
 \[
 E(E(X\mid\mathcal G))=E(X).
 \]
 
-Contrôle absolu :
+Absolute-value control:
 
 \[
 |E(X\mid\mathcal G)|\le E(|X|\mid\mathcal G),
 \]
 
-et donc \(E|E(X\mid\mathcal G)|\le E|X|\).
+and therefore \(E|E(X\mid\mathcal G)|\le E|X|\).
 
-Monotonie :
-
-\[
-X\le X'\Rightarrow E(X\mid\mathcal G)\le E(X'\mid\mathcal G)\quad\text{p.s.}
-\]
-
-Indépendance : si \(X\) est indépendant de \(\mathcal G\),
+Monotonicity:
 
 \[
-E(X\mid\mathcal G)=E(X)\quad\text{p.s.}
+X\le X'\Rightarrow E(X\mid\mathcal G)\le E(X'\mid\mathcal G)\quad\text{a.s.}
 \]
 
-## 11. Facteur mesurable
+Independence: if \(X\) is independent of \(\mathcal G\),
 
-Si \(Y\) est \(\mathcal G\)-mesurable et que les intégrabilités nécessaires sont satisfaites,
+\[
+E(X\mid\mathcal G)=E(X)\quad\text{a.s.}
+\]
+
+## 11. Measurable factor
+
+If \(Y\) is \(\mathcal G\)-measurable and the required integrability conditions hold,
 
 \[
 \boxed{E(YX\mid\mathcal G)=Y\,E(X\mid\mathcal G).}
 \]
 
-## 12. Conditionnement successif
+## 12. Successive conditioning
 
-Si \(\mathcal G_1\subseteq\mathcal G_2\), alors
+If \(\mathcal G_1\subseteq\mathcal G_2\), then
 
 \[
 \boxed{
@@ -237,40 +235,40 @@ E(E(X\mid\mathcal G_2)\mid\mathcal G_1)=E(X\mid\mathcal G_1).
 }
 \]
 
-Si \(B\in\mathcal G\), le cours donne également
+If \(B\in\mathcal G\), one also has
 
 \[
 E(E(X\mid\mathcal G)\mid B)=E(X\mid B).
 \]
 
-## 13. Indépendance des tribus
+## 13. Independence of sigma-fields
 
-Deux sous-tribus \(\mathcal G_1\) et \(\mathcal G_2\) sont indépendantes si et seulement si, pour toute variable intégrable mesurable par rapport à \(\mathcal G_2\),
+Two sub-sigma-fields \(\mathcal G_1\) and \(\mathcal G_2\) are independent if and only if, for every integrable random variable measurable with respect to \(\mathcal G_2\),
 
 \[
 E(X\mid\mathcal G_1)=E(X).
 \]
 
-Pour des variables indépendantes \(X\) et \(Y\), on retrouve en particulier
+For independent random variables \(X\) and \(Y\), in particular,
 
 \[
 E(X\mid Y)=E(X).
 \]
 
-Le cours souligne toutefois que cette dernière égalité, prise isolément, ne suffit pas à établir l'indépendance.
+However, this last equality by itself is not sufficient to establish independence.
 
-## 14. Synthèse
+## 14. Summary
 
 \[
-\text{événement}
-\rightarrow\text{variable discrète}
-\rightarrow\text{variable arbitraire}
-\rightarrow\text{tribu}
+\text{event}
+\rightarrow\text{discrete variable}
+\rightarrow\text{arbitrary variable}
+\rightarrow\text{sigma-field}
 \]
 
 \[
-\rightarrow\text{caractérisation}
-\rightarrow\text{propriétés}
-\rightarrow\text{indépendance}
-\rightarrow\text{propriété de la tour}.
+\rightarrow\text{characterization}
+\rightarrow\text{properties}
+\rightarrow\text{independence}
+\rightarrow\text{tower property}.
 \]
