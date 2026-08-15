@@ -145,7 +145,6 @@ def test_property_accessors_are_covered_by_the_docstring_guard():
             """Deleter documentation."""
             del self._value
 
-    _assert_standard_class_docstring.__call__ if False else None
     _assert_standard_property_docstring(Fixture.__dict__["value"], "Fixture.value")
 
 
