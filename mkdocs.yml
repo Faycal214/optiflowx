@@ -1,5 +1,5 @@
 site_name: OptiFlowX
-site_description: Executable stochastic-process course material based on the five USTHB MSPRO stochastic-process PDFs.
+site_description: A Python library for stochastic-process mathematics.
 repo_url: https://github.com/Faycal214/optiflowx
 repo_name: Faycal214/optiflowx
 
