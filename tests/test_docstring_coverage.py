@@ -7,7 +7,9 @@ import optiflowx.stochastic as stochastic
 
 PUBLIC_STOCHASTIC_MODULES = tuple(
     info.name
-    for info in pkgutil.iter_modules(stochastic.__path__, prefix=f"{stochastic.__name__}.")
+    for info in pkgutil.iter_modules(
+        stochastic.__path__, prefix=f"{stochastic.__name__}."
+    )
     if not info.name.rsplit(".", 1)[-1].startswith("_")
 )
 
@@ -21,6 +23,38 @@ def _public_objects(module):
             continue
         if inspect.isclass(obj) or inspect.isfunction(obj):
             yield name, obj
+
+
+def _assert_documented_function(func, owner, *, require_examples=True):
+    assert func.__doc__, f"Missing docstring: {owner}"
+    if require_examples:
+        assert "Examples" in func.__doc__, f"Missing Examples section: {owner}"
+
+
+def _assert_standard_property_docstring(prop, owner):
+    if prop.fget is not None:
+        _assert_documented_function(prop.fget, f"{owner}.getter")
+    if prop.fset is not None:
+        _assert_documented_function(
+            prop.fset, f"{owner}.setter", require_examples=False
+        )
+    if prop.fdel is not None:
+        _assert_documented_function(
+            prop.fdel, f"{owner}.deleter", require_examples=False
+        )
+
+
+def _assert_standard_descriptor_docstring(descriptor, owner):
+    """Require documentation for custom public descriptors.
+
+    Built-in descriptor categories with specialized handling are excluded.
+    Any other object implementing ``__get__`` is treated as a public custom
+    descriptor and must provide its own docstring.
+    """
+    if isinstance(descriptor, (property, classmethod, staticmethod)):
+        return
+    if hasattr(descriptor, "__get__"):
+        assert descriptor.__doc__, f"Missing descriptor docstring: {owner}"
 
 
 def _assert_standard_class_docstring(cls):
@@ -52,28 +86,27 @@ def _assert_standard_class_docstring(cls):
             continue
 
         raw_member = inspect.getattr_static(cls, method_name)
-        if isinstance(raw_member, (classmethod, staticmethod)):
-            func = raw_member.__func__
-        elif isinstance(raw_member, property):
-            func = raw_member.fget
-        else:
-            func = raw_member
+        owner = f"{cls.__name__}.{method_name}"
 
-        if func is None or not inspect.isfunction(func):
+        if isinstance(raw_member, property):
+            _assert_standard_property_docstring(raw_member, owner)
             continue
 
-        assert func.__doc__, f"Missing method docstring: {cls.__name__}.{method_name}"
-        assert "Examples" in func.__doc__, (
-            f"Missing Examples section: {cls.__name__}.{method_name}"
-        )
+        if isinstance(raw_member, (classmethod, staticmethod)):
+            _assert_documented_function(raw_member.__func__, owner)
+            continue
+
+        if inspect.isfunction(raw_member):
+            _assert_documented_function(raw_member, owner)
+            continue
+
+        _assert_standard_descriptor_docstring(raw_member, owner)
 
 
 def _assert_standard_function_docstring(function):
-    assert function.__doc__, (
-        f"Missing function docstring: {function.__module__}.{function.__name__}"
-    )
-    assert "Examples" in function.__doc__, (
-        f"Missing Examples section: {function.__module__}.{function.__name__}"
+    _assert_documented_function(
+        function,
+        f"{function.__module__}.{function.__name__}",
     )
 
 
@@ -86,3 +119,57 @@ def test_public_api_docstrings_are_discovered_independently_of___all__():
                 _assert_standard_class_docstring(obj)
             elif inspect.isfunction(obj):
                 _assert_standard_function_docstring(obj)
+
+
+def test_property_accessors_are_covered_by_the_docstring_guard():
+    """Ensure public property getters, setters, and deleters are validated."""
+
+    class Fixture:
+        @property
+        def value(self):
+            """Getter documentation.
+
+            Examples
+            --------
+            ``fixture.value``
+            """
+            return 1
+
+        @value.setter
+        def value(self, new_value):
+            """Setter documentation."""
+            self._value = new_value
+
+        @value.deleter
+        def value(self):
+            """Deleter documentation."""
+            del self._value
+
+    _assert_standard_class_docstring.__call__ if False else None
+    _assert_standard_property_docstring(Fixture.__dict__["value"], "Fixture.value")
+
+
+def test_custom_public_descriptors_are_not_silently_ignored():
+    """Ensure a custom descriptor without documentation fails the contract."""
+
+    class DocumentedDescriptor:
+        """A documented descriptor used by the coverage fixture."""
+
+        def __get__(self, instance, owner):
+            return self
+
+    class UndocumentedDescriptor:
+        def __get__(self, instance, owner):
+            return self
+
+    _assert_standard_descriptor_docstring(
+        DocumentedDescriptor(), "DocumentedDescriptor"
+    )
+    try:
+        _assert_standard_descriptor_docstring(
+            UndocumentedDescriptor(), "UndocumentedDescriptor"
+        )
+    except AssertionError:
+        pass
+    else:
+        raise AssertionError("Undocumented custom descriptor was not rejected")
