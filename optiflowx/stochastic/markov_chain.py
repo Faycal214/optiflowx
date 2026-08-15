@@ -8,6 +8,8 @@ from typing import Hashable
 
 import numpy as np
 
+from .validation import validate_states, validate_stochastic_matrix, validate_tolerance
+
 State = Hashable
 
 
@@ -15,23 +17,13 @@ class MarkovChain:
     """Finite-state homogeneous discrete-time Markov chain."""
 
     def __init__(self, transition_matrix: Sequence[Sequence[float]], states: Sequence[State] | None = None, *, tolerance: float = 1e-12) -> None:
-        matrix = np.asarray(transition_matrix, dtype=float)
-        if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1] or matrix.shape[0] == 0:
-            raise ValueError("transition_matrix must be a non-empty square matrix")
-        if not np.all(np.isfinite(matrix)):
-            raise ValueError("transition_matrix must contain finite values")
-        if np.any(matrix < -tolerance) or not np.allclose(matrix.sum(axis=1), 1.0, atol=tolerance, rtol=0.0):
-            raise ValueError("transition_matrix must be stochastic: non-negative rows summing to 1")
-        matrix = matrix.copy()
-        matrix[np.abs(matrix) < tolerance] = 0.0
-        matrix[matrix < 0.0] = 0.0
-        labels = tuple(range(matrix.shape[0])) if states is None else tuple(states)
-        if len(labels) != matrix.shape[0] or len(set(labels)) != len(labels):
-            raise ValueError("states must be unique and match matrix size")
+        tolerance = validate_tolerance(tolerance)
+        matrix = validate_stochastic_matrix(transition_matrix, tolerance=tolerance)
+        labels = validate_states(states, matrix.shape[0])
         self._P = matrix
         self._states = labels
         self._index = {state: i for i, state in enumerate(labels)}
-        self._tolerance = float(tolerance)
+        self._tolerance = tolerance
 
     @property
     def transition_matrix(self) -> np.ndarray:
