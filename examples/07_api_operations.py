@@ -30,7 +30,7 @@ def markov_chain_examples() -> None:
     print(chain.chapman_kolmogorov(1, 2))
     print(chain.transition_graph())
     print(chain.accessible("A", "B"), chain.communicate("A", "B"))
-    print(chain.communicating_classes(), chain.closed_classes())
+    print(chain.communating_classes(), chain.closed_classes())
     print(chain.is_irreducible(), chain.is_absorbing_state("A"), chain.classify_states())
     print(chain.first_visit_probability("A", "B", 2))
     print(chain.first_passage_probability("A", "B", 2))
@@ -182,7 +182,7 @@ def martingale_examples(space: FiniteProbabilitySpace) -> None:
     print(stopping.maximum(stopping).values)
     print(stopping.add(stopping).values)
     stopped = mart.stopped(stopping)
-    print(isinstance(stopped, StoppedProcess), stopped.process, stopped.stopping_time, stopped.n_steps)
+    print(isinstance(stopped, StoppedProcess), stopped.process, stopped.stopping_time, len(stopped.process))
     print(stopped.values(1), stopped.sequence(), stopped.terminal_value())
 
 
