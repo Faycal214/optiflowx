@@ -43,7 +43,6 @@ PUBLIC_OBJECTS = {
         "jump_chain", "kolmogorov_derivative", "stationary_weights",
         "stationary_weights_at", "stationary_distribution", "pure_immigration_probability",
         "pure_birth_probability", "pure_death_probability", "pure_birth_reciprocal_rate_sum",
-        "simulate",
     ],
     "FiniteProbabilitySpace": [
         "probability", "probability_of", "random_variable", "partition",
