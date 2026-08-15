@@ -1,200 +1,208 @@
-# Chaînes de Markov à temps continu (CMTC)
+# Continuous-Time Markov Chains
 
-Cette page suit le **Chapitre 3 — Chaînes de Markov à temps continu**. Les définitions et résultats mathématiques présentés ici sont ceux du PDF du cours ; l'API est ensuite mise en regard de ces objets.
+This page gives a compact mathematical reference for finite homogeneous CTMCs and shows how the concepts map to OptiFlowX.
 
-## 1. Processus et matrice de transition
+## 1. Transition probabilities
 
-Pour une CMTC homogène, le chapitre utilise les probabilités
+For a homogeneous CTMC,
 
-$$
+\[
 p_{ij}(t)=P(X_{s+t}=j\mid X_s=i),
-$$
+\]
 
-qui ne dépendent que de la durée $t$. On note
+and
 
-$$
-P(t)=(p_{ij}(t)).
-$$
+\[
+P(t)=(p_{ij}(t)),
+\qquad P(0)=I.
+\]
 
-La matrice vérifie notamment $P(0)=I$ et la propriété de Chapman–Kolmogorov.
+The transition matrices satisfy Chapman–Kolmogorov.
 
 ```python
 from optiflowx.stochastic import ContinuousTimeMarkovChain
 
 chain = ContinuousTimeMarkovChain(Q, states=[0, 1, 2])
-chain.transition_matrix(2.0)
+chain.transition_matrix_at(2.0)
 ```
 
-## 2. Générateur infinitésimal
+## 2. Infinitesimal generator
 
-Le chapitre introduit la matrice génératrice $Q=(q_{ij})$ par le comportement infinitésimal. Pour $i\neq j$ :
+The generator \(Q=(q_{ij})\) is defined through the infinitesimal behavior
 
-$$
-p_{ij}(h)=q_{ij}h+o(h).
-$$
+\[
+p_{ij}(h)=q_{ij}h+o(h),
+\qquad i\ne j.
+\]
 
-Les coefficients hors diagonale sont positifs ou nuls, les coefficients diagonaux sont non positifs, et les lignes de $Q$ somment à zéro.
+Off-diagonal rates are non-negative, diagonal rates are non-positive, and every row sums to zero:
+
+\[
+\sum_jq_{ij}=0.
+\]
 
 ```python
 chain.generator_matrix
 chain.infinitesimal_transition_matrix(h)
 ```
 
-L'expression `I + hQ` représente ici le développement au premier ordre utilisé dans le cours ; la matrice de transition exacte est traitée séparément.
+## 3. Transition matrix and state law
 
-## 3. Matrice de transition et loi à l'instant t
+For a finite homogeneous CTMC,
 
-Dans le cadre homogène fini du chapitre :
+\[
+P(t)=e^{tQ},
+\]
 
-$$
-P(t)=e^{tQ}.
-$$
+and for an initial row distribution \(\mu_0\),
 
-```python
-P_t = chain.transition_matrix(t)
-```
-
-Si la loi initiale est le vecteur-ligne $\mu_0$, alors
-
-$$
+\[
 \mu_t=\mu_0P(t).
-$$
+\]
 
 ```python
-mu_t = chain.state_distribution(mu_0, t)
+P_t = chain.transition_matrix_at(2.0)
+mu_t = chain.state_distribution(mu_0, 2.0)
 ```
 
-## 4. Chapman–Kolmogorov
+The API also supports a uniformization-based numerical path for transition matrices.
 
-L'homogénéité donne
+```python
+P_t = chain.transition_matrix_at(2.0, method="uniformization")
+```
 
-$$
+## 4. Chapman–Kolmogorov equations
+
+Homogeneity gives
+
+\[
 P(s+t)=P(s)P(t).
-$$
+\]
 
 ```python
 chain.chapman_kolmogorov(s, t)
 ```
 
-## 5. Équations de Kolmogorov
+## 5. Kolmogorov equations
 
-Le chapitre présente les équations avant et arrière :
+The forward and backward equations are
 
-$$
+\[
 \frac{dP(t)}{dt}=P(t)Q,
-$$
+\]
 
-et
+and
 
-$$
+\[
 \frac{dP(t)}{dt}=QP(t).
-$$
+\]
 
 ```python
 chain.forward_derivative(t)
 chain.backward_derivative(t)
 ```
 
-## 6. Temps de séjour
+## 6. Holding times
 
-Depuis l'état $i$, le taux de sortie est
+From state \(i\), the exit rate is
 
-$$
+\[
 q_i=-q_{ii}.
-$$
+\]
 
-Le temps de séjour est exponentiel de paramètre $q_i$ lorsque $q_i>0$.
+When \(q_i>0\), the holding time is exponential with parameter \(q_i\).
 
 ```python
 chain.holding_rate(i)
 chain.holding_time(i)
 ```
 
-Si le taux de sortie est nul, le temps de séjour est infini dans la construction utilisée par le package.
+If the exit rate is zero, the holding time is infinite in the model represented by the package.
 
-## 7. Chaîne des sauts
+## 7. Embedded jump chain
 
-Le chapitre associe à la CMTC une chaîne de Markov discrète décrivant les états visités aux instants de saut. Pour $i\neq j$ et $q_i>0$ :
+The states observed at jump times form a discrete-time Markov chain. For \(i\ne j\) and \(q_i>0\),
 
-$$
+\[
 \widetilde p_{ij}=\frac{q_{ij}}{q_i}
 =\frac{q_{ij}}{-q_{ii}}.
-$$
+\]
 
 ```python
 chain.jump_chain_matrix()
 jump_chain = chain.jump_chain()
 ```
 
-Cette relation est importante car les propriétés de communication et de récurrence étudiées dans le chapitre sont reliées à la chaîne des sauts.
+## 8. Stationary distribution
 
-## 8. Loi stationnaire
+A distribution \(\pi\) is stationary if
 
-Une loi $\pi$ est stationnaire si
+\[
+\pi P(t)=\pi,
+\qquad \forall t\ge0.
+\]
 
-$$
-\pi P(t)=\pi,\qquad \forall t\geq0.
-$$
+In the finite framework,
 
-Dans le cadre étudié, elle est caractérisée par
-
-$$
+\[
 \pi Q=0,
-\qquad \sum_i\pi_i=1.
-$$
+\qquad
+\sum_i\pi_i=1.
+\]
 
 ```python
 pi = chain.stationary_distribution()
 ```
 
-Le package résout cette relation dans le cadre fini représenté par `ContinuousTimeMarkovChain`.
+## 9. Long-run occupation and cost
 
-## 9. Relation avec la chaîne des sauts
+The time spent in state \(i\) up to \(T\) is represented by
 
-Le chapitre relie la distribution stationnaire de la CMTC à celle de sa chaîne des sauts en tenant compte des temps de séjour. OptiFlowX conserve cette relation dans les outils de théorie associés à la CMTC.
+\[
+\int_0^T\mathbf1_{\{X_t=i\}}\,dt.
+\]
 
-## 10. Explosion et régularité
+The corresponding occupation fraction is
 
-Le chapitre définit le temps d'explosion à partir de la somme des temps de séjour successifs :
+\[
+\frac1T\int_0^T\mathbf1_{\{X_t=i\}}\,dt.
+\]
 
-$$
-\zeta=\sum_{n\geq1}S_n.
-$$
+For a state cost function \(h\), a stationary long-run cost is
 
-Le processus est régulier lorsque
+\[
+\sum_i\pi_i h(i).
+\]
 
-$$
-P(\zeta=+\infty)=1,
-$$
+```python
+path.occupation_time(i, 20.0)
+path.occupation_fraction(i, 20.0)
+```
 
-et explosif lorsqu'une explosion en temps fini peut avoir une probabilité positive.
+## 10. Non-explosion
 
-Pour les processus de naissance pure, la question est liée à la série des inverses des taux de naissance. Le package ne déduit pas la convergence d'une série infinie à partir d'un nombre fini de termes : il expose explicitement une somme partielle dans `pure_birth_reciprocal_rate_sum`.
+The explosion time can be represented as
 
-## 11. Comportement ergodique dans le temps
+\[
+\zeta=\sum_{n\ge1}S_n.
+\]
 
-Pour un état $i$, le temps passé dans $i$ jusqu'à $T$ peut être représenté par
+The process is non-explosive when
 
-$$
-\int_0^T \mathbf 1_{\{X_t=i\}}\,dt.
-$$
+\[
+P(\zeta=+\infty)=1.
+\]
 
-La fraction de temps est
+For a pure-birth model, this is related to the behavior of sums of reciprocal birth rates.
 
-$$
-\frac1T\int_0^T \mathbf 1_{\{X_t=i\}}\,dt.
-$$
+## 11. Simulation
 
-Dans le cadre ergodique/récurrent positif développé dans le chapitre, cette quantité converge vers la probabilité stationnaire correspondante.
+A jump-by-jump simulation follows these steps:
 
-## 12. Simulation
-
-La simulation suit la construction du chapitre :
-
-1. choisir l'état courant ;
-2. générer le temps de séjour exponentiel associé à son taux de sortie ;
-3. choisir le prochain état selon la chaîne des sauts ;
-4. recommencer jusqu'à l'horizon demandé.
+1. choose the current state;
+2. generate the exponential holding time associated with its exit rate;
+3. choose the next state according to the jump chain;
+4. repeat until the requested time horizon is reached.
 
 ```python
 path = chain.simulate(t_max=20.0, initial_state=0)
@@ -203,20 +211,19 @@ path.states
 path.state_at(5.0)
 ```
 
-## 13. Correspondance cours → package
+## 12. API map
 
-| Objet du chapitre | Composant OptiFlowX |
+| Mathematical object | OptiFlowX |
 |---|---|
-| Générateur $Q$ | `ContinuousTimeMarkovChain` |
-| Approximation infinitésimale | `infinitesimal_transition_matrix` |
-| $P(t)$ | `transition_matrix` |
-| $p_{ij}(t)$ | `transition_probability` |
-| Loi $\mu_t$ | `state_distribution` |
+| Generator \(Q\) | `ContinuousTimeMarkovChain` |
+| Infinitesimal approximation | `infinitesimal_transition_matrix` |
+| Transition matrix \(P(t)\) | `transition_matrix_at` |
+| State law | `state_distribution` |
 | Chapman–Kolmogorov | `chapman_kolmogorov` |
-| Kolmogorov avant | `forward_derivative` |
-| Kolmogorov arrière | `backward_derivative` |
-| Temps de séjour | `holding_rate`, `holding_time` |
-| Chaîne des sauts | `jump_chain`, `jump_chain_matrix` |
-| Loi stationnaire | `stationary_distribution` |
-| Trajectoire | `CTMCPath` |
+| Forward equation | `forward_derivative` |
+| Backward equation | `backward_derivative` |
+| Holding rate / time | `holding_rate`, `holding_time` |
+| Embedded jump chain | `jump_chain`, `jump_chain_matrix` |
+| Stationary law | `stationary_distribution` |
+| Simulated path | `CTMCPath` |
 | Simulation | `simulate` |
