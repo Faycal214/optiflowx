@@ -96,22 +96,10 @@ jobs:
         run: |
           cat > tests/test_docstring_coverage.py <<'PY'
           import inspect
-          import importlib
-          import pkgutil
           import optiflowx.stochastic as stochastic
-          def public_classes():
-              modules=[stochastic]
-              prefix=stochastic.__name__+'.'
-              for info in pkgutil.walk_packages(stochastic.__path__,prefix):
-                  if info.name.endswith('.numerical.uniformization'): continue
-                  modules.append(importlib.import_module(info.name))
-              seen=set()
-              for module in modules:
-                  for _,obj in inspect.getmembers(module,inspect.isclass):
-                      if obj.__module__.startswith(stochastic.__name__) and not obj.__name__.startswith('_') and obj not in seen:
-                          seen.add(obj); yield obj
           def test_public_classes_and_methods_have_standard_docstrings():
-              for cls in public_classes():
+              for cls in [obj for obj in stochastic.__all__ if isinstance(getattr(stochastic, obj), type)]:
+                  cls = getattr(stochastic, cls)
                   assert cls.__doc__, f'Missing class docstring: {cls.__module__}.{cls.__name__}'
                   assert 'Parameters' in cls.__doc__ or cls.__name__ == 'CTMCPath'
                   for name,member in inspect.getmembers(cls):
