@@ -1,9 +1,6 @@
 """Public stochastic-process API for the MSPRO Processus Aléatoires curriculum.
 
-The package exposes domain objects directly from :mod:`optiflowx.stochastic`.
-Canonical module names mirror the mathematical object names used by users;
-legacy implementation modules remain internal compatibility layers during the
-API migration.
+Domain objects are implemented directly in their canonical modules.
 """
 
 from .birth_death_process import BirthDeathProcess
