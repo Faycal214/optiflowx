@@ -88,7 +88,7 @@ def ctmc_examples() -> None:
     print(chain.chapman_kolmogorov(1.0, 2.0))
     print(chain.forward_derivative(1.0), chain.forward_equation(1.0))
     print(chain.backward_derivative(1.0), chain.backward_equation(1.0))
-    print(chain.stationary_distribution(), chain.communating_classes())
+    print(chain.stationary_distribution(), chain.communicating_classes())
     print(chain.stationary_distribution_from_jump_chain(), chain.mean_return_time("A"))
     print(chain.long_run_cost([5.0, 1.0]))
     print(chain.holding_rate("A"), chain.holding_time("A", rng=np.random.default_rng(2)))
