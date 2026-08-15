@@ -1,7 +1,6 @@
 """Chapter 5: discrete-time martingale example."""
 
-from optiflowx.stochastic import Filtration, FiniteProbabilitySpace, Martingale, transform_martingale
-
+from optiflowx.stochastic import Filtration, FiniteProbabilitySpace, Martingale
 
 space = FiniteProbabilitySpace([0, 1, 2, 3], [0.25] * 4)
 eps1 = space.random_variable([1.0, 1.0, -1.0, -1.0], name="epsilon_1")
@@ -17,5 +16,5 @@ print("is martingale:", mart.is_martingale())
 print("conditional future E[X_2|F_0]:", mart.conditional_future(0, 2).array())
 print("expectations:", mart.expectations())
 
-absolute = transform_martingale(mart, abs)
+absolute = mart.transform(abs)
 print("|X_n| is a submartingale:", absolute.is_submartingale())
