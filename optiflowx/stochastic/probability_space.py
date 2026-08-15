@@ -1,36 +1,43 @@
-"""Public API for finite probability spaces from MSPRO Chapter 4."""
+"""Finite probability spaces and conditional expectation from MSPRO Chapter 4."""
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
+from typing import Hashable
 
-from .conditional import FiniteProbabilitySpace as _FiniteProbabilitySpace
+import numpy as np
+
+from .partition import Partition
+from .random_variable import RandomVariable
+
+Outcome = Hashable
 
 
-class FiniteProbabilitySpace(_FiniteProbabilitySpace):
-    """Finite probability space ``(Omega, P)`` for the discrete course framework.
+class FiniteProbabilitySpace:
+    """Finite probability space used for the chapter's discrete framework."""
 
-    Parameters
-    ----------
-    outcomes:
-        Unique elements of the finite sample space ``Omega``.
-    probabilities:
-        Point probabilities in the same order as ``outcomes``.
-    """
+    def __init__(self, outcomes: Sequence[Outcome], probabilities: Sequence[float]) -> None:
+        """Create ``(Omega, P)`` from its outcomes and point probabilities."""
+        self.outcomes = tuple(outcomes)
+        if not self.outcomes or len(set(self.outcomes)) != len(self.outcomes):
+            raise ValueError("outcomes must be unique and non-empty")
+        p = np.asarray(probabilities, dtype=float)
+        if p.shape != (len(self.outcomes),) or not np.all(np.isfinite(p)) or np.any(p < 0) or not np.isclose(p.sum(), 1.0):
+            raise ValueError("probabilities must be non-negative and sum to 1")
+        self.probabilities = dict(zip(self.outcomes, p.astype(float)))
 
     @property
     def n_outcomes(self) -> int:
-        """Return the cardinality ``|Omega|`` of the sample space."""
+        """Return ``|Omega|``."""
         return len(self.outcomes)
 
-    def probability_of(self, event: Iterable) -> float:
-        """Return ``P(A)`` for a finite event ``A``."""
-        return self.probability(event)
+    @property
+    def probabilities_array(self) -> np.ndarray:
+        """Return point probabilities in outcome order."""
+        return np.asarray([self.probabilities[o] for o in self.outcomes])
 
-    def random_variable(self, values, *, name: str | None = None):
-        """Create a canonical :class:`RandomVariable` on this space."""
-        from .random_variable import RandomVariable
-
+    def random_variable(self, values: Mapping[Outcome, float] | Sequence[float], *, name: str | None = None) -> RandomVariable:
+        """Create a discrete random variable on this space."""
         if isinstance(values, Mapping):
             mapping = values
         else:
@@ -39,53 +46,126 @@ class FiniteProbabilitySpace(_FiniteProbabilitySpace):
             mapping = dict(zip(self.outcomes, values))
         return RandomVariable(self, mapping, name=name)
 
-    def partition(self, blocks):
-        """Create a canonical :class:`Partition` from its blocks."""
-        from .partition import Partition
-
+    def partition(self, blocks: Iterable[Iterable[Outcome]]) -> Partition:
+        """Create a finite sigma-field representation from partition blocks."""
         return Partition.from_blocks(blocks, self)
 
-    def conditional_expectation(self, x, partition):
-        """Return the canonical random variable ``E(X|G)``."""
+    def probability(self, event: Iterable[Outcome]) -> float:
+        """Return the probability of a finite event."""
+        event = set(event)
+        if not event.issubset(self.outcomes):
+            raise ValueError("event contains an unknown outcome")
+        return float(sum(self.probabilities[o] for o in event))
+
+    def probability_of(self, event: Iterable[Outcome]) -> float:
+        """Return ``P(A)`` using the canonical API name."""
+        return self.probability(event)
+
+    def conditional_probability_given_event(self, event: Iterable[Outcome], condition: Iterable[Outcome]) -> float:
+        """Return ``P(A|B)=P(A intersection B)/P(B)`` when ``P(B)>0``."""
+        a = set(event)
+        b = set(condition)
+        if not a.issubset(self.outcomes) or not b.issubset(self.outcomes):
+            raise ValueError("event contains an unknown outcome")
+        denominator = self.probability(b)
+        if denominator <= 0:
+            raise ValueError("conditioning event must have positive probability")
+        return self.probability(a & b) / denominator
+
+    def conditional_expectation_given_event(self, x: RandomVariable, condition: Iterable[Outcome]) -> float:
+        """Return ``E(X|B)=E(X 1_B)/P(B)`` for ``P(B)>0``."""
         if x.space is not self:
             raise ValueError("random variable belongs to another probability space")
+        b = set(condition)
+        denominator = self.probability(b)
+        if denominator <= 0:
+            raise ValueError("conditioning event must have positive probability")
+        numerator = sum(self.probabilities[o] * x.values[o] for o in b)
+        return float(numerator / denominator)
+
+    def conditional_expectation(self, x: RandomVariable, partition: Partition) -> RandomVariable:
+        """Compute ``E(X | G)`` block-by-block."""
+        if x.space is not self:
+            raise ValueError("random variable belongs to another probability space")
+        if not isinstance(partition, Partition):
+            raise TypeError("partition must be a Partition")
         values = {}
         for block in partition.blocks:
             mass = self.probability(block)
             if mass <= 0:
                 raise ValueError("conditional expectation is undefined on a zero-probability block")
             mean = sum(self.probabilities[o] * x.values[o] for o in block) / mass
-            for outcome in block:
-                values[outcome] = float(mean)
-        return self.random_variable(values, name=f"E({x.name or 'X'}|G)")
+            for o in block:
+                values[o] = float(mean)
+        return RandomVariable(self, values, name=f"E({x.name or 'X'}|G)")
 
-    def conditional_expectation_given(self, x, y):
-        """Return the canonical ``E(X|Y)``."""
-        from .partition import Partition
-
+    def conditional_expectation_given(self, x: RandomVariable, y: RandomVariable) -> RandomVariable:
+        """Compute ``E(X | Y)`` through the partition generated by ``Y``."""
         return self.conditional_expectation(x, Partition.generated_by(y))
 
-    def conditional_probability(self, event: Iterable, partition):
-        """Return the canonical random variable ``P(A|G)``."""
+    def conditional_probability(self, event: Iterable[Outcome], partition: Partition) -> RandomVariable:
+        """Return ``P(A|G)`` as ``E(1_A|G)``."""
         event = set(event)
-        indicator = self.random_variable(
-            {outcome: float(outcome in event) for outcome in self.outcomes},
-            name="1_A",
-        )
+        indicator = self.random_variable({o: float(o in event) for o in self.outcomes}, name="1_A")
         result = self.conditional_expectation(indicator, partition)
-        return self.random_variable(result.values, name="P(A|G)")
+        return RandomVariable(self, result.values, name="P(A|G)")
 
-    def conditional_variance(self, x, partition):
-        """Return the canonical ``Var(X|G)``."""
+    def total_expectation(self, x: RandomVariable, partition: Partition) -> float:
+        """Return ``E[E(X|G)]``."""
+        return self.conditional_expectation(x, partition).expectation()
+
+    def tower(self, x: RandomVariable, finer: Partition, coarser: Partition) -> RandomVariable:
+        """Apply the tower property when the first partition refines the second."""
+        if not finer.refines(coarser):
+            raise ValueError("finer partition must refine coarser partition")
+        return self.conditional_expectation(self.conditional_expectation(x, finer), coarser)
+
+    def pull_out(self, y: RandomVariable, x: RandomVariable, partition: Partition) -> RandomVariable:
+        """Return the residual of ``E(YX|G)=Y E(X|G)``."""
+        if not self.check_measurable(y, partition):
+            raise ValueError("y must be measurable with respect to the conditioning partition")
+        left = self.conditional_expectation(y * x, partition)
+        right = y * self.conditional_expectation(x, partition)
+        return left - right
+
+    def conditional_variance(self, x: RandomVariable, partition: Partition) -> RandomVariable:
+        """Return ``Var(X|G)=E(X^2|G)-E(X|G)^2``."""
         ex = self.conditional_expectation(x, partition)
         return self.conditional_expectation(x * x, partition) - ex * ex
 
-    def conditional_covariance(self, x, y, partition):
-        """Return the canonical ``Cov(X,Y|G)``."""
-        return self.conditional_expectation(x * y, partition) - (
-            self.conditional_expectation(x, partition)
-            * self.conditional_expectation(y, partition)
-        )
+    def conditional_covariance(self, x: RandomVariable, y: RandomVariable, partition: Partition) -> RandomVariable:
+        """Return ``Cov(X,Y|G)``."""
+        return self.conditional_expectation(x * y, partition) - self.conditional_expectation(x, partition) * self.conditional_expectation(y, partition)
+
+    def variance(self, x: RandomVariable) -> float:
+        """Return the ordinary variance of ``x``."""
+        m = x.expectation()
+        return float(((x - m) * (x - m)).expectation())
+
+    def covariance(self, x: RandomVariable, y: RandomVariable) -> float:
+        """Return the ordinary covariance of ``x`` and ``y``."""
+        return float((x * y).expectation() - x.expectation() * y.expectation())
+
+    def total_variance(self, x: RandomVariable, partition: Partition) -> float:
+        """Return the total-variance decomposition."""
+        ex = self.conditional_expectation(x, partition)
+        return float(self.variance(ex) + self.conditional_variance(x, partition).expectation())
+
+    def total_covariance(self, x: RandomVariable, y: RandomVariable, partition: Partition) -> float:
+        """Return the total-covariance decomposition."""
+        ex = self.conditional_expectation(x, partition)
+        ey = self.conditional_expectation(y, partition)
+        return float(self.conditional_covariance(x, y, partition).expectation() + self.covariance(ex, ey))
+
+    def l2_projection(self, x: RandomVariable, partition: Partition) -> RandomVariable:
+        """Return the ``L2`` projection interpretation of ``E(X|G)``."""
+        if self.variance(x) < -1e-12:
+            raise ValueError("invalid variance")
+        return self.conditional_expectation(x, partition)
+
+    def check_measurable(self, x: RandomVariable, partition: Partition, *, atol: float = 1e-12) -> bool:
+        """Check whether ``x`` is constant on every block of the partition."""
+        return all(np.ptp([x.values[o] for o in block]) <= atol for block in partition.blocks)
 
 
 __all__ = ["FiniteProbabilitySpace"]
