@@ -98,7 +98,16 @@ jobs:
                   assert obj.__doc__, f'Missing class docstring: {obj.__module__}.{obj.__name__}'
                   if obj.__module__.endswith('.exceptions'):
                       continue
-                  assert 'Parameters' in obj.__doc__ or obj.__name__ == 'CTMCPath'
+                  assert 'Mathematical object' in obj.__doc__
+                  assert 'Course basis' in obj.__doc__
+                  assert 'Examples' in obj.__doc__
+                  try:
+                      signature=inspect.signature(obj.__init__)
+                      has_public_parameters=any(p.name not in {'self','cls'} and not p.name.startswith('_') for p in signature.parameters.values())
+                  except (TypeError,ValueError):
+                      has_public_parameters=False
+                  if has_public_parameters:
+                      assert 'Parameters' in obj.__doc__, obj.__name__
                   for method_name,member in inspect.getmembers(obj):
                       if method_name.startswith('_'): continue
                       func=member.fget if isinstance(member,property) else member
