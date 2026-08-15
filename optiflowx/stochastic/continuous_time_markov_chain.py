@@ -1,23 +1,21 @@
-"""Homogeneous continuous-time Markov chains from MSPRO Chapter 3.
-
-The public API mirrors the mathematical objects developed in the supplied
-course chapter: the generator Q, transition matrices P(t), Kolmogorov
-equations, holding times, the embedded jump chain, stationarity, recurrence,
-and continuous-time occupation behavior.
-"""
+"""Homogeneous continuous-time Markov chains from MSPRO Chapter 3."""
 
 from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Hashable
+from typing import Hashable, Literal
 
 import numpy as np
 from scipy.linalg import expm
 
+from .exceptions import GeneratorValidationError
 from .markov_chain import MarkovChain
+from .numerical.uniformization import uniformization_transition_matrix
+from .validation import validate_generator, validate_probability_vector, validate_states, validate_tolerance
 
 State = Hashable
+TransitionMethod = Literal["expm", "uniformization"]
 
 
 @dataclass(frozen=True)
@@ -71,25 +69,12 @@ class ContinuousTimeMarkovChain:
         tolerance: float = 1e-12,
     ) -> None:
         """Create a homogeneous CTMC from its infinitesimal generator ``Q``."""
-        q = np.asarray(generator, dtype=float)
-        if q.ndim != 2 or q.shape[0] != q.shape[1] or q.shape[0] == 0:
-            raise ValueError("generator must be a non-empty square matrix")
-        if not np.all(np.isfinite(q)):
-            raise ValueError("generator must contain finite values")
-        off_diag = q - np.diag(np.diag(q))
-        if np.any(off_diag < -tolerance):
-            raise ValueError("off-diagonal generator entries must be non-negative")
-        if np.any(np.diag(q) > tolerance):
-            raise ValueError("generator diagonal entries must be non-positive")
-        if not np.allclose(q.sum(axis=1), 0.0, atol=tolerance, rtol=0.0):
-            raise ValueError("generator rows must sum to zero")
-        labels = tuple(range(q.shape[0])) if states is None else tuple(states)
-        if len(labels) != q.shape[0] or len(set(labels)) != len(labels):
-            raise ValueError("states must be unique and match generator size")
-        self._Q = q.copy()
+        self._tolerance = validate_tolerance(tolerance)
+        q = validate_generator(generator, tolerance=self._tolerance)
+        labels = validate_states(states, q.shape[0])
+        self._Q = q
         self._states = labels
         self._index = {s: i for i, s in enumerate(labels)}
-        self._tolerance = tolerance
 
     @property
     def generator_matrix(self) -> np.ndarray:
@@ -116,14 +101,50 @@ class ContinuousTimeMarkovChain:
         self._validate_time(h)
         return np.eye(self.n_states) + float(h) * self._Q
 
-    def transition_matrix(self, t: float) -> np.ndarray:
-        """Return ``P(t)=exp(tQ)`` for the finite homogeneous CTMC."""
-        self._validate_time(t)
-        return expm(self._Q * float(t))
+    def transition_matrix(
+        self,
+        t: float,
+        *,
+        method: TransitionMethod = "expm",
+        max_terms: int = 100_000,
+    ) -> np.ndarray:
+        """Return ``P(t)`` using SciPy ``expm`` or CTMC uniformization.
 
-    def transition_matrix_at(self, t: float) -> np.ndarray:
-        """Return ``P(t)=exp(tQ)`` using the canonical API name."""
-        return self.transition_matrix(t)
+        Parameters
+        ----------
+        t:
+            Non-negative time.
+        method:
+            ``"expm"`` uses the matrix exponential. ``"uniformization"``
+            uses Jensen's uniformization series.
+        max_terms:
+            Maximum Poisson-series terms for uniformization.
+        """
+        self._validate_time(t)
+        if method == "expm":
+            return expm(self._Q * float(t))
+        if method == "uniformization":
+            return uniformization_transition_matrix(
+                self._Q,
+                t,
+                tolerance=self._tolerance,
+                max_terms=max_terms,
+            )
+        raise ValueError("method must be 'expm' or 'uniformization'")
+
+    def transition_matrix_at(
+        self,
+        t: float,
+        *,
+        method: TransitionMethod = "expm",
+        max_terms: int = 100_000,
+    ) -> np.ndarray:
+        """Return ``P(t)`` using the canonical transition-matrix API."""
+        return self.transition_matrix(t, method=method, max_terms=max_terms)
+
+    def transition_matrix_uniformized(self, t: float, *, max_terms: int = 100_000) -> np.ndarray:
+        """Return ``P(t)`` explicitly through Jensen uniformization."""
+        return self.transition_matrix(t, method="uniformization", max_terms=max_terms)
 
     def transition_probability(self, source: State, target: State, t: float) -> float:
         """Return ``p_ij(t)=P(X_t=j | X_0=i)``."""
@@ -131,7 +152,7 @@ class ContinuousTimeMarkovChain:
 
     def state_distribution(self, initial_distribution: Sequence[float], t: float) -> np.ndarray:
         """Return ``mu_t=mu_0 P(t)`` for a row-vector initial law."""
-        mu = self._distribution(initial_distribution)
+        mu = validate_probability_vector(initial_distribution, self.n_states, tolerance=self._tolerance, name="initial_distribution")
         return mu @ self.transition_matrix(t)
 
     def chapman_kolmogorov(self, s: float, t: float) -> np.ndarray:
@@ -179,8 +200,8 @@ class ContinuousTimeMarkovChain:
     def stationary_distribution_from_jump_chain(self) -> np.ndarray:
         """Recover the CTMC stationary law from its jump-chain stationary law."""
         rates = -np.diag(self._Q)
-        if np.any(rates <= 0):
-            raise ValueError("positive holding rates are required in every state")
+        if np.any(rates <= self._tolerance):
+            raise GeneratorValidationError("positive holding rates are required in every state")
         phi = self.jump_chain().stationary_distribution()
         weights = phi / rates
         return weights / weights.sum()
@@ -264,17 +285,6 @@ class ContinuousTimeMarkovChain:
             return self._index[state]
         except KeyError as exc:
             raise ValueError(f"unknown state: {state!r}") from exc
-
-    def _distribution(self, values: Sequence[float]) -> np.ndarray:
-        mu = np.asarray(values, dtype=float)
-        if (
-            mu.shape != (self.n_states,)
-            or not np.all(np.isfinite(mu))
-            or np.any(mu < 0)
-            or not np.isclose(mu.sum(), 1.0)
-        ):
-            raise ValueError("initial distribution must be non-negative and sum to 1")
-        return mu
 
     @staticmethod
     def _validate_time(t: float) -> None:
