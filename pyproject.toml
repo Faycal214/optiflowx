@@ -4,27 +4,33 @@ build-backend = "hatchling.build"
 
 [project]
 name = "optiflowx"
-version = "0.1.0"
+dynamic = ["version"]
 requires-python = ">=3.10"
-description = "Stochastic-process analysis and simulation tools based on the USTHB MSPRO Processus Aléatoires curriculum."
+description = "A Python library for stochastic-process analysis, simulation, and finite-probability objects."
 readme = "README.md"
 authors = [{ name = "Alikacem Faycal", email = "faycal213.dz@gmail.com" }]
 license = { text = "MIT" }
 dependencies = ["numpy", "scipy"]
 keywords = [
   "stochastic processes",
+  "probability",
   "discrete-time Markov chains",
-  "CMTD",
-  "Poisson process",
   "continuous-time Markov chains",
-  "CMTC",
+  "Poisson process",
   "birth-death process",
   "conditional expectation",
   "martingales",
   "stopping times",
+  "uniformization",
+  "stochastic simulation",
 ]
 
 classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Information Analysis",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -35,8 +41,10 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/Faycal214/optiflowx"
+Documentation = "https://faycal214.github.io/optiflowx/"
 Repository = "https://github.com/Faycal214/optiflowx"
 Issues = "https://github.com/Faycal214/optiflowx/issues"
+Changelog = "https://github.com/Faycal214/optiflowx/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
@@ -53,6 +61,9 @@ docs = [
     "mkdocs",
     "mkdocs-material",
 ]
+
+[tool.hatch.version]
+path = "optiflowx/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["optiflowx"]
