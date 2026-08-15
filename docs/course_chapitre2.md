@@ -1,151 +1,149 @@
-# Chapitre 2 — Processus de Poisson (PP)
+# Chapter 2 — Poisson Processes
 
-> **Cours de référence :** N. Boussaha, *Processus Aléatoires (2)*, Master Modélisation Stochastique et Prévision en Recherche Opérationnelle (MSPRO), USTHB, 2024–2025.
->
-> Cette page appartient à **Course material**. Elle reprend la progression mathématique du support, indépendamment des classes Python et des exemples de programmation documentés ailleurs.
+This page develops the mathematics of Poisson processes and keeps the mathematical discussion separate from the Python API and worked examples.
 
 ## 1. Introduction
 
-Le processus de Poisson est introduit comme un processus à temps continu et à valeurs entières positives, utilisé pour décrire les instants auxquels des événements aléatoires se produisent : appels, arrivées de clients, pannes, émissions de particules, etc.
+A Poisson process is introduced as a continuous-time process with non-negative integer values, used to describe the times at which random events occur: calls, customer arrivals, failures, particle emissions, and similar phenomena.
 
-## 2. Processus de comptage
+## 2. Counting process
 
-Soit \(N(t)\) le nombre d'occurrences observées dans \(]0,t]\). Un processus \((N(t))_{t\ge0}\) est un processus de comptage si
+Let \(N(t)\) be the number of occurrences observed in \(]0,t]\). A process \((N(t))_{t\ge0}\) is a counting process if
 
 \[
 N(t)\in\mathbb N,
 \qquad s<t\Rightarrow N(s)\le N(t),
 \]
 
-et si \(N(t)-N(s)\) représente le nombre d'occurrences sur \(]s,t]\).
+and if \(N(t)-N(s)\) represents the number of occurrences on \(]s,t]\).
 
-## 3. Première définition du processus de Poisson
+## 3. First definition of the Poisson process
 
-Un processus de comptage est un processus de Poisson de taux \(\lambda>0\) si :
+A counting process is a Poisson process with rate \(\lambda>0\) if:
 
-- \(N(0)=0\) presque sûrement ;
-- les accroissements sont indépendants ;
-- les accroissements sont stationnaires ;
-- \(P(N(h)=1)=\lambda h+o(h)\) ;
+- \(N(0)=0\) almost surely;
+- the increments are independent;
+- the increments are stationary;
+- \(P(N(h)=1)=\lambda h+o(h)\);
 - \(P(N(h)\ge2)=o(h)\).
 
-Ici \(o(h)/h\to0\) lorsque \(h\to0\).
+Here \(o(h)/h\to0\) as \(h\to0\).
 
-## 4. Deuxième définition
+## 4. Second definition
 
-Le support donne la formulation équivalente : \(N(0)=0\), les accroissements sont indépendants et, pour toute longueur \(t\),
+An equivalent formulation is: \(N(0)=0\), the increments are independent, and for every interval length \(t\),
 
 \[
 P(N(t+s)-N(s)=n)=e^{-\lambda t}\frac{(\lambda t)^n}{n!},
 \qquad n\in\mathbb N.
 \]
 
-Cette loi ne dépend pas de \(s\), ce qui donne les accroissements stationnaires.
+This law does not depend on \(s\), which gives stationary increments.
 
-## 5. Équivalence des définitions
+## 5. Equivalence of the definitions
 
-En posant
+Let
 
 \[
-p_n(t)=P(N(t)=n),
+p_n(t)=P(N(t)=n).
 \]
 
-l'analyse sur \([t,t+h]\) donne
+The analysis over \([t,t+h]\) gives
 
 \[
 p_0'(t)=-\lambda p_0(t),\qquad p_0(0)=1,
 \]
 
-et, pour \(n\ge1\),
+and, for \(n\ge1\),
 
 \[
 p_n'(t)=-\lambda p_n(t)+\lambda p_{n-1}(t),
 \qquad p_n(0)=0.
 \]
 
-La résolution conduit à
+Solving these equations gives
 
 \[
 \boxed{P(N(t)=n)=e^{-\lambda t}\frac{(\lambda t)^n}{n!}}.
 \]
 
-Donc \(N(t)\sim\mathcal P(\lambda t)\) et
+Therefore \(N(t)\sim\mathcal P(\lambda t)\) and
 
 \[
 N(t+s)-N(s)\sim\mathcal P(\lambda t).
 \]
 
-## 6. Temps inter-occurrences
+## 6. Inter-occurrence times
 
-Si
+If
 
 \[
 0=\tau_0<\tau_1<\tau_2<\cdots
 \]
 
-sont les temps d'occurrence, les inter-arrivées
+are the occurrence times, the inter-arrival times
 
 \[
 T_n=\tau_n-\tau_{n-1}
 \]
 
-forment une suite i.i.d. de loi exponentielle de paramètre \(\lambda\) :
+form an i.i.d. sequence with exponential distribution of parameter \(\lambda\):
 
 \[
 T_n\sim\mathrm{Exp}(\lambda).
 \]
 
-## 7. Temps d'occurrence conditionnels
+## 7. Conditional occurrence times
 
-Conditionnellement à \(N(s)=1\), l'instant de l'unique occurrence dans \([0,s]\) est uniforme :
+Conditionally on \(N(s)=1\), the time of the unique occurrence in \([0,s]\) is uniform:
 
 \[
 T_1\mid\{N(s)=1\}\sim\mathcal U([0,s]).
 \]
 
-Plus généralement, conditionnellement à \(N(s)=k\), les \(k\) temps d'occurrence sur \([0,s]\) ont la loi des statistiques d'ordre d'un échantillon de \(k\) variables uniformes sur \([0,s]\).
+More generally, conditionally on \(N(s)=k\), the \(k\) occurrence times in \([0,s]\) have the distribution of the order statistics of a sample of \(k\) independent uniform random variables on \([0,s]\).
 
 ## 8. Superposition
 
-Si \(N^{(1)}\) et \(N^{(2)}\) sont indépendants et de taux \(\lambda_1\) et \(\lambda_2\), alors
+If \(N^{(1)}\) and \(N^{(2)}\) are independent Poisson processes with rates \(\lambda_1\) and \(\lambda_2\), then
 
 \[
 N(t)=N^{(1)}(t)+N^{(2)}(t)
 \]
 
-est encore un processus de Poisson, de taux
+is again a Poisson process, with rate
 
 \[
 \boxed{\lambda_1+\lambda_2}.
 \]
 
-## 9. Séparation / thinning
+## 9. Splitting / thinning
 
-À partir d'un processus de Poisson de taux \(\lambda\), chaque occurrence peut être affectée indépendamment à un type 1 avec probabilité \(p\), ou au type 2 avec probabilité \(1-p\). Les deux processus obtenus sont indépendants et ont pour taux
+Starting from a Poisson process of rate \(\lambda\), assign each occurrence independently to type 1 with probability \(p\), or to type 2 with probability \(1-p\). The two resulting processes are independent and have rates
 
 \[
 \lambda p
-\qquad\text{et}\qquad
+\qquad\text{and}\qquad
 \lambda(1-p).
 \]
 
-## 10. Processus de Poisson non homogène
+## 10. Non-homogeneous Poisson process
 
-Dans le cas non homogène, le taux dépend du temps : \(\lambda=\lambda(t)\). Les accroissements ne sont donc plus stationnaires. On introduit la fonction moyenne cumulée
+In the non-homogeneous case, the rate depends on time: \(\lambda=\lambda(t)\). Increments are therefore no longer stationary. Introduce the cumulative mean function
 
 \[
 \boxed{m(t)=\int_0^t\lambda(u)\,du}.
 \]
 
-Localement,
+Locally,
 
 \[
-P(\text{une occurrence dans }[t,t+h[)=\lambda(t)h+o(h).
+P(\text{one occurrence in }[t,t+h[)=\lambda(t)h+o(h).
 \]
 
-Ce modèle convient aux phénomènes dont le rythme d'occurrence varie avec le temps.
+This model is suited to phenomena whose occurrence rate varies over time.
 
-## 11. Résultats à retenir
+## 11. Key results
 
 \[
 N(t)\sim\mathcal P(\lambda t),
@@ -153,20 +151,20 @@ N(t)\sim\mathcal P(\lambda t),
 T_n\sim\mathrm{Exp}(\lambda).
 \]
 
-Les accroissements sur des intervalles disjoints sont indépendants ; dans le cas homogène, leur loi dépend seulement de la longueur des intervalles. Conditionnellement à un nombre fixé d'occurrences, les instants sont distribués comme des statistiques d'ordre uniformes.
+Increments over disjoint intervals are independent; in the homogeneous case, their law depends only on the interval lengths. Conditionally on a fixed number of occurrences, the occurrence times are distributed as uniform order statistics.
 
-## 12. Synthèse
+## 12. Summary
 
 \[
-\text{comptage}
-\rightarrow \text{définition du PP}
-\rightarrow \text{loi de Poisson}
-\rightarrow \text{inter-occurrences}
+\text{counting}
+\rightarrow \text{Poisson definition}
+\rightarrow \text{Poisson law}
+\rightarrow \text{inter-arrival times}
 \]
 
 \[
-\rightarrow \text{temps conditionnels}
+\rightarrow \text{conditional times}
 \rightarrow \text{superposition}
-\rightarrow \text{séparation}
-\rightarrow \text{PP non homogène}.
+\rightarrow \text{splitting}
+\rightarrow \text{non-homogeneous Poisson process}.
 \]
