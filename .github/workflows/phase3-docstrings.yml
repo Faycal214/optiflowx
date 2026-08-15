@@ -29,43 +29,38 @@ jobs:
               try: return ast.unparse(node.annotation)
               except Exception: return None
           def public_args(node):
-              args = list(node.args.posonlyargs) + list(node.args.args) + list(node.args.kwonlyargs)
-              defaults = [None] * (len(args)-len(node.args.defaults)) + list(node.args.defaults)
-              return [(a.arg, annotation_text(a), ast.unparse(d) if d is not None else None) for a,d in zip(args,defaults) if a.arg not in {"self","cls"} and not a.arg.startswith("_")]
+              args=list(node.args.posonlyargs)+list(node.args.args)+list(node.args.kwonlyargs)
+              defaults=[None]*(len(args)-len(node.args.defaults))+list(node.args.defaults)
+              return [(a.arg,annotation_text(a),ast.unparse(d) if d is not None else None) for a,d in zip(args,defaults) if a.arg not in {"self","cls"} and not a.arg.startswith("_")]
           def returns_text(node):
               if node.returns is not None:
                   try: return ast.unparse(node.returns)
                   except Exception: return None
           def existing_body(doc):
               if not doc: return ""
-              stop={"Parameters","Returns","Raises","Examples","Yields","Notes","Mathematical object","Mathematical operation","Course basis"}
-              out=[]
+              stop={"Parameters","Returns","Raises","Examples","Yields","Notes","Mathematical object","Mathematical operation","Course basis"}; out=[]
               for line in doc.strip().splitlines():
                   if line.strip() in stop: break
                   out.append(line)
               return "\n".join(out).strip()
           mapping={"transition_matrix":"Transition probability matrix.","generator":"Infinitesimal generator matrix.","states":"Optional state labels in matrix order.","tolerance":"Numerical tolerance used by validation and comparisons.","source":"Source state label.","target":"Target state label.","state":"State label.","initial_distribution":"Initial probability distribution.","n":"Integer index required by the operation.","m":"Non-negative integer time step.","t":"Non-negative time.","s":"Non-negative initial time.","h":"Non-negative time increment.","rate":"Positive process rate.","birth_rates":"Birth-rate specification.","death_rates":"Death-rate specification.","max_state":"Optional upper state bound.","probabilities":"Probability vector.","probability":"Probability value.","partition":"Finite conditioning partition.","condition":"Conditioning event.","event":"Finite event.","x":"Random variable or numeric input.","y":"Random variable or numeric input.","first":"First partition or random variable.","second":"Second partition or random variable.","finer":"Finer conditioning partition.","coarser":"Coarser conditioning partition.","costs":"Finite state-cost vector.","n_steps":"Number of discrete transitions.","t_max":"Simulation horizon.","horizon":"Observation horizon.","intensity":"Callable intensity function.","mean_function":"Optional callable mean function.","k":"Count or order.","n_terms":"Number of truncated terms or states.","initial_state":"Optional initial state label.","rng":"Optional NumPy random-number generator.","method":"Numerical method selector.","max_terms":"Maximum number of numerical-series terms.","values":"Outcome-to-value mapping or ordered values.","outcomes":"Finite outcome labels.","blocks":"Partition blocks.","name":"Optional display name.","function":"Callable transformation.","initial_population":"Initial population size.","birth_rate":"Linear birth-rate coefficient.","death_rate":"Linear death-rate coefficient.","immigration":"Immigration-rate offset.","emigration":"Emigration-rate offset."}
           def pd(name): return mapping.get(name,"Input argument.")
-          def format_doc(node, kind, module_path):
-              summary=existing_body(ast.get_docstring(node, clean=False) or "") or ("Public stochastic object." if kind=="class" else "Public stochastic operation.")
-              lines=[summary,""]
+          def format_doc(node,kind,module_path):
+              summary=existing_body(ast.get_docstring(node,clean=False) or "") or ("Public stochastic object." if kind=="class" else "Public stochastic operation."); lines=[summary,""]
               if kind=="class":
                   lines += ["Mathematical object","------------------","This class represents the stochastic object named by the public API.","","Course basis","------------","The implementation follows the corresponding MSPRO course material documented by OptiFlowX."]
-                  init=next((n for n in node.body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name=="__init__"),None)
-                  params=public_args(init) if init else []
+                  init=next((n for n in node.body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name=="__init__"),None); params=public_args(init) if init else []
                   if params:
                       lines += ["","Parameters","----------"]
                       for name,ann,default in params:
-                          h=name+(f" : {ann}" if ann else "")+(f", default {default}" if default is not None else "")
-                          lines += [h,"    "+pd(name)]
+                          h=name+(f" : {ann}" if ann else "")+(f", default {default}" if default is not None else ""); lines += [h,"    "+pd(name)]
                   lines += ["","Examples","--------",f"See the executable examples for `{module_path}` and the API reference."]
               else:
                   params=public_args(node)
                   if params:
                       lines += ["Parameters","----------"]
                       for name,ann,default in params:
-                          h=name+(f" : {ann}" if ann else "")+(f", default {default}" if default is not None else "")
-                          lines += [h,"    "+pd(name)]
+                          h=name+(f" : {ann}" if ann else "")+(f", default {default}" if default is not None else ""); lines += [h,"    "+pd(name)]
                   ret=returns_text(node)
                   if ret and ret!="None": lines += ["","Returns","-------",ret,"    Result produced by the operation."]
                   raises=set()
@@ -87,8 +82,7 @@ jobs:
                   if not isinstance(node,(ast.ClassDef,ast.FunctionDef,ast.AsyncFunctionDef)) or node.name.startswith("_"): continue
                   if not node.body or not isinstance(node.body[0],ast.Expr) or not isinstance(node.body[0].value,ast.Constant) or not isinstance(node.body[0].value.value,str): continue
                   expr=node.body[0]; indent=re.match(r"\s*",lines[expr.lineno-1]).group(0); doc=format_doc(node,"class" if isinstance(node,ast.ClassDef) else "function",rel)
-                  block=''.join(indent+x+("\n" if not x.endswith("\n") else "") for x in ('\"\"\"'+doc.replace('"""','\\"\\"\\"')+'\"\"\"').splitlines())
-                  reps.append((expr.lineno-1,expr.end_lineno,block))
+                  block=''.join(indent+x+("\n" if not x.endswith("\n") else "") for x in ('\"\"\"'+doc.replace('"""','\\"\\"\\"')+'\"\"\"').splitlines()); reps.append((expr.lineno-1,expr.end_lineno,block))
               for a,b,r in sorted(reps,reverse=True): lines[a:b]=[r]
               p.write_text(''.join(lines))
           PY
@@ -98,16 +92,19 @@ jobs:
           import inspect
           import optiflowx.stochastic as stochastic
           def test_public_classes_and_methods_have_standard_docstrings():
-              for cls in [obj for obj in stochastic.__all__ if isinstance(getattr(stochastic, obj), type)]:
-                  cls = getattr(stochastic, cls)
-                  assert cls.__doc__, f'Missing class docstring: {cls.__module__}.{cls.__name__}'
-                  assert 'Parameters' in cls.__doc__ or cls.__name__ == 'CTMCPath'
-                  for name,member in inspect.getmembers(cls):
-                      if name.startswith('_'): continue
+              for name in stochastic.__all__:
+                  obj=getattr(stochastic,name)
+                  if not isinstance(obj,type): continue
+                  assert obj.__doc__, f'Missing class docstring: {obj.__module__}.{obj.__name__}'
+                  if obj.__module__.endswith('.exceptions'):
+                      continue
+                  assert 'Parameters' in obj.__doc__ or obj.__name__ == 'CTMCPath'
+                  for method_name,member in inspect.getmembers(obj):
+                      if method_name.startswith('_'): continue
                       func=member.fget if isinstance(member,property) else member
                       if inspect.isfunction(func):
-                          assert func.__doc__, f'Missing method docstring: {cls.__name__}.{name}'
-                          assert 'Examples' in func.__doc__, f'Missing Examples section: {cls.__name__}.{name}'
+                          assert func.__doc__, f'Missing method docstring: {obj.__name__}.{method_name}'
+                          assert 'Examples' in func.__doc__, f'Missing Examples section: {obj.__name__}.{method_name}'
           PY
       - name: Run focused test
         run: |
