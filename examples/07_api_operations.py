@@ -88,7 +88,7 @@ def ctmc_examples() -> None:
     print(chain.chapman_kolmogorov(1.0, 2.0))
     print(chain.forward_derivative(1.0), chain.forward_equation(1.0))
     print(chain.backward_derivative(1.0), chain.backward_equation(1.0))
-    print(chain.stationary_distribution(), chain.communicating_classes())
+    print(chain.stationary_distribution(), chain.communating_classes())
     print(chain.stationary_distribution_from_jump_chain(), chain.mean_return_time("A"))
     print(chain.long_run_cost([5.0, 1.0]))
     print(chain.holding_rate("A"), chain.holding_time("A", rng=np.random.default_rng(2)))
@@ -114,12 +114,12 @@ def birth_death_examples() -> None:
 
     finite = BirthDeathProcess.finite([0.5, 0.7, 0.9], [0.0, 0.2, 0.4])
     print(finite.generator_matrix())
-    print(BirthDeathProcess.pure_immigration(1.0).generator_matrix())
+    print(BirthDeathProcess.pure_immigration(1.0, max_state=6).generator_matrix())
     print(BirthDeathProcess.pure_immigration_probability(3, 2.0, rate=1.0))
     print(BirthDeathProcess.pure_birth_probability(3, 2.0, rate=0.5))
     print(BirthDeathProcess.pure_death_probability(3, 2.0, initial_population=5, rate=0.3))
     print(BirthDeathProcess.pure_birth(0.4).pure_birth_reciprocal_rate_sum(5))
-    print(BirthDeathProcess.pure_death(0.3).generator_matrix())
+    print(BirthDeathProcess.pure_death(0.3, max_state=6).generator_matrix())
 
 
 def probability_and_partition_examples() -> tuple[FiniteProbabilitySpace, Partition]:
