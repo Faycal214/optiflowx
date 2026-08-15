@@ -51,7 +51,7 @@ jobs:
 
           legacy = []
           for path in Path('.').rglob('*'):
-              if not path.is_file() or '.git' in path.parts or '.github' in path.parts and 'workflows' in path.parts:
+              if not path.is_file() or '.git' in path.parts or ('.github' in path.parts and 'workflows' in path.parts):
                   continue
               try:
                   text = path.read_text(encoding='utf-8')
@@ -72,3 +72,5 @@ jobs:
           git add -A -- ':!.github/workflows/*'
           git commit -m "refactor: rename project to StochX"
           git push origin main
+
+# Temporary migration helper; removed after the package tree is migrated.
