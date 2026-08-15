@@ -1,273 +1,271 @@
-# Chapitre 1 — Chaînes de Markov à Temps Discret (CMTD)
+# Chapter 1 — Discrete-Time Markov Chains (DTMC)
 
-> **Cours de référence :** N. Boussaha, *Processus Aléatoires (1)*, Master Modélisation Stochastique et Prévision en Recherche Opérationnelle (MSPRO), USTHB, 2024–2025.
->
-> Cette page appartient à **Course material**. Elle présente le contenu mathématique du chapitre dans l'ordre du support. Les classes Python et leur utilisation sont documentées séparément dans **Package / API** et les calculs appliqués sont montrés dans **Examples**.
+This page presents the mathematical development of discrete-time Markov chains and keeps the mathematical discussion separate from the Python API and worked examples.
 
-## 1. Processus aléatoires
+## 1. Stochastic processes
 
-Un processus aléatoire est une famille de variables aléatoires définies sur un même espace de probabilité et indexées par un paramètre, généralement le temps. Le support introduit une application
+A stochastic process is a family of random variables defined on the same probability space and indexed by a parameter, usually time. It can be viewed as a mapping
 
 \[
 X:\Omega\times T\longrightarrow E,
 \qquad (\omega,t)\longmapsto X_t(\omega),
 \]
 
-avec, pour chaque instant \(t\), une variable aléatoire \(X_t\). Le cours distingue les processus selon que le temps et l'espace des états sont discrets ou continus. La CMTD correspond au cas temps discret / espace des états discret.
+with a random variable \(X_t\) for every instant \(t\). Processes may be classified according to whether time and the state space are discrete or continuous. A DTMC corresponds to discrete time and a discrete state space.
 
-## 2. Chaîne de Markov homogène
+## 2. Homogeneous Markov chain
 
-Soit \((X_n)_{n\in\mathbb N}\) un processus à temps discret et à espace d'états discret \(S\). La propriété de Markov est
+Let \((X_n)_{n\in\mathbb N}\) be a discrete-time process with discrete state space \(S\). The Markov property is
 
 \[
 P(X_{n+1}=j\mid X_0=i_0,\ldots,X_n=i)=P(X_{n+1}=j\mid X_n=i).
 \]
 
-La chaîne est homogène lorsque les probabilités de transition ne dépendent pas de l'instant :
+The chain is homogeneous when the transition probabilities do not depend on time:
 
 \[
 P(X_{n+1}=j\mid X_n=i)=P(X_1=j\mid X_0=i).
 \]
 
-On note
+We write
 
 \[
 p_{ij}=P(X_{n+1}=j\mid X_n=i).
 \]
 
-## 3. Matrice de transition et graphe associé
+## 3. Transition matrix and associated graph
 
-Les probabilités sont regroupées dans
+The probabilities are collected in
 
 \[
 P=(p_{ij})_{i,j\in S},
 \]
 
-avec
+with
 
 \[
 p_{ij}\ge0,
 \qquad \sum_{j\in S}p_{ij}=1.
 \]
 
-Le graphe associé est orienté : les états sont les sommets et une transition possible est représentée par une arête pondérée par sa probabilité.
+The associated graph is directed: states are vertices and a possible transition is represented by an edge weighted by its probability.
 
-### Marche aléatoire sur \(\mathbb Z\)
+### Random walk on \(\mathbb Z\)
 
-Le support considère notamment
+A standard form is
 
 \[
 p_{ij}=\begin{cases}
 p,&j=i+1,\\
 q,&j=i-1,\\
 r,&j=i,\\
-0,&\text{sinon},
+0,&\text{otherwise},
 \end{cases}
 \qquad p+q+r=1.
 \]
 
-## 4. Loi initiale et caractérisation
+## 4. Initial law and characterization
 
-La loi initiale est
+The initial law is
 
 \[
 \mu_0=(P(X_0=i))_{i\in S}.
 \]
 
-Une chaîne homogène est entièrement caractérisée par \(P\) et \(\mu_0\). Pour un chemin \(i_0,\ldots,i_n\),
+A homogeneous chain is fully characterized by \(P\) and \(\mu_0\). For a path \(i_0,\ldots,i_n\),
 
 \[
 P(X_0=i_0,\ldots,X_n=i_n)
 =\mu_0(i_0)p_{i_0i_1}\cdots p_{i_{n-1}i_n}.
 \]
 
-## 5. Transitions en plusieurs étapes
+## 5. Multi-step transitions
 
-La probabilité de passage de \(i\) à \(j\) en \(n\) transitions est
+The probability of going from \(i\) to \(j\) in \(n\) transitions is
 
 \[
 p_{ij}^{(n)}=P(X_{m+n}=j\mid X_m=i),
 \]
 
-et
+and
 
 \[
 P^{(n)}=(p_{ij}^{(n)})_{i,j\in S}.
 \]
 
-La matrice \(P^{(n)}\) est stochastique.
+The matrix \(P^{(n)}\) is stochastic.
 
-## 6. Équations de Chapman–Kolmogorov
+## 6. Chapman–Kolmogorov equations
 
-Pour \(m,n\ge0\),
+For \(m,n\ge0\),
 
 \[
 p_{ij}^{(n+m)}=\sum_{k\in S}p_{ik}^{(m)}p_{kj}^{(n)}.
 \]
 
-Sous forme matricielle,
+In matrix form,
 
 \[
 P^{(m+n)}=P^{(m)}P^{(n)}.
 \]
 
-Comme \(P^{(1)}=P\),
+Since \(P^{(1)}=P\),
 
 \[
 P^{(n)}=P^n.
 \]
 
-Il faut distinguer l'élément \(p_{ij}^{(n)}\) de la puissance scalaire \((p_{ij})^n\).
+The element \(p_{ij}^{(n)}\) must be distinguished from the scalar power \((p_{ij})^n\).
 
-## 7. Construction récursive
+## 7. Recursive construction
 
-Si \((\xi_n)\) est une suite i.i.d., si \(X_0\) est indépendante de cette suite et si
+If \((\xi_n)\) is an i.i.d. sequence, if \(X_0\) is independent of that sequence, and if
 
 \[
 X_{n+1}=f(X_n,\xi_{n+1}),
 \]
 
-alors le processus ainsi construit est une chaîne de Markov homogène sous les hypothèses du résultat du cours.
+then, under the assumptions of the corresponding result, the process constructed this way is a homogeneous Markov chain.
 
-## 8. Loi de l'état
+## 8. State distribution
 
-On note
+Let
 
 \[
 \mu_n=(P(X_n=i))_{i\in S}.
 \]
 
-La formule des probabilités totales donne
+The total-probability formula gives
 
 \[
 \mu_n=\mu_0P^n.
 \]
 
-## 9. Première visite
+## 9. First visit
 
-La probabilité de première visite de \(j\) à partir de \(i\) au temps \(n\) est
+The probability of a first visit to \(j\) from \(i\) at time \(n\) is
 
 \[
 f_{ij}^{(n)}=P(X_n=j,X_{n-1}\ne j,\ldots,X_1\ne j\mid X_0=i).
 \]
 
-La probabilité totale de visiter \(j\) est
+The total probability of ever visiting \(j\) is
 
 \[
 f_{ij}=\sum_{n=1}^{\infty}f_{ij}^{(n)}.
 \]
 
-Pour \(i=j\), \(f_{ii}^{(n)}\) est une probabilité de premier retour.
+For \(i=j\), \(f_{ii}^{(n)}\) is a first-return probability.
 
-## 10. Accessibilité, communication et classes
+## 10. Accessibility, communication, and classes
 
-L'état \(j\) est accessible depuis \(i\) s'il existe \(n\ge0\) tel que
+State \(j\) is accessible from \(i\) if there exists \(n\ge0\) such that
 
 \[
 p_{ij}^{(n)}>0.
 \]
 
-Deux états communiquent lorsqu'ils sont accessibles l'un depuis l'autre. La communication est une relation d'équivalence ; ses classes forment une partition de \(S\).
+Two states communicate when each is accessible from the other. Communication is an equivalence relation; its classes form a partition of \(S\).
 
-Une chaîne est **irréductible** lorsqu'elle ne possède qu'une seule classe de communication. Une classe est **fermée** lorsqu'il est impossible d'en sortir. Un état est **absorbant** si
+A chain is **irreducible** when it has only one communication class. A class is **closed** when it is impossible to leave it. A state is **absorbing** if
 
 \[
 p_{ii}=1.
 \]
 
-## 11. Récurrence et transience
+## 11. Recurrence and transience
 
-Un état \(j\) est récurrent si
+State \(j\) is recurrent if
 
 \[
 f_{jj}=1,
 \]
 
-et transient si \(f_{jj}<1\).
+and transient if \(f_{jj}<1\).
 
-Le nombre de retours à \(i\), partant de \(i\), est associé à
+The number of returns to \(i\), starting from \(i\), is associated with
 
 \[
 N(i,i)=\sum_{n=1}^{\infty}\mathbf 1_{\{X_n=i\}}\mathbf 1_{\{X_0=i\}}.
 \]
 
-Le cours obtient
+The expected number of returns satisfies
 
 \[
 E[N(i,i)]=\sum_{n=1}^{\infty}p_{ii}^{(n)}.
 \]
 
-Ainsi,
+Thus,
 
 \[
-i\text{ récurrent}\iff\sum_{n=1}^{\infty}p_{ii}^{(n)}=\infty,
+i\text{ recurrent}\iff\sum_{n=1}^{\infty}p_{ii}^{(n)}=\infty,
 \]
 
-et la convergence de la série caractérise la transience. La récurrence est une propriété de classe.
+while convergence of the series characterizes transience. Recurrence is a class property.
 
-## 12. Temps d'atteinte et temps moyen de retour
+## 12. Hitting time and mean return time
 
-Le temps de première atteinte de \(j\), partant de \(i\), est
+The first hitting time of \(j\), starting from \(i\), is
 
 \[
 T_{ij}=\min\{n\ge1:X_n=j\mid X_0=i\}.
 \]
 
-Alors
+Then
 
 \[
 f_{ij}^{(n)}=P(T_{ij}=n),
 \]
 
-et
+and
 
 \[
 \mu_{ij}=E(T_{ij}\mid X_0=i)=\sum_{n=1}^{\infty}nf_{ij}^{(n)}.
 \]
 
-Le temps moyen de retour à \(j\) est
+The mean return time to \(j\) is
 
 \[
 \mu_j=E(T_{jj}\mid X_0=j).
 \]
 
-Le support établit la décomposition
+The multi-step transition probabilities satisfy the decomposition
 
 \[
 p_{ij}^{(n)}=\sum_{k=1}^{n}f_{ij}^{(k)}p_{jj}^{(n-k)}.
 \]
 
-## 13. Récurrence nulle et positive
+## 13. Null and positive recurrence
 
-Un état récurrent est **récurrent positif** si
+A recurrent state is **positive recurrent** if
 
 \[
 \mu_j<\infty,
 \]
 
-et **récurrent nul** si
+and **null recurrent** if
 
 \[
 \mu_j=\infty.
 \]
 
-Le cours caractérise également les trois catégories par la série \(\sum p_{ii}^{(n)}\) et la limite de \(p_{ii}^{(n)}\) : transience si la série converge ; récurrence nulle si la série diverge mais \(p_{ii}^{(n)}\to0\) ; récurrence positive si la série diverge et que la limite est strictement positive.
+The three categories can also be characterized using the series \(\sum p_{ii}^{(n)}\) and the limit of \(p_{ii}^{(n)}\): transience when the series converges; null recurrence when the series diverges but \(p_{ii}^{(n)}\to0\); and positive recurrence when the series diverges and the limit is strictly positive.
 
-## 14. Périodicité et ergodicité
+## 14. Periodicity and ergodicity
 
-La période d'un état est
+The period of a state is
 
 \[
 d(i)=\operatorname{pgcd}\{n\ge1:p_{ii}^{(n)}>0\}.
 \]
 
-Un état est apériodique lorsque \(d(i)=1\). La périodicité est une propriété de classe.
+A state is aperiodic when \(d(i)=1\). Periodicity is a class property.
 
-Un état est **ergodique** lorsqu'il est récurrent positif et apériodique. Une chaîne est ergodique lorsque tous ses états le sont. Dans un espace d'états fini, une chaîne irréductible est récurrente positive et, si elle est aussi apériodique, elle est ergodique.
+A state is **ergodic** when it is positive recurrent and aperiodic. A chain is ergodic when all its states are ergodic. In a finite state space, an irreducible chain is positive recurrent and, if it is also aperiodic, it is ergodic.
 
-## 15. Distribution stationnaire
+## 15. Stationary distribution
 
-Une distribution \(\pi\) est stationnaire si
+A distribution \(\pi\) is stationary if
 
 \[
 \pi=\pi P,
@@ -275,55 +273,55 @@ Une distribution \(\pi\) est stationnaire si
 \qquad \sum_{j\in S}\pi_j=1.
 \]
 
-État par état,
+State by state,
 
 \[
 \pi_j=\sum_{i\in S}\pi_i p_{ij}.
 \]
 
-Une distribution stationnaire vérifie donc aussi \(\pi=\pi P^n\) pour tout \(n\ge1\).
+A stationary distribution therefore also satisfies \(\pi=\pi P^n\) for every \(n\ge1\).
 
-Le chapitre étudie plusieurs situations : unicité dans certaines chaînes irréductibles, plusieurs distributions lorsque plusieurs classes fermées existent, et absence de distribution stationnaire dans certains cas transitoires.
+Several cases arise: uniqueness for some irreducible chains, multiple distributions when several closed classes exist, and absence of a stationary distribution for some transient models.
 
-Si une distribution stationnaire existe, elle donne une masse nulle aux états transitoires ou récurrents nuls.
+If a stationary distribution exists, it assigns zero mass to transient or null-recurrent states.
 
-Si la chaîne est irréductible et récurrente positive, il existe une distribution stationnaire unique et
+If the chain is irreducible and positive recurrent, there is a unique stationary distribution and
 
 \[
 \boxed{\pi_j=\frac1{\mu_j}}.
 \]
 
-Les \(\pi_j\) représentent la proportion de temps passée dans chaque état sur une longue période.
+The values \(\pi_j\) represent the long-run proportion of time spent in each state.
 
-## 16. Distribution limite
+## 16. Limiting distribution
 
-La loi de \(X_n\) est
+The law of \(X_n\) is
 
 \[
 \mu_n=\mu_0P^n.
 \]
 
-Le support étudie alors les conditions d'existence de la limite \(\lim_{n\to\infty}\mu_n\). Pour une chaîne ergodique, la matrice \(P^n\) converge vers une matrice dont toutes les lignes sont identiques et la distribution limite coïncide avec la distribution stationnaire.
+One then studies the conditions under which the limit \(\lim_{n\to\infty}\mu_n\) exists. For an ergodic chain, \(P^n\) converges to a matrix whose rows are identical, and the limiting distribution coincides with the stationary distribution.
 
-## 17. Chaînes absorbantes
+## 17. Absorbing chains
 
-Le chapitre traite enfin le cas où certaines classes sont absorbantes. Une réorganisation des états permet d'isoler les états transitoires des états absorbants et d'étudier les probabilités et temps d'absorption à partir des blocs de la matrice de transition.
+The absorbing case is obtained when some classes are absorbing. Reordering the states makes it possible to separate transient states from absorbing states and study absorption probabilities and absorption times through the corresponding matrix blocks.
 
-## 18. Synthèse
+## 18. Summary
 
 \[
-\text{CMTD}
+\text{DTMC}
 \rightarrow \text{transition}
 \rightarrow \text{Chapman–Kolmogorov}
-\rightarrow \text{loi de l'état}
-\rightarrow \text{premières visites}
+\rightarrow \text{state law}
+\rightarrow \text{first visits}
 \]
 
 \[
 \rightarrow \text{communication}
-\rightarrow \text{récurrence/transience}
-\rightarrow \text{temps de retour}
-\rightarrow \text{périodicité}
-\rightarrow \text{stationnarité}
-\rightarrow \text{distribution limite/absorption}.
-\]
+\rightarrow \text{recurrence/transience}
+\rightarrow \text{return times}
+\rightarrow \text{periodicity}
+\rightarrow \text{stationarity}
+\rightarrow \text{limiting distribution/absorption}.
+\] 
