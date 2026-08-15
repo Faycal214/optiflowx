@@ -22,7 +22,7 @@ MarkovChain(transition_matrix, states=None, tolerance=1e-12)
 
 ```python
 import numpy as np
-from optiflowx.stochastic import MarkovChain
+from stochx.stochastic import MarkovChain
 
 P = np.array([[0.8, 0.2], [0.3, 0.7]])
 chain = MarkovChain(P, states=["A", "B"])
@@ -85,7 +85,7 @@ chain = MarkovChain(P, states=["A", "B"])
 
 ```python
 import numpy as np
-from optiflowx.stochastic import MarkovChain
+from stochx.stochastic import MarkovChain
 
 P = np.array([
     [0.8, 0.2],

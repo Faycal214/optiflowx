@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from optiflowx.stochastic import MarkovChain
+from stochx.stochastic import MarkovChain
 
 
 def test_markov_return_and_stationary_helpers():

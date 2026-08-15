@@ -77,7 +77,7 @@ with $R=I+Q/\nu$ and $\nu\ge\max_i(-q_{ii})$.
 
 ```python
 import numpy as np
-from optiflowx.stochastic import ContinuousTimeMarkovChain
+from stochx.stochastic import ContinuousTimeMarkovChain
 
 Q = np.array([
     [-2.0, 2.0],

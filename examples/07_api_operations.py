@@ -1,10 +1,10 @@
-"""API coverage gallery for the public OptiFlowX stochastic objects."""
+"""API coverage gallery for the public StochX stochastic objects."""
 
 from __future__ import annotations
 
 import numpy as np
 
-from optiflowx.stochastic import (
+from stochx.stochastic import (
     BirthDeathProcess,
     CTMCPath,
     ContinuousTimeMarkovChain,

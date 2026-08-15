@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from optiflowx.stochastic import BirthDeathProcess, ContinuousTimeMarkovChain
-from optiflowx.stochastic.exceptions import GeneratorValidationError, NumericalError
+from stochx.stochastic import BirthDeathProcess, ContinuousTimeMarkovChain
+from stochx.stochastic.exceptions import GeneratorValidationError, NumericalError
 
 
 def test_generator_and_transition_matrix():

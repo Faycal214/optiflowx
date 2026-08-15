@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to OptiFlowX are documented here.
+All notable changes to StochX are documented here.
 
 ## [0.1.0] - 2026-08-15
 

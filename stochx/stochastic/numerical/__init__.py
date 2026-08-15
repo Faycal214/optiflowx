@@ -1,4 +1,4 @@
-"""Numerical algorithms used internally by OptiFlowX."""
+"""Numerical algorithms used internally by StochX."""
 
 from .uniformization import uniformization_transition_matrix
 

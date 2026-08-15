@@ -33,7 +33,7 @@ CTMCPath(times, states)
 ```python
 import numpy as np
 
-from optiflowx.stochastic import ContinuousTimeMarkovChain
+from stochx.stochastic import ContinuousTimeMarkovChain
 
 chain = ContinuousTimeMarkovChain([[-2.0, 2.0], [1.0, -1.0]])
 path = chain.simulate(5.0, initial_state=0, rng=np.random.default_rng(0))

@@ -1,6 +1,6 @@
 """Chapter 4: conditional expectation on a finite probability space."""
 
-from optiflowx.stochastic import FiniteProbabilitySpace, Partition
+from stochx.stochastic import FiniteProbabilitySpace, Partition
 
 space = FiniteProbabilitySpace(
     outcomes=[0, 1, 2, 3],

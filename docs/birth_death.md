@@ -25,7 +25,7 @@ q_{k,k}=-(\lambda_k+\mu_k),
 with the appropriate boundary adjustments.
 
 ```python
-from optiflowx.stochastic import BirthDeathProcess
+from stochx.stochastic import BirthDeathProcess
 
 process = BirthDeathProcess(
     birth_rates=lambda k: 0.4 * k,
@@ -184,7 +184,7 @@ process = BirthDeathProcess.linear(
 
 ## 9. API map
 
-| Mathematical object | OptiFlowX |
+| Mathematical object | StochX |
 |---|---|
 | Birth rate \(\lambda_k\) | `birth_rate` |
 | Death rate \(\mu_k\) | `death_rate` |

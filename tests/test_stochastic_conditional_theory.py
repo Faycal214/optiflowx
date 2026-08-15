@@ -1,6 +1,6 @@
 import pytest
 
-from optiflowx.stochastic import FiniteProbabilitySpace, Partition
+from stochx.stochastic import FiniteProbabilitySpace, Partition
 
 
 def test_conditional_event_helpers_and_independence():

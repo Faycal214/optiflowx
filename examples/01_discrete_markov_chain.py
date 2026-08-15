@@ -6,8 +6,8 @@ transition probabilities and a stationary distribution pi satisfies pi P=pi.
 
 import numpy as np
 
-from optiflowx.stochastic import MarkovChain
-from optiflowx.stochastic.analysis import empirical_state_frequencies
+from stochx.stochastic import MarkovChain
+from stochx.stochastic.analysis import empirical_state_frequencies
 
 chain = MarkovChain(
     [[0.7, 0.3], [0.4, 0.6]],

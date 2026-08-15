@@ -1,6 +1,6 @@
-# OptiFlowX Architecture
+# StochX Architecture
 
-OptiFlowX is designed as a **mathematical library with an executable course layer**.
+StochX is designed as a **mathematical library with an executable course layer**.
 
 The central rule is:
 

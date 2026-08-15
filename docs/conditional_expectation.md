@@ -1,6 +1,6 @@
 # Conditional Expectation
 
-This page gives a compact mathematical reference for conditional expectation in finite probability spaces and shows how the concepts map to OptiFlowX.
+This page gives a compact mathematical reference for conditional expectation in finite probability spaces and shows how the concepts map to StochX.
 
 ## 1. Conditioning on an event
 
@@ -16,7 +16,7 @@ and for an integrable random variable \(X\),
 E(X\mid B)=\frac{E(X\mathbf1_B)}{P(B)}.
 \]
 
-In OptiFlowX:
+In StochX:
 
 ```python
 space.conditional_probability_given_event(A, B)
@@ -225,7 +225,7 @@ space.l2_projection(X, G)
 
 ## 12. API map
 
-| Mathematical object | OptiFlowX |
+| Mathematical object | StochX |
 |---|---|
 | Finite probability space | `FiniteProbabilitySpace` |
 | Random variable | `RandomVariable` |

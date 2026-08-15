@@ -53,7 +53,7 @@ BirthDeathProcess(birth_rates, death_rates, *, max_state=None)
 ## Example
 
 ```python
-from optiflowx.stochastic import BirthDeathProcess
+from stochx.stochastic import BirthDeathProcess
 
 process = BirthDeathProcess.linear(
     birth_rate=0.8,

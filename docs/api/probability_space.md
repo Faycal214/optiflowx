@@ -48,7 +48,7 @@ FiniteProbabilitySpace(outcomes, probabilities)
 ## Example
 
 ```python
-from optiflowx.stochastic import FiniteProbabilitySpace
+from stochx.stochastic import FiniteProbabilitySpace
 
 space = FiniteProbabilitySpace(
     outcomes=["H", "T"],

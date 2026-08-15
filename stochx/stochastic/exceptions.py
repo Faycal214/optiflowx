@@ -1,11 +1,11 @@
-"""Exceptions raised by OptiFlowX stochastic models."""
+"""Exceptions raised by StochX stochastic models."""
 
 
-class OptiFlowXError(Exception):
-    """Base exception for OptiFlowX-specific failures."""
+class StochXError(Exception):
+    """Base exception for StochX-specific failures."""
 
 
-class ValidationError(OptiFlowXError, ValueError):
+class ValidationError(StochXError, ValueError):
     """Base exception for invalid mathematical model inputs."""
 
 
@@ -21,12 +21,12 @@ class GeneratorValidationError(MatrixValidationError):
     """Raised when a CTMC generator does not satisfy generator conditions."""
 
 
-class NumericalError(OptiFlowXError):
+class NumericalError(StochXError):
     """Raised when a numerical algorithm cannot safely complete."""
 
 
 __all__ = [
-    "OptiFlowXError",
+    "StochXError",
     "ValidationError",
     "MatrixValidationError",
     "ProbabilityValidationError",

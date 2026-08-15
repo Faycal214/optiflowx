@@ -1,4 +1,4 @@
-"""OptiFlowX stochastic-process toolkit."""
+"""StochX stochastic-process toolkit."""
 
 __version__ = "0.1.0"
 

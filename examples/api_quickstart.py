@@ -1,11 +1,11 @@
 """Minimal public API syntax example.
 
-Run from the repository root after installing OptiFlowX with `pip install -e .`.
+Run from the repository root after installing StochX with `pip install -e .`.
 """
 
 import numpy as np
 
-from optiflowx.stochastic import MarkovChain, PoissonProcess
+from stochx.stochastic import MarkovChain, PoissonProcess
 
 
 P = np.array([[0.8, 0.2], [0.1, 0.9]])

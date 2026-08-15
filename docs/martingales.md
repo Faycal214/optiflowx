@@ -10,7 +10,7 @@ $$
 \mathcal F_0\subseteq\mathcal F_1\subseteq\cdots.
 $$
 
-In OptiFlowX, each finite \(\mathcal F_n\) is represented by a `Partition`:
+In StochX, each finite \(\mathcal F_n\) is represented by a `Partition`:
 
 ```python
 filtration = Filtration([F0, F1, F2])
@@ -52,7 +52,7 @@ $$
 E[(X_{n+1}-X_n)\mid\mathcal F_n]=0.
 $$
 
-OptiFlowX can evaluate the residual directly:
+StochX can evaluate the residual directly:
 
 ```python
 mart.martingale_residual(n)
@@ -194,7 +194,7 @@ If an outcome has \(T=+\infty\), `terminal_value()` refuses to construct an unde
 
 ## 12. API map
 
-| Mathematical object | OptiFlowX |
+| Mathematical object | StochX |
 |---|---|
 | Filtration | `Filtration` |
 | Natural filtration | `Filtration.natural` |

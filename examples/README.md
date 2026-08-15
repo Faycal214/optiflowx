@@ -1,8 +1,8 @@
-# OptiFlowX examples
+# StochX examples
 
 The examples are executable documentation. Each course area has a focused example, and `07_api_operations.py` is the public-API coverage gallery.
 
-Run from the repository root after installing OptiFlowX:
+Run from the repository root after installing StochX:
 
 ```bash
 python examples/01_discrete_markov_chain.py

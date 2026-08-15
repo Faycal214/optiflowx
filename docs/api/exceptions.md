@@ -1,11 +1,11 @@
 # Exceptions
 
-OptiFlowX exposes semantic exceptions for invalid stochastic objects and numerical failures. They remain ordinary Python exception subclasses, so callers can still handle the corresponding standard exception categories when appropriate.
+StochX exposes semantic exceptions for invalid stochastic objects and numerical failures. They remain ordinary Python exception subclasses, so callers can still handle the corresponding standard exception categories when appropriate.
 
 ## Exception hierarchy
 
 ```text
-OptiFlowXError
+StochXError
 ├── ValidationError
 │   ├── MatrixValidationError
 │   ├── ProbabilityValidationError

@@ -1,12 +1,12 @@
 import numpy as np
 import pytest
 
-from optiflowx.stochastic.exceptions import (
+from stochx.stochastic.exceptions import (
     GeneratorValidationError,
     MatrixValidationError,
     ProbabilityValidationError,
 )
-from optiflowx.stochastic.validation import (
+from stochx.stochastic.validation import (
     DEFAULT_TOLERANCE,
     normalize_stochastic_matrix,
     validate_generator,

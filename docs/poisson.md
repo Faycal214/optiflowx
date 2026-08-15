@@ -1,6 +1,6 @@
 # Poisson Processes
 
-This page gives a compact mathematical reference for homogeneous and non-homogeneous Poisson processes and shows how the concepts map to OptiFlowX.
+This page gives a compact mathematical reference for homogeneous and non-homogeneous Poisson processes and shows how the concepts map to StochX.
 
 ## 1. Poisson process
 
@@ -11,7 +11,7 @@ P(N(t+s)-N(s)=n)=e^{-\lambda t}\frac{(\lambda t)^n}{n!}.
 \]
 
 ```python
-from optiflowx.stochastic import PoissonProcess
+from stochx.stochastic import PoissonProcess
 
 process = PoissonProcess(rate=2.0)
 ```
@@ -100,7 +100,7 @@ m(t)=\int_0^t\lambda(u)\,du.
 \]
 
 ```python
-from optiflowx.stochastic import NonHomogeneousPoissonProcess
+from stochx.stochastic import NonHomogeneousPoissonProcess
 
 process = NonHomogeneousPoissonProcess(
     intensity=lambda t: 2 * t,
@@ -113,7 +113,7 @@ process.count_probability(2, 3.0)
 
 ## 7. API map
 
-| Mathematical object | OptiFlowX |
+| Mathematical object | StochX |
 |---|---|
 | Homogeneous Poisson process | `PoissonProcess` |
 | Counting law | `count_probability` |

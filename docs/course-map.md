@@ -1,10 +1,10 @@
 # Course → API Map
 
-This page connects the mathematical concepts in the five chapters with the corresponding OptiFlowX API components.
+This page connects the mathematical concepts in the five chapters with the corresponding StochX API components.
 
 ## Chapter 1 — Discrete-Time Markov Chains
 
-| Concept | OptiFlowX | Documentation |
+| Concept | StochX | Documentation |
 |---|---|---|
 | one-step transition matrix `P` | `MarkovChain` | `cmt_d.md` |
 | transition in `n` steps `P^(n)` | `n_step_transition` | `cmt_d.md` |
@@ -22,7 +22,7 @@ This page connects the mathematical concepts in the five chapters with the corre
 
 ## Chapter 2 — Poisson Processes
 
-| Concept | OptiFlowX | Documentation |
+| Concept | StochX | Documentation |
 |---|---|---|
 | homogeneous Poisson process | `PoissonProcess` | `poisson.md` |
 | Poisson counting law | `count_probability` | `poisson.md` |
@@ -37,7 +37,7 @@ This page connects the mathematical concepts in the five chapters with the corre
 
 ## Chapter 3 — Continuous-Time Markov Chains
 
-| Concept | OptiFlowX | Documentation |
+| Concept | StochX | Documentation |
 |---|---|---|
 | infinitesimal generator `Q` | `ContinuousTimeMarkovChain` | `cmtc.md` |
 | transition matrix `P(t)` | `transition_matrix_at` | `cmtc.md` |
@@ -52,7 +52,7 @@ This page connects the mathematical concepts in the five chapters with the corre
 
 ## Birth-death processes
 
-| Concept | OptiFlowX | Documentation |
+| Concept | StochX | Documentation |
 |---|---|---|
 | birth/death rates | `BirthDeathProcess` | `birth_death.md` |
 | finite generator | `generator_matrix` | `birth_death.md` |
@@ -64,7 +64,7 @@ This page connects the mathematical concepts in the five chapters with the corre
 
 ## Chapter 4 — Conditional Expectation
 
-| Concept | OptiFlowX | Documentation |
+| Concept | StochX | Documentation |
 |---|---|---|
 | finite probability space | `FiniteProbabilitySpace` | `conditional_expectation.md` |
 | random variable | `RandomVariable` | `conditional_expectation.md` |
@@ -79,7 +79,7 @@ This page connects the mathematical concepts in the five chapters with the corre
 
 ## Chapter 5 — Discrete-Time Martingales
 
-| Concept | OptiFlowX | Documentation |
+| Concept | StochX | Documentation |
 |---|---|---|
 | filtration | `Filtration` | `martingales.md` |
 | adapted process | `is_adapted` | `martingales.md` |

@@ -1,6 +1,6 @@
 """Chapter 5: discrete-time martingale example."""
 
-from optiflowx.stochastic import Filtration, FiniteProbabilitySpace, Martingale
+from stochx.stochastic import Filtration, FiniteProbabilitySpace, Martingale
 
 space = FiniteProbabilitySpace([0, 1, 2, 3], [0.25] * 4)
 eps1 = space.random_variable([1.0, 1.0, -1.0, -1.0], name="epsilon_1")

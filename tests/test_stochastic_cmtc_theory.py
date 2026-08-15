@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from optiflowx.stochastic import CTMCPath, ContinuousTimeMarkovChain
+from stochx.stochastic import CTMCPath, ContinuousTimeMarkovChain
 
 
 def test_ctmc_domain_helpers():

@@ -1,4 +1,4 @@
-# OptiFlowX
+# StochX
 
 **A Python library for stochastic processes and applied probability.**
 
@@ -14,7 +14,7 @@ The library currently covers:
 ## Installation
 
 ```bash
-pip install optiflowx
+pip install stochx
 ```
 
 ## Quick example
@@ -23,7 +23,7 @@ Create a discrete-time Markov chain from its transition matrix:
 
 ```python
 import numpy as np
-from optiflowx.stochastic import MarkovChain
+from stochx.stochastic import MarkovChain
 
 P = np.array([
     [0.8, 0.2],
@@ -47,7 +47,7 @@ The course chapters present the mathematical definitions, notation, results, and
 
 ### Package / API
 
-The API Reference documents the public OptiFlowX classes, functions, properties, methods, validation rules, and numerical behavior.
+The API Reference documents the public StochX classes, functions, properties, methods, validation rules, and numerical behavior.
 
 ### Examples
 
@@ -69,4 +69,4 @@ Worked examples show how the mathematical objects are represented and used in Py
 | Stopping time | `StoppingTime` |
 | Stopped process | `StoppedProcess` |
 
-**OptiFlowX** — stochastic-process mathematics implemented as a Python library.
+**StochX** — stochastic-process mathematics implemented as a Python library.

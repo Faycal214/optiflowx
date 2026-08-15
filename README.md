@@ -1,17 +1,17 @@
-# OptiFlowX
+# StochX
 
-[![CI](https://github.com/Faycal214/optiflowx/actions/workflows/test.yml/badge.svg)](https://github.com/Faycal214/optiflowx/actions/workflows/test.yml)
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-1081C2?style=flat)](https://faycal214.github.io/optiflowx/)
+[![CI](https://github.com/Faycal214/stochx/actions/workflows/test.yml/badge.svg)](https://github.com/Faycal214/stochx/actions/workflows/test.yml)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-1081C2?style=flat)](https://faycal214.github.io/stochx/)
 [![Python](https://img.shields.io/badge/python-3.10%2B-1081C2?style=flat)](https://www.python.org/)
-[![License](https://img.shields.io/github/license/Faycal214/optiflowx?style=flat)](LICENSE)
+[![License](https://img.shields.io/github/license/Faycal214/stochx?style=flat)](LICENSE)
 
-OptiFlowX is a lightweight Python library for turning stochastic-process mathematics into executable, validated, and testable objects.
+StochX is a lightweight Python library for turning stochastic-process mathematics into executable, validated, and testable objects.
 
 It is designed around a simple idea: each mathematical object should have a clear Python representation, a predictable API, numerical validation, and runnable examples.
 
-## What makes OptiFlowX different
+## What makes StochX different
 
-OptiFlowX is not limited to discrete-time Markov chains. Its public stochastic API is organized around several connected mathematical objects:
+StochX is not limited to discrete-time Markov chains. Its public stochastic API is organized around several connected mathematical objects:
 
 | Area | Main objects |
 |---|---|
@@ -31,7 +31,7 @@ Two features are particularly central to the library:
 ## Installation
 
 ```bash
-python -m pip install optiflowx
+python -m pip install stochx
 ```
 
 For development:
@@ -53,7 +53,7 @@ mkdocs serve
 
 ```python
 import numpy as np
-from optiflowx.stochastic import MarkovChain, empirical_state_frequencies
+from stochx.stochastic import MarkovChain, empirical_state_frequencies
 
 P = [
     [0.7, 0.3],
@@ -76,7 +76,7 @@ print(empirical_state_frequencies(path, chain.states))
 ### Continuous-time Markov chain
 
 ```python
-from optiflowx.stochastic import ContinuousTimeMarkovChain
+from stochx.stochastic import ContinuousTimeMarkovChain
 
 Q = [
     [-2.0, 2.0],
@@ -91,10 +91,10 @@ print(chain.transition_matrix_at(2.0, method="uniformization"))
 
 ## Public API
 
-The public stochastic namespace is available from `optiflowx.stochastic`:
+The public stochastic namespace is available from `stochx.stochastic`:
 
 ```python
-from optiflowx.stochastic import (
+from stochx.stochastic import (
     BirthDeathProcess,
     CTMCPath,
     ContinuousTimeMarkovChain,
@@ -112,7 +112,7 @@ from optiflowx.stochastic import (
 )
 ```
 
-The complete reference is maintained in the [API documentation](https://faycal214.github.io/optiflowx/).
+The complete reference is maintained in the [API documentation](https://faycal214.github.io/stochx/).
 
 ## Examples
 
@@ -139,7 +139,7 @@ The documentation site separates three concerns:
 - **API Reference** for Python classes, properties, methods, validation rules, and examples.
 - **Worked Examples** for end-to-end executable usage.
 
-Start at the [documentation site](https://faycal214.github.io/optiflowx/).
+Start at the [documentation site](https://faycal214.github.io/stochx/).
 
 ## Development and quality gates
 
@@ -176,17 +176,17 @@ python -m twine check dist/*
 
 ## Versioning
 
-OptiFlowX follows semantic versioning for public API changes:
+StochX follows semantic versioning for public API changes:
 
 - `MAJOR` for incompatible public API changes;
 - `MINOR` for backwards-compatible features;
 - `PATCH` for backwards-compatible fixes.
 
-The package version is defined once in `optiflowx/__init__.py` and is used by the build configuration, avoiding separate version values that can drift.
+The package version is defined once in `stochx/__init__.py` and is used by the build configuration, avoiding separate version values that can drift.
 
 ## Release status
 
-OptiFlowX is currently in the early development stage. PyPI publishing is prepared through a tag-based release workflow, but releases are not automatically published until the repository's PyPI trusted publisher is configured.
+StochX is currently in the early development stage. PyPI publishing is prepared through a tag-based release workflow, but releases are not automatically published until the repository's PyPI trusted publisher is configured.
 
 ## License
 

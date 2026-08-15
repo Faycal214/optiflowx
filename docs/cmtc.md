@@ -1,6 +1,6 @@
 # Continuous-Time Markov Chains
 
-This page gives a compact mathematical reference for finite homogeneous CTMCs and shows how the concepts map to OptiFlowX.
+This page gives a compact mathematical reference for finite homogeneous CTMCs and shows how the concepts map to StochX.
 
 ## 1. Transition probabilities
 
@@ -20,7 +20,7 @@ P(t)=(p_{ij}(t)),
 The transition matrices satisfy Chapman–Kolmogorov.
 
 ```python
-from optiflowx.stochastic import ContinuousTimeMarkovChain
+from stochx.stochastic import ContinuousTimeMarkovChain
 
 chain = ContinuousTimeMarkovChain(Q, states=[0, 1, 2])
 chain.transition_matrix_at(2.0)
@@ -213,7 +213,7 @@ path.state_at(5.0)
 
 ## 12. API map
 
-| Mathematical object | OptiFlowX |
+| Mathematical object | StochX |
 |---|---|
 | Generator \(Q\) | `ContinuousTimeMarkovChain` |
 | Infinitesimal approximation | `infinitesimal_transition_matrix` |

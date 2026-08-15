@@ -3,8 +3,8 @@
 import numpy as np
 import pytest
 
-from optiflowx.stochastic import MarkovChain
-from optiflowx.stochastic.exceptions import MatrixValidationError
+from stochx.stochastic import MarkovChain
+from stochx.stochastic.exceptions import MatrixValidationError
 
 
 def test_markov_chain_rejects_non_stochastic_matrix_with_semantic_error():

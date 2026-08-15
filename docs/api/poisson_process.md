@@ -32,7 +32,7 @@ PoissonProcess(rate)
 ### Example
 
 ```python
-from optiflowx.stochastic import PoissonProcess
+from stochx.stochastic import PoissonProcess
 
 process = PoissonProcess(rate=3.0)
 print(process.count_probability(2, 1.0))

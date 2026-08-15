@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from optiflowx.stochastic import ContinuousTimeMarkovChain
+from stochx.stochastic import ContinuousTimeMarkovChain
 
 Q = np.array([[-2.0, 2.0], [1.0, -1.0]])
 chain = ContinuousTimeMarkovChain(Q, states=["A", "B"])

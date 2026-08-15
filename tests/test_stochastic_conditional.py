@@ -1,6 +1,6 @@
 import numpy as np
 
-from optiflowx.stochastic import FiniteProbabilitySpace, Partition
+from stochx.stochastic import FiniteProbabilitySpace, Partition
 
 
 def make_space():

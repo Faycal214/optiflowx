@@ -1,6 +1,6 @@
 """Complete Chapter 4 finite conditional-expectation demonstration."""
 
-from optiflowx.stochastic import FiniteProbabilitySpace, Partition
+from stochx.stochastic import FiniteProbabilitySpace, Partition
 
 space = FiniteProbabilitySpace([1, 2, 3, 4], [0.25] * 4)
 X = space.random_variable([1.0, 2.0, 3.0, 4.0], name="X")

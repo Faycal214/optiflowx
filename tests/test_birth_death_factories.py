@@ -1,6 +1,6 @@
 import pytest
 
-from optiflowx.stochastic import BirthDeathProcess
+from stochx.stochastic import BirthDeathProcess
 
 
 @pytest.mark.parametrize(

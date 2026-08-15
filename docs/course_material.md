@@ -1,8 +1,8 @@
 # Course Material
 
-This section presents the mathematical foundations covered by the five stochastic-process chapters implemented in OptiFlowX.
+This section presents the mathematical foundations covered by the five stochastic-process chapters implemented in StochX.
 
-The course pages are intentionally kept separate from the OptiFlowX package/API documentation and from the worked examples.
+The course pages are intentionally kept separate from the StochX package/API documentation and from the worked examples.
 
 ## Chapters
 

@@ -1,17 +1,17 @@
 cff-version: 1.2.0
-title: "OptiFlowX"
+title: "StochX"
 version: "0.1.0"
 date-released: "2026-08-15"
 type: software
 abstract: >-
   A lightweight Python library for stochastic-process analysis,
   simulation, and finite-probability objects.
-message: "If you use OptiFlowX in academic work, please cite this software."
+message: "If you use StochX in academic work, please cite this software."
 authors:
   - family-names: "Alikacem"
     given-names: "Faycal"
-repository-code: "https://github.com/Faycal214/optiflowx"
-url: "https://faycal214.github.io/optiflowx/"
+repository-code: "https://github.com/Faycal214/stochx"
+url: "https://faycal214.github.io/stochx/"
 license: "MIT"
 keywords:
   - stochastic processes

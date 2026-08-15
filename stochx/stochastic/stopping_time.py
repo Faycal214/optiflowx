@@ -15,11 +15,11 @@ class StoppingTime:
     
     Mathematical object
     ------------------
-    Public stochastic object exposed by the OptiFlowX API.
+    Public stochastic object exposed by the StochX API.
     
     Course basis
     ------------
-    The implementation follows the corresponding MSPRO course material documented by OptiFlowX.
+    The implementation follows the corresponding MSPRO course material documented by StochX.
     
     Parameters
     ----------

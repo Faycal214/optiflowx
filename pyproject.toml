@@ -3,7 +3,7 @@ requires = ["hatchling>=1.18"]
 build-backend = "hatchling.build"
 
 [project]
-name = "optiflowx"
+name = "stochx"
 dynamic = ["version"]
 requires-python = ">=3.10"
 description = "A Python library for stochastic-process analysis, simulation, and finite-probability objects."
@@ -40,11 +40,11 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Faycal214/optiflowx"
-Documentation = "https://faycal214.github.io/optiflowx/"
-Repository = "https://github.com/Faycal214/optiflowx"
-Issues = "https://github.com/Faycal214/optiflowx/issues"
-Changelog = "https://github.com/Faycal214/optiflowx/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/Faycal214/stochx"
+Documentation = "https://faycal214.github.io/stochx/"
+Repository = "https://github.com/Faycal214/stochx"
+Issues = "https://github.com/Faycal214/stochx/issues"
+Changelog = "https://github.com/Faycal214/stochx/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
@@ -63,10 +63,10 @@ docs = [
 ]
 
 [tool.hatch.version]
-path = "optiflowx/__init__.py"
+path = "stochx/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["optiflowx"]
+packages = ["stochx"]
 
 [tool.pytest.ini_options]
 addopts = "-q --disable-warnings --maxfail=1"
@@ -74,7 +74,7 @@ testpaths = ["tests"]
 
 [tool.coverage.run]
 branch = true
-source = ["optiflowx"]
+source = ["stochx"]
 
 [tool.coverage.report]
 show_missing = true

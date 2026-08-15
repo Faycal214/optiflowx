@@ -22,7 +22,7 @@ A NumPy array containing one empirical frequency per supplied state, in the supp
 ### Example
 
 ```python
-from optiflowx.stochastic.analysis import empirical_state_frequencies
+from stochx.stochastic.analysis import empirical_state_frequencies
 
 path = ["A", "B", "A", "A", "B"]
 frequencies = empirical_state_frequencies(path, ["A", "B"])

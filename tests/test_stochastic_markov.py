@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from optiflowx.stochastic import MarkovChain
+from stochx.stochastic import MarkovChain
 
 
 def test_transition_matrix_is_validated_and_exposed():

@@ -1,4 +1,4 @@
-from optiflowx.stochastic import Filtration, FiniteProbabilitySpace, Martingale
+from stochx.stochastic import Filtration, FiniteProbabilitySpace, Martingale
 
 
 def test_martingale_transform():

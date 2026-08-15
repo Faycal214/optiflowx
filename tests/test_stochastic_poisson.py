@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from optiflowx.stochastic import NonHomogeneousPoissonProcess, PoissonProcess
+from stochx.stochastic import NonHomogeneousPoissonProcess, PoissonProcess
 
 
 def test_poisson_count_probability():

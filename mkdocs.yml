@@ -1,7 +1,7 @@
-site_name: OptiFlowX
+site_name: StochX
 site_description: A Python library for stochastic-process mathematics.
-repo_url: https://github.com/Faycal214/optiflowx
-repo_name: Faycal214/optiflowx
+repo_url: https://github.com/Faycal214/stochx
+repo_name: Faycal214/stochx
 
 nav:
   - Home: index.md

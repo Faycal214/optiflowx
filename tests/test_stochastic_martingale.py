@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from optiflowx.stochastic import Filtration, FiniteProbabilitySpace, Martingale, StoppingTime
+from stochx.stochastic import Filtration, FiniteProbabilitySpace, Martingale, StoppingTime
 
 
 def fair_coin_space():

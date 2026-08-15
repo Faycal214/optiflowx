@@ -1,6 +1,6 @@
 import numpy as np
 
-from optiflowx.stochastic.analysis import empirical_state_frequencies
+from stochx.stochastic.analysis import empirical_state_frequencies
 
 
 def test_empirical_state_frequencies():

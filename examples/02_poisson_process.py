@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from optiflowx.stochastic import PoissonProcess
+from stochx.stochastic import PoissonProcess
 
 
 process = PoissonProcess(rate=2.0)

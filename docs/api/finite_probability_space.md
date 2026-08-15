@@ -1,6 +1,6 @@
 # FiniteProbabilitySpace
 
-`FiniteProbabilitySpace` represents a finite sample space with an explicit probability mass function and provides the finite conditional-expectation operations exposed by OptiFlowX.
+`FiniteProbabilitySpace` represents a finite sample space with an explicit probability mass function and provides the finite conditional-expectation operations exposed by StochX.
 
 ## Constructor
 
@@ -48,7 +48,7 @@ FiniteProbabilitySpace(outcomes, probabilities)
 ## Example
 
 ```python
-from optiflowx.stochastic import FiniteProbabilitySpace
+from stochx.stochastic import FiniteProbabilitySpace
 
 space = FiniteProbabilitySpace(
     outcomes=["H", "T"],

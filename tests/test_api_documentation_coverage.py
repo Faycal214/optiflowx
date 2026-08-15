@@ -5,7 +5,7 @@ import inspect
 import pkgutil
 from pathlib import Path
 
-import optiflowx.stochastic as stochastic
+import stochx.stochastic as stochastic
 
 
 API_ROOT = Path("docs/api")

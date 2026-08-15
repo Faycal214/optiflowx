@@ -2,7 +2,7 @@ import importlib
 import inspect
 import pkgutil
 
-import optiflowx.stochastic as stochastic
+import stochx.stochastic as stochastic
 
 
 _INTERNAL_STOCHASTIC_MODULES = {"validation"}

@@ -1,8 +1,8 @@
-"""Contract tests for the canonical OptiFlowX public API."""
+"""Contract tests for the canonical StochX public API."""
 
 import numpy as np
 
-from optiflowx.stochastic import (
+from stochx.stochastic import (
     BirthDeathProcess,
     ContinuousTimeMarkovChain,
     Filtration,

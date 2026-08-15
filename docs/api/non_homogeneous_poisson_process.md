@@ -35,7 +35,7 @@ NonHomogeneousPoissonProcess(intensity_function, mean_function=None)
 ## Example
 
 ```python
-from optiflowx.stochastic import NonHomogeneousPoissonProcess
+from stochx.stochastic import NonHomogeneousPoissonProcess
 
 process = NonHomogeneousPoissonProcess(
     intensity=lambda t: 1.0 + t,

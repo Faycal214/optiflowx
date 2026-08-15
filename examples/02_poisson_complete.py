@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from optiflowx.stochastic import NonHomogeneousPoissonProcess, PoissonProcess
+from stochx.stochastic import NonHomogeneousPoissonProcess, PoissonProcess
 
 rng = np.random.default_rng(7)
 pp = PoissonProcess(2.0)

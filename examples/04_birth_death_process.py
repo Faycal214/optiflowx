@@ -1,6 +1,6 @@
 """Chapter 3: birth-death process example."""
 
-from optiflowx.stochastic import BirthDeathProcess
+from stochx.stochastic import BirthDeathProcess
 
 
 process = BirthDeathProcess.linear(

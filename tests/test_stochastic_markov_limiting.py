@@ -1,6 +1,6 @@
 import numpy as np
 
-from optiflowx.stochastic import MarkovChain
+from stochx.stochastic import MarkovChain
 
 
 def test_limiting_distribution_single_closed_three_state_class():

@@ -1,6 +1,6 @@
 # Discrete-Time Markov Chains
 
-This page gives a compact mathematical reference for finite homogeneous discrete-time Markov chains and shows how the concepts map to OptiFlowX.
+This page gives a compact mathematical reference for finite homogeneous discrete-time Markov chains and shows how the concepts map to StochX.
 
 ## 1. Markov property
 
@@ -27,7 +27,7 @@ P=(p_{ij}),
 \]
 
 ```python
-from optiflowx.stochastic import MarkovChain
+from stochx.stochastic import MarkovChain
 
 chain = MarkovChain(
     [[0.7, 0.3],
@@ -157,14 +157,14 @@ prob = chain.absorption_probability("A", {"B"})
 ```
 
 ```python
-from optiflowx.stochastic.analysis import empirical_state_frequencies
+from stochx.stochastic.analysis import empirical_state_frequencies
 
 frequencies = empirical_state_frequencies(path, chain.states)
 ```
 
 ## 11. API map
 
-| Mathematical object | OptiFlowX |
+| Mathematical object | StochX |
 |---|---|
 | Transition matrix | `MarkovChain` |
 | \(P^n\) | `n_step_transition` |

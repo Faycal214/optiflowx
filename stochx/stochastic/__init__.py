@@ -7,7 +7,7 @@ from .exceptions import (
     GeneratorValidationError,
     MatrixValidationError,
     NumericalError,
-    OptiFlowXError,
+    StochXError,
     ProbabilityValidationError,
     ValidationError,
 )
@@ -33,7 +33,7 @@ __all__ = [
     "MatrixValidationError",
     "NonHomogeneousPoissonProcess",
     "NumericalError",
-    "OptiFlowXError",
+    "StochXError",
     "Partition",
     "PoissonProcess",
     "ProbabilityValidationError",

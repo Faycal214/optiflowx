@@ -1,14 +1,14 @@
 from importlib.metadata import metadata, version
 
-import optiflowx
+import stochx
 
 
 def test_version_is_single_sourced() -> None:
-    assert optiflowx.__version__ == version("optiflowx")
+    assert stochx.__version__ == version("stochx")
 
 
 def test_distribution_metadata_is_release_ready() -> None:
-    info = metadata("optiflowx")
-    assert info["Name"] == "optiflowx"
-    assert info["Version"] == optiflowx.__version__
+    info = metadata("stochx")
+    assert info["Name"] == "stochx"
+    assert info["Version"] == stochx.__version__
     assert "stochastic-process" in info["Summary"]
