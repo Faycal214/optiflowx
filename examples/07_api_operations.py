@@ -30,7 +30,7 @@ def markov_chain_examples() -> None:
     print(chain.chapman_kolmogorov(1, 2))
     print(chain.transition_graph())
     print(chain.accessible("A", "B"), chain.communicate("A", "B"))
-    print(chain.communating_classes(), chain.closed_classes())
+    print(chain.communicating_classes(), chain.closed_classes())
     print(chain.is_irreducible(), chain.is_absorbing_state("A"), chain.classify_states())
     print(chain.first_visit_probability("A", "B", 2))
     print(chain.first_passage_probability("A", "B", 2))
