@@ -1,0 +1,76 @@
+name: One-shot StochX migration
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    if: contains(github.event.head_commit.message, '[stochx-migration-bootstrap]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rename package and replace project identity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git mv optiflowx stochx
+
+          while IFS= read -r -d '' file; do
+            case "$file" in
+              .git/*) continue ;;
+            esac
+            if file "$file" | grep -qE 'text|JSON|XML|YAML|ASCII'; then
+              sed -i \
+                -e 's/OptiFlowX/StochX/g' \
+                -e 's/optiflowx/stochx/g' \
+                -e 's/Faycal214\/optiflowx/Faycal214\/stochx/g' \
+                -e 's/faycal214\.github\.io\/optiflowx/faycal214.github.io\/stochx/g' \
+                "$file"
+            fi
+          done < <(git ls-files -z)
+
+          rm -f .github/workflows/rename-to-stochx.yml
+
+          python - <<'PY'
+          from pathlib import Path
+          import tomllib
+
+          with Path('pyproject.toml').open('rb') as fh:
+              data = tomllib.load(fh)
+
+          assert data['project']['name'] == 'stochx'
+          assert data['tool']['hatch']['version']['path'] == 'stochx/__init__.py'
+          assert data['tool']['hatch']['build']['targets']['wheel']['packages'] == ['stochx']
+
+          text_files = []
+          for path in Path('.').rglob('*'):
+              if not path.is_file() or '.git' in path.parts:
+                  continue
+              try:
+                  text = path.read_text(encoding='utf-8')
+              except UnicodeDecodeError:
+                  continue
+              if 'optiflowx' in text.lower() or 'OptiFlowX' in text:
+                  text_files.append(str(path))
+
+          assert not text_files, f'Legacy identity remains in: {text_files}'
+          print('StochX migration identity checks passed.')
+          PY
+
+      - name: Commit migration
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor: rename project to StochX"
+          git push origin main
