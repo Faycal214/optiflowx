@@ -1,38 +1,47 @@
 # StoppingTime
 
-`StoppingTime` represents a discrete stopping time with respect to a filtration. The defining condition is that the event
-
-$$\{T\le n\}\in\mathcal F_n$$
-
-holds at every finite time represented by the object.
+`StoppingTime` represents a discrete stopping time with values in $\mathbb N\cup\{\infty\}$ with respect to a filtration. The construction enforces the finite-time stopping-time condition from the course model.
 
 ## Constructor
 
 ```python
-StoppingTime(values, filtration)
+StoppingTime(space, values, filtration)
 ```
+
+### Parameters
+
+| Parameter | Description |
+|---|---|
+| `space` | Underlying `FiniteProbabilitySpace`. |
+| `values` | Outcome-to-stopping-time mapping. |
+| `filtration` | Filtration with respect to which the stopping condition is checked. |
+
+## Class methods
+
+- `from_values(space, values, filtration)` — explicit construction helper from outcome-wise values.
 
 ## Properties
 
 | Property | Meaning |
 |---|---|
-| `values` | Time at which stopping occurs on each outcome. |
-| `filtration` | Filtration relative to which stopping is tested. |
-| `n_steps` | Number of represented time levels. |
+| `space` | Underlying probability space. |
+| `values` | Outcome-wise stopping times. |
+| `filtration` | Filtration used for the definition. |
 
 ## Methods
 
-- `is_stopping_time()` — validate the stopping-time condition.
-- `minimum(other)` — minimum of two stopping times.
-- `maximum(other)` — maximum of two stopping times.
-- `add(other)` — combine stopping-time values under the implemented finite construction.
+- `minimum(other)` — construct $T\wedge S$.
+- `maximum(other)` — construct $T\vee S$.
+- `add(other)` — construct $T+S$ under the finite representation.
+
+The stopping-time validity is enforced during construction.
 
 ## Example
 
 ```python
-T = StoppingTime(values, filtration)
-print(T.is_stopping_time())
-T_min = T.minimum(S)
+T = StoppingTime.from_values(space, values, filtration)
+S = T.minimum(other)
+print(S.values)
 ```
 
 ## Related course material
