@@ -67,6 +67,11 @@ class Martingale:
             raise ValueError("invalid time indices")
         return self.process[n].space.conditional_expectation(self.process[n + k], self.filtration[n])
 
+    def transform(self, function, *, name: str | None = None) -> "Martingale":
+        """Apply a scalar transformation pointwise to the supplied process."""
+        transformed = tuple(rv.apply(function, name=name) for rv in self.process)
+        return Martingale(transformed, self.filtration)
+
     def stopped(self, stopping_time: StoppingTime) -> StoppedProcess:
         """Construct the stopped process ``X_{n wedge T}``."""
         return StoppedProcess(self.process, stopping_time)
