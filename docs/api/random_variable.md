@@ -1,6 +1,6 @@
 # RandomVariable
 
-`RandomVariable` represents a discrete random variable on a `FiniteProbabilitySpace`.
+`RandomVariable` represents a finite-valued random variable on a `FiniteProbabilitySpace`.
 
 $$X:\Omega\to\mathbb R.$$
 
@@ -10,26 +10,32 @@ $$X:\Omega\to\mathbb R.$$
 RandomVariable(space, values, name=None)
 ```
 
-### Properties
+### Parameters
 
-| Property | Meaning |
+| Parameter | Description |
 |---|---|
 | `space` | Underlying finite probability space. |
 | `values` | Outcome-to-value mapping. |
-| `support` | Values taken by the random variable. |
 | `name` | Optional display name. |
+
+## Properties
+
+| Property | Meaning |
+|---|---|
+| `space` | Underlying probability space. |
+| `values` | Outcome-to-value mapping. |
+| `name` | Optional display name. |
+| `support` | Distinct values taken by the variable. |
 
 ## Methods
 
-- `expected_value()` — compute $\mathbb E[X]$.
-- `variance()` — compute $\operatorname{Var}(X)$.
-- `covariance(other)` — compute covariance with another random variable.
-- `probability(value)` — probability of a value.
-- `distribution()` — return the induced finite distribution.
-- `transform(function, name=None)` — apply a function pointwise.
-- `conditional_expectation(partition)` — conditional expectation with respect to a partition when supported directly by the object.
+- `array()` — return values in probability-space outcome order.
+- `expectation()` — compute $\mathbb E[X]$.
+- `expected_value()` — canonical alias for `expectation()`.
+- `transform(function, name=None)` — construct the pointwise transformation $g(X)$.
+- `apply(function, name=None)` — canonical pointwise application API.
 
-Arithmetic operations such as `X + Y`, `X - Y`, `X * Y`, and `-X` preserve the public `RandomVariable` type.
+Arithmetic operations `+`, `-`, `*`, unary `-`, and their supported reflected forms return another public `RandomVariable` on the same probability space.
 
 ## Example
 
@@ -39,7 +45,7 @@ X = space.random_variable({"H": 1.0, "T": 0.0}, name="X")
 Y = X.transform(lambda x: x + 1.0, name="Y")
 
 print(X.expected_value())
-print(Y.values)
+print(Y.support)
 ```
 
 ## Related course material
