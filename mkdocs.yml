@@ -29,6 +29,7 @@ nav:
           - StoppingTime: api/stopping_time.md
           - StoppedProcess: api/stopped_process.md
           - Analysis utilities: api/analysis.md
+          - Exceptions: api/exceptions.md
       - API map: api.md
   - Examples:
       - Worked examples: examples.md
