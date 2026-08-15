@@ -2,12 +2,10 @@
 
 **A Python library for stochastic processes, built from the MSPRO stochastic-process course.**
 
-OptiFlowX provides executable mathematical objects for the stochastic-process topics covered by the five supplied USTHB MSPRO *Processus Aléatoires* course PDFs.
-
 The library currently covers:
 
-- discrete-time Markov chains (CMTD);
-- continuous-time Markov chains (CMTC);
+- discrete-time Markov chains (DTMC);
+- continuous-time Markov chains (CTMC);
 - Poisson processes;
 - birth-death processes;
 - finite probability spaces, partitions, random variables, and conditional expectation;
@@ -45,7 +43,7 @@ The documentation is divided into three parts.
 
 ### Course material
 
-The five course chapters present the mathematical definitions, notation, results, and hypotheses from the supplied USTHB MSPRO PDFs. The course material is kept separate from the software reference.
+The five course chapters present the mathematical definitions, notation, results, and hypotheses used in the stochastic-process course. The course material is kept separate from the software reference.
 
 ### Package / API
 
@@ -70,9 +68,5 @@ Worked examples show how the mathematical objects are represented and used in Py
 | Martingale | `Martingale` |
 | Stopping time | `StoppingTime` |
 | Stopped process | `StoppedProcess` |
-
-## Source
-
-The mathematical documentation is based on the five supplied USTHB MSPRO *Processus Aléatoires* PDFs. The API documentation describes the corresponding OptiFlowX implementation separately.
 
 **OptiFlowX** — stochastic-process mathematics implemented as a Python library.
