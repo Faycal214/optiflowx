@@ -7,26 +7,19 @@ This page maps the public package components to the mathematical objects defined
 `MarkovChain` represents a finite homogeneous discrete-time Markov chain through its transition matrix $P$.
 
 - `transition_matrix`: $P$
-- `n_step_transition(n)`: $P^n$
+- `n_step_transition(n)`, `transition_matrix_at(n)`: $P^n$
 - `state_distribution(mu0, n)`: $\mu_0P^n$
 - `chapman_kolmogorov(m, n)`: $P^mP^n$
 - `accessible`, `communicate`, `communicating_classes`: state classification by transitions
 - `closed_classes`, `is_absorbing_state`: closed/absorbing classes
 - `classify_states`: recurrence/transience
 - `period`, `is_aperiodic`, `is_ergodic`: periodicity and ergodicity
-- `first_visit_probability`: $P_i(T_j=n)$ for $i\ne j$
-- `stationary_distribution`: irreducible finite stationary law
+- `first_visit_probability`, `first_passage_probability`: first hitting probabilities
+- `first_return_probability`, `return_probability`, `mean_return_time`: return behavior
+- `stationary_distribution`, `stationary_distributions`: stationary laws
 - `limiting_distribution`: limit under the conditions represented in the course
 - `absorption_probability`: probability of reaching a specified closed class
 - `simulate`: trajectory generation
-
-Additional Chapter 1 helpers are in `theory.py`:
-
-- `first_return_probability`
-- `return_probability`
-- `mean_return_time`
-- `stationary_distributions`
-- `empirical_state_frequencies`
 
 ## Chapter 2 — Poisson process
 
@@ -37,8 +30,8 @@ Additional Chapter 1 helpers are in `theory.py`:
 - `interarrival_samples`: exponential inter-arrival times
 - `arrival_times`: cumulative arrival times
 - `simulate`: event times up to a horizon
-- `conditional_first_arrival_cdf`: conditional uniform law of the first arrival
-- `conditional_arrival_times`: ordered uniform arrival times conditional on the count
+- `conditional_first_arrival_cdf`: conditional first-arrival law
+- `conditional_arrival_times`: ordered arrival times conditional on the count
 - `superpose`: sum of rates
 - `split`: Bernoulli thinning/splitting
 
@@ -50,36 +43,36 @@ $$m(t)=\int_0^t\lambda(x)\,dx.$$
 
 `ContinuousTimeMarkovChain` represents a finite homogeneous CTMC with generator $Q$.
 
-- `generator_matrix`: $Q$
+- `generator_matrix`, `generator`: $Q$
 - `infinitesimal_transition_matrix(h)`: $I+hQ$
-- `transition_matrix(t)`: $e^{Qt}$
+- `transition_matrix(t)`, `transition_matrix_at(t)`: $e^{Qt}$
 - `state_distribution`: $\mu_0P(t)$
 - `chapman_kolmogorov`: $P(s+t)=P(s)P(t)$
-- `forward_derivative`: $P(t)Q$
-- `backward_derivative`: $QP(t)$
+- `forward_derivative`, `forward_equation`: $P(t)Q$
+- `backward_derivative`, `backward_equation`: $QP(t)$
 - `holding_rate`, `holding_time`: exponential holding time with rate $-q_{ii}$
 - `jump_chain_matrix`, `jump_chain`: embedded jump chain
-- `stationary_distribution`: solution of $\pi Q=0$
+- `communicating_classes`: communication through the jump chain
+- `stationary_distribution`, `stationary_distribution_from_jump_chain`: stationary laws
+- `mean_return_time`: continuous-time return behavior
 - `long_run_cost`: stationary weighted state cost
 - `simulate`: jump-time trajectory
 
-Additional Chapter 3 helpers:
+`CTMCPath` represents a simulated path.
 
-- `ctmc_communication_classes`
-- `ctmc_stationary_from_jump_chain`
-- `ctmc_mean_return_time`
-- `occupation_time`
-- `occupation_fraction`
+- `state_at(t)`
+- `occupation_time(state, horizon)`
+- `occupation_fraction(state, horizon)`
 
 ## Birth-death process
 
 `BirthDeathProcess` represents rates $\lambda_k$ and $\mu_k$.
 
 - `birth_rate`, `death_rate`
-- `generator_matrix`
-- `jump_chain_matrix`
+- `generator`, `generator_matrix`
+- `jump_chain`, `jump_chain_matrix`
 - `kolmogorov_derivative`
-- `stationary_weights`
+- `stationary_weights`, `stationary_distribution`
 - `pure_immigration_probability`
 - `pure_birth_probability`
 - `pure_death_probability`
@@ -95,26 +88,17 @@ Additional Chapter 3 helpers:
 
 Main operations:
 
-- `expectation`
+- `probability`, `probability_of`
+- `conditional_probability_given_event`
+- `conditional_expectation_given_event`
 - `conditional_expectation`
 - `conditional_expectation_given`
 - `conditional_probability`
-- `total_expectation`
-- `tower`
-- `pull_out`
-- `conditional_variance`
-- `conditional_covariance`
-- `total_variance`
-- `total_covariance`
-- `l2_projection`
-
-Additional helpers:
-
-- `conditional_expectation_given_event`
-- `conditional_probability_given_event`
-- `independent_partitions`
-- `independent_random_variables`
+- `are_partitions_independent`, `are_independent`
 - `conditional_characterization_error`
+- `total_expectation`, `tower`, `pull_out`
+- `conditional_variance`, `conditional_covariance`
+- `total_variance`, `total_covariance`, `l2_projection`
 
 ## Chapter 5 — Martingales
 
@@ -128,13 +112,11 @@ Additional helpers:
 - `martingale_residual`
 - `conditional_future`
 - `expectations`
+- `transform`
 - `doob`
+- `stopped`
 
 `StoppingTime` represents a discrete stopping time with values in $\mathbb N\cup\{\infty\}$.
-
-- `minimum`
-- `maximum`
-- `add`
 
 `StoppedProcess` represents
 
@@ -144,7 +126,8 @@ $$X_n^T=X_{n\wedge T}.$$
 - `sequence`
 - `terminal_value`
 
-Additional helpers:
+## Standalone analysis
 
-- `transform_martingale`
-- `stopped_martingale`
+`optiflowx.stochastic.analysis` contains generic trajectory analysis that does not belong to a single process object.
+
+- `empirical_state_frequencies(path, states)`
