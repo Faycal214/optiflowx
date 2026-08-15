@@ -1,3 +1,5 @@
+"""Regression tests for centralized DTMC matrix validation."""
+
 import numpy as np
 import pytest
 
