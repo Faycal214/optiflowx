@@ -18,6 +18,7 @@ from optiflowx.stochastic import (
     RandomVariable,
     StoppedProcess,
     StoppingTime,
+    empirical_state_frequencies,
 )
 
 
@@ -41,7 +42,9 @@ def markov_chain_examples() -> None:
     print(chain.period("A"), chain.is_aperiodic(), chain.is_ergodic())
     print(chain.stationary_distribution(), chain.stationary_distributions())
     print(chain.limiting_distribution(), chain.jump_chain() is chain)
-    print(chain.simulate(5, initial_state="A", rng=np.random.default_rng(0)))
+    path = chain.simulate(5, initial_state="A", rng=np.random.default_rng(0))
+    print(path)
+    print(empirical_state_frequencies(path, chain.states))
 
     absorbing = MarkovChain(
         [[1.0, 0.0, 0.0], [0.2, 0.5, 0.3], [0.0, 0.0, 1.0]],
@@ -112,6 +115,7 @@ def birth_death_examples() -> None:
 
     finite = BirthDeathProcess.finite([0.5, 0.7, 0.9], [0.0, 0.2, 0.4])
     print(finite.generator_matrix())
+    print(BirthDeathProcess.pure_immigration(1.0).generator_matrix())
     print(BirthDeathProcess.pure_immigration_probability(3, 2.0, rate=1.0))
     print(BirthDeathProcess.pure_birth_probability(3, 2.0, rate=0.5))
     print(BirthDeathProcess.pure_death_probability(3, 2.0, initial_population=5, rate=0.3))
