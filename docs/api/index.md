@@ -1,6 +1,6 @@
 # API Reference
 
-OptiFlowX exposes stochastic-process objects as explicit Python classes. The reference below follows a PyDTMC-style layout: each class page describes the mathematical object, constructor, public properties, public methods, examples, and related course material.
+OptiFlowX exposes stochastic-process objects as explicit Python classes. The reference follows a PyDTMC-style layout: each class page describes the mathematical object, constructor, public properties, public methods, examples, and related course material.
 
 ## Markov chains
 
@@ -33,6 +33,10 @@ OptiFlowX exposes stochastic-process objects as explicit Python classes. The ref
 ## Standalone analysis
 
 - [`empirical_state_frequencies`](analysis.md) — generic trajectory-frequency analysis.
+
+## Exceptions
+
+- [`Exception hierarchy`](exceptions.md) — semantic validation and numerical exceptions.
 
 ## API conventions
 
