@@ -6,6 +6,7 @@ import numpy as np
 
 from optiflowx.stochastic import (
     BirthDeathProcess,
+    CTMCPath,
     ContinuousTimeMarkovChain,
     FiniteProbabilitySpace,
     Filtration,
@@ -14,6 +15,8 @@ from optiflowx.stochastic import (
     NonHomogeneousPoissonProcess,
     Partition,
     PoissonProcess,
+    RandomVariable,
+    StoppedProcess,
     StoppingTime,
 )
 
@@ -88,7 +91,7 @@ def ctmc_examples() -> None:
     print(chain.holding_rate("A"), chain.holding_time("A", rng=np.random.default_rng(2)))
     print(chain.jump_chain_matrix(), chain.jump_chain().states)
     path = chain.simulate(5.0, initial_state="A", rng=np.random.default_rng(2))
-    print(path.times, path.states, path.state_at(2.0))
+    print(isinstance(path, CTMCPath), path.times, path.states, path.state_at(2.0))
     print(path.occupation_time("A", 5.0), path.occupation_fraction("A", 5.0))
 
 
@@ -124,7 +127,7 @@ def probability_and_partition_examples() -> tuple[FiniteProbabilitySpace, Partit
 
     print(space.outcomes, space.probabilities, space.n_outcomes)
     print(space.probability({"H"}), space.probability_of({"H"}))
-    print(X.array(), X.expectation(), X.expected_value(), X.support)
+    print(isinstance(X, RandomVariable), X.array(), X.expectation(), X.expected_value(), X.support)
     print(X.transform(lambda x: x + 1.0, name="Z").array())
     print(X.apply(lambda x: 2.0 * x).array())
     print((X + Y).array(), (X - Y).array(), (X * Y).array(), (-X).array())
@@ -171,7 +174,7 @@ def martingale_examples(space: FiniteProbabilitySpace) -> None:
     print(stopping.maximum(stopping).values)
     print(stopping.add(stopping).values)
     stopped = mart.stopped(stopping)
-    print(stopped.process, stopped.stopping_time, stopped.n_steps)
+    print(isinstance(stopped, StoppedProcess), stopped.process, stopped.stopping_time, stopped.n_steps)
     print(stopped.values(1), stopped.sequence(), stopped.terminal_value())
 
 
