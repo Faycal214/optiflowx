@@ -114,12 +114,17 @@ def birth_death_examples() -> None:
 
     finite = BirthDeathProcess.finite([0.5, 0.7, 0.9], [0.0, 0.2, 0.4])
     print(finite.generator_matrix())
-    print(BirthDeathProcess.pure_immigration(1.0, max_state=6).generator_matrix())
+    print(BirthDeathProcess.pure_immigration(1.0).max_state)
+    print(BirthDeathProcess.pure_birth(0.4).max_state)
+    print(BirthDeathProcess.pure_death(0.3).max_state)
+    finite_pure_immigration = BirthDeathProcess(lambda _k: 1.0, lambda _k: 0.0, max_state=6)
+    finite_pure_death = BirthDeathProcess(lambda _k: 0.0, lambda k: 0.3 * k, max_state=6)
+    print(finite_pure_immigration.generator_matrix())
+    print(finite_pure_death.generator_matrix())
     print(BirthDeathProcess.pure_immigration_probability(3, 2.0, rate=1.0))
     print(BirthDeathProcess.pure_birth_probability(3, 2.0, rate=0.5))
     print(BirthDeathProcess.pure_death_probability(3, 2.0, initial_population=5, rate=0.3))
     print(BirthDeathProcess.pure_birth(0.4).pure_birth_reciprocal_rate_sum(5))
-    print(BirthDeathProcess.pure_death(0.3, max_state=6).generator_matrix())
 
 
 def probability_and_partition_examples() -> tuple[FiniteProbabilitySpace, Partition]:
