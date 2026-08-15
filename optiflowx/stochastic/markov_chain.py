@@ -407,6 +407,7 @@ class MarkovChain:
                 for neighbour in graph[vertex]:
                     if neighbour not in seen:
                         seen.add(neighbour)
+                        queue.append(neighbour)
             if len(seen) != n:
                 return False
         period = 0
