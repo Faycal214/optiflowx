@@ -26,9 +26,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e . --no-deps
           pip install numpy scipy pytest
-      - name: Run stochastic tests
+      - name: Run full test suite
         run: |
-          pytest -q tests/test_stochastic_*.py --disable-warnings
+          pytest -q tests --disable-warnings
       - name: Run API, documentation, and example coverage
         run: |
           pytest -q \
