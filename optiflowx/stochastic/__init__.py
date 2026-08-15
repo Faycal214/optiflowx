@@ -1,11 +1,22 @@
-"""Stochastic-process tools for the MSPRO Processus Aléatoires curriculum."""
+"""Public stochastic-process API for the MSPRO Processus Aléatoires curriculum.
 
-from .birth_death import BirthDeathProcess
-from .cmtc import CTMCPath, ContinuousTimeMarkovChain
-from .conditional import FiniteProbabilitySpace, Partition, RandomVariable
-from .markov import MarkovChain
-from .martingale import Filtration, Martingale, StoppedProcess, StoppingTime
-from .poisson import NonHomogeneousPoissonProcess, PoissonProcess
+The package exposes domain objects directly from :mod:`optiflowx.stochastic`.
+Canonical module names mirror the mathematical object names used by users;
+legacy implementation modules remain internal compatibility layers during the
+API migration.
+"""
+
+from .birth_death_process import BirthDeathProcess
+from .continuous_time_markov_chain import CTMCPath, ContinuousTimeMarkovChain
+from .filtration import Filtration
+from .martingale import Martingale
+from .partition import Partition
+from .poisson_process import NonHomogeneousPoissonProcess, PoissonProcess
+from .probability_space import FiniteProbabilitySpace
+from .random_variable import RandomVariable
+from .markov_chain import MarkovChain
+from .stopped_process import StoppedProcess
+from .stopping_time import StoppingTime
 from .theory import (
     conditional_characterization_error,
     conditional_expectation_given_event,
