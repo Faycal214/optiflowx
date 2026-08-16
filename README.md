@@ -1,8 +1,9 @@
 # StochX
 
+[![PyPI](https://img.shields.io/pypi/v/stochx)](https://pypi.org/project/stochx/)
+[![Python](https://img.shields.io/pypi/pyversions/stochx)](https://pypi.org/project/stochx/)
 [![CI](https://github.com/Faycal214/stochx/actions/workflows/test.yml/badge.svg)](https://github.com/Faycal214/stochx/actions/workflows/test.yml)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-1081C2?style=flat)](https://faycal214.github.io/stochx/)
-[![Python](https://img.shields.io/badge/python-3.10%2B-1081C2?style=flat)](https://www.python.org/)
 [![License](https://img.shields.io/github/license/Faycal214/stochx?style=flat)](LICENSE)
 
 StochX is a lightweight Python library for turning stochastic-process mathematics into executable, validated, and testable objects.
