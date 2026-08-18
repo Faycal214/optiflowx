@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
-from math import isfinite
 from typing import Iterable, Sequence
 
 import numpy as np
@@ -20,9 +19,10 @@ class TimeSeries:
     Parameters
     ----------
     values:
-        Numeric observations in chronological order.
+        Numeric observations in chronological order. Missing observations may
+        be represented by ``numpy.nan``.
     index:
-        Optional labels for the observations. When omitted, integer positions
+        Optional labels for observations. When omitted, integer positions
         starting at zero are used.
     name:
         Optional series name, used in summaries and plots.
@@ -31,7 +31,7 @@ class TimeSeries:
 
     Notes
     -----
-    The current course material focuses on regularly spaced observations. The
+    The course material focuses on regularly spaced observations. The
     container therefore preserves order and frequency metadata without trying
     to infer or repair irregular calendars automatically.
     """
@@ -54,8 +54,8 @@ class TimeSeries:
             raise ValueError("values must be a one-dimensional numeric sequence")
         if len(array) == 0:
             raise ValueError("values must contain at least one observation")
-        if not np.all(np.isfinite(array)):
-            raise ValueError("values must contain only finite observations")
+        if np.any(np.isinf(array)):
+            raise ValueError("values must not contain infinite observations")
 
         if index is not None:
             labels = tuple(index)
@@ -76,19 +76,20 @@ class TimeSeries:
         if isinstance(item, slice):
             values = self.values[item]
             index = self.index[item] if self.index is not None else None
-            return TimeSeries(
-                values,
-                index=index,
-                name=self.name,
-                frequency=self.frequency,
-            )
+            return TimeSeries(values, index=index, name=self.name, frequency=self.frequency)
         return float(self.values[item])
 
     @property
     def nobs(self) -> int:
-        """Number of observations."""
+        """Number of positions in the series, including missing observations."""
 
         return len(self)
+
+    @property
+    def nmissing(self) -> int:
+        """Number of missing observations."""
+
+        return int(np.isnan(self.values).sum())
 
     @property
     def start(self) -> DateLike | None:
@@ -115,8 +116,7 @@ class TimeSeries:
     def lag(self, periods: int = 1) -> "TimeSeries":
         """Return a lagged series, padding unavailable observations with NaN.
 
-        Positive ``periods`` means ``y[t-periods]``. This mirrors the usual
-        time-series lag convention and is intended for model construction.
+        Positive ``periods`` means ``y[t-periods]``.
         """
 
         if not isinstance(periods, int):
@@ -137,32 +137,29 @@ class TimeSeries:
         )
 
     def diff(self, periods: int = 1) -> "TimeSeries":
-        """Difference the series ``periods`` times."""
+        """Difference the series ``periods`` times, dropping unavailable lags."""
 
         if not isinstance(periods, int) or periods < 1:
             raise ValueError("periods must be a positive integer")
+        if self.nobs <= periods:
+            raise ValueError("periods must be smaller than the number of observations")
+        if np.isnan(self.values).any():
+            raise ValueError("diff requires a series without missing observations")
+
         values = self.values.copy()
         for _ in range(periods):
             values = np.diff(values)
         index = self.index[periods:] if self.index is not None else None
-        return TimeSeries(
-            values,
-            index=index,
-            name=f"D({self.name},{periods})",
-            frequency=self.frequency,
-        )
+        return TimeSeries(values, index=index, name=f"D({self.name},{periods})", frequency=self.frequency)
 
     def log(self) -> "TimeSeries":
         """Return the natural logarithm of a strictly positive series."""
 
+        if np.isnan(self.values).any():
+            raise ValueError("log requires a series without missing observations")
         if np.any(self.values <= 0):
             raise ValueError("log transformation requires strictly positive values")
-        return TimeSeries(
-            np.log(self.values),
-            index=self.index,
-            name=f"LOG({self.name})",
-            frequency=self.frequency,
-        )
+        return TimeSeries(np.log(self.values), index=self.index, name=f"LOG({self.name})", frequency=self.frequency)
 
     def pct_change(self, periods: int = 1) -> "TimeSeries":
         """Return percentage changes over ``periods`` observations."""
@@ -171,29 +168,30 @@ class TimeSeries:
             raise ValueError("periods must be a positive integer")
         if periods >= self.nobs:
             raise ValueError("periods must be smaller than the number of observations")
+        if np.isnan(self.values).any():
+            raise ValueError("pct_change requires a series without missing observations")
+
         previous = self.values[:-periods]
         current = self.values[periods:]
         if np.any(previous == 0):
             raise ZeroDivisionError("percentage change is undefined after a zero")
         values = (current / previous - 1.0) * 100.0
         index = self.index[periods:] if self.index is not None else None
-        return TimeSeries(
-            values,
-            index=index,
-            name=f"DLOG({self.name})",
-            frequency=self.frequency,
-        )
+        return TimeSeries(values, index=index, name=f"DLOG({self.name})", frequency=self.frequency)
 
     def describe(self) -> dict[str, float]:
-        """Return the core descriptive statistics used in course TPs."""
+        """Return descriptive statistics used in course TPs."""
 
+        valid = self.values[~np.isnan(self.values)]
+        n = valid.size
         return {
             "Observations": float(self.nobs),
-            "Mean": float(np.mean(self.values)),
-            "Std. Dev.": float(np.std(self.values, ddof=1)) if self.nobs > 1 else float("nan"),
-            "Variance": float(np.var(self.values, ddof=1)) if self.nobs > 1 else float("nan"),
-            "Minimum": float(np.min(self.values)),
-            "Maximum": float(np.max(self.values)),
+            "Included observations": float(n),
+            "Mean": float(np.mean(valid)) if n else float("nan"),
+            "Std. Dev.": float(np.std(valid, ddof=1)) if n > 1 else float("nan"),
+            "Variance": float(np.var(valid, ddof=1)) if n > 1 else float("nan"),
+            "Minimum": float(np.min(valid)) if n else float("nan"),
+            "Maximum": float(np.max(valid)) if n else float("nan"),
         }
 
     def summary(self) -> str:
@@ -201,19 +199,19 @@ class TimeSeries:
 
         stats = self.describe()
         lines = [
-            f"{self.name}",
+            self.name,
             "=" * len(self.name),
-            f"Observations: {int(stats['Observations'])}",
-            f"Mean:        {stats['Mean']:.6g}",
-            f"Std. Dev.:   {stats['Std. Dev.']:.6g}",
-            f"Variance:    {stats['Variance']:.6g}",
-            f"Minimum:     {stats['Minimum']:.6g}",
-            f"Maximum:     {stats['Maximum']:.6g}",
+            f"Observations:          {int(stats['Observations'])}",
+            f"Included observations: {int(stats['Included observations'])}",
+            f"Mean:                  {stats['Mean']:.6g}",
+            f"Std. Dev.:             {stats['Std. Dev.']:.6g}",
+            f"Variance:              {stats['Variance']:.6g}",
+            f"Minimum:               {stats['Minimum']:.6g}",
+            f"Maximum:               {stats['Maximum']:.6g}",
         ]
+        if self.frequency is not None:
+            lines.insert(2, f"Frequency:             {self.frequency}")
         return "\n".join(lines)
-
-    def _replace_nan(self, values: np.ndarray) -> "TimeSeries":
-        return TimeSeries(values, index=self.index, name=self.name, frequency=self.frequency)
 
     def __repr__(self) -> str:
         return (
