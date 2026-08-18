@@ -65,7 +65,9 @@ class Equation:
                 raise ValueError(f"invalid regressor {token!r}: {exc}") from exc
             if not hasattr(value, "values"):
                 raise ValueError(f"regressor {token!r} did not produce a time series")
-            series = value
+            if value.nobs != self.workfile.nobs:
+                value = self.workfile._pad_to_workfile(value, name=token)
+            series = value[self.workfile.sample]
             if series.nobs != dependent.nobs:
                 raise ValueError(f"regressor {token!r} has incompatible length")
             regressors.append(pd.Series(series.values, index=series.index))
@@ -79,9 +81,6 @@ class Equation:
             raise ValueError("no observations remain after applying the equation sample")
         y = frame[dependent_name].to_numpy(dtype=float)
         X = frame[names].to_numpy(dtype=float)
-        if "C" in names:
-            # C is already an explicit constant column.
-            pass
         model = sm.OLS(y, X)
         result = model.fit()
         sample = f"{frame.index[0]} {frame.index[-1]}" if frame.index is not None and len(frame.index) else None
