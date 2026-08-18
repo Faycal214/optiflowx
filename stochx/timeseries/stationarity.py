@@ -42,13 +42,7 @@ DF_SPECIFICATIONS: dict[str, dict[str, str]] = {
 
 @dataclass(frozen=True)
 class UnitRootResult:
-    """Unified EViews-style unit-root result.
-
-    The unit-root decision is based on the deterministic-specification-specific
-    Dickey-Fuller critical value.  The reported ``pvalue`` is informational;
-    it is not used as a replacement for the non-standard DF critical-value
-    decision rule taught in the course.
-    """
+    """Unified EViews-style unit-root result."""
 
     test: str
     statistic: float
@@ -72,15 +66,16 @@ class UnitRootResult:
 
     @property
     def decision_rule(self) -> str:
-        """Return the exact inequality used for the DF/ADF decision."""
-        critical = self.critical_values[self._level_key]
-        return f"Reject H0 when test statistic < {critical:.6f}."
+        """Return the inequality used by the test's critical-value decision rule."""
+        if self.test == "KPSS Test":
+            return f"Reject H0 when test statistic > {self.critical_value:.6f}."
+        return f"Reject H0 when test statistic < {self.critical_value:.6f}."
 
     @property
     def _level_key(self) -> str:
         """Return the critical-value key corresponding to the decision level."""
         mapping = {0.01: "1%", 0.05: "5%", 0.10: "10%"}
-        return min(mapping, key=lambda value: abs(value - self.alpha))
+        return mapping[self.alpha]
 
     @property
     def critical_value(self) -> float:
@@ -127,7 +122,7 @@ class UnitRootResult:
         lines.extend(
             [
                 "",
-                "Dickey-Fuller critical values:",
+                "Critical values:",
                 *[f"{level}: {value:.6f}" for level, value in self.critical_values.items()],
                 "",
                 f"Decision level: {critical_key}",
@@ -232,13 +227,7 @@ def adf(
     autolag: str | None = "AIC",
     alpha: float = 0.05,
 ) -> UnitRootResult:
-    """Run an ADF test under one of the course's three deterministic models.
-
-    ``n`` is Model 1 (no constant/no trend), ``c`` is Model 2 (constant),
-    and ``ct`` is Model 3 (constant + deterministic trend).  Decisions use
-    the regression-specific Dickey-Fuller critical values returned for that
-    specification; ordinary Student-t/normal critical values are not used.
-    """
+    """Run an ADF test under one of the course's three deterministic models."""
     x = _values(y)
     if regression not in DF_SPECIFICATIONS:
         raise ValueError("regression must be 'n', 'c', or 'ct'")
@@ -284,6 +273,16 @@ def adf(
     )
 
 
+def dickey_fuller(
+    y: TimeSeries | Iterable[float],
+    *,
+    regression: DFRegression = "c",
+    alpha: float = 0.05,
+) -> UnitRootResult:
+    """Run the original Dickey-Fuller test with no augmented lagged differences."""
+    return adf(y, regression=regression, lags=0, autolag=None, alpha=alpha)
+
+
 def dickey_fuller_sequential(
     y: TimeSeries | Iterable[float],
     *,
@@ -291,13 +290,7 @@ def dickey_fuller_sequential(
     autolag: str | None = "AIC",
     alpha: float = 0.05,
 ) -> SequentialDFResult:
-    """Apply the course's sequential Model 3 → Model 2 → Model 1 DF/ADF workflow.
-
-    The procedure evaluates the trend/intercept specification first. If the
-    unit-root null is rejected there, Model 3 is selected. Otherwise the test
-    proceeds to Model 2, then Model 1. Every step keeps its own regression-
-    specific non-standard Dickey-Fuller critical values.
-    """
+    """Apply the course's sequential Model 3 → Model 2 → Model 1 DF/ADF workflow."""
     _validate_alpha(alpha)
     models = (
         adf(y, regression="ct", lags=max_lags, autolag=autolag, alpha=alpha),
@@ -383,6 +376,7 @@ def phillips_perron(
         raise ImportError("Phillips-Perron requires the optional 'arch' dependency. Install with: pip install arch") from exc
     test = PhillipsPerron(x, trend=trend, lags=lags)
     critical = {str(k): float(v) for k, v in test.critical_values.items()}
+    decision = _decision(float(test.stat), critical, 0.05)
     return UnitRootResult(
         "Phillips-Perron Test",
         float(test.stat),
@@ -393,9 +387,9 @@ def phillips_perron(
         int(test.nobs),
         "The series contains a unit root.",
         "The series is stationary.",
-        _decision(float(test.stat), critical, 0.05),
+        decision,
         0.05,
-        "Reject the unit-root null at 5%; evidence favors stationarity." if test.stat < critical.get("5%", np.inf) else "Do not reject the unit-root null at 5%; evidence favors non-stationarity.",
+        "Reject the unit-root null at 5%; evidence favors stationarity." if decision == "reject" else "Do not reject the unit-root null at 5%; evidence favors non-stationarity.",
         critical_value_source="Phillips-Perron critical values",
         specification_label=f"Phillips-Perron trend={trend}",
     )
