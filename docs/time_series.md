@@ -69,16 +69,16 @@ The result layer exposes coefficients, standard errors, t-statistics, p-values, 
 The Dickey-Fuller/ADF implementation follows the course convention of treating deterministic specifications separately:
 
 ```text
-Model 3: constant + deterministic trend
-Model 2: constant, no trend
-Model 1: no constant, no trend
+Model 3: ΔYt = α + βt + γYt-1 + ΣφiΔYt-i + εt
+Model 2: ΔYt = α + γYt-1 + ΣφiΔYt-i + εt
+Model 1: ΔYt = γYt-1 + ΣφiΔYt-i + εt
 ```
 
-The ADF regression tests the coefficient on the lagged level:
+The ADF root test is:
 
 ```text
-H0: gamma = 0   -> unit root / non-stationarity
-H1: gamma < 0   -> stationarity under the selected deterministic specification
+H0: γ = 0   -> unit root / non-stationarity
+H1: γ < 0   -> stationarity under the selected deterministic specification
 ```
 
 Example:
@@ -94,29 +94,86 @@ print(model3.interpret())
 
 ### Non-standard Dickey-Fuller critical values
 
-The decision is **not** made by comparing the ADF statistic with an ordinary Student-t or normal critical value. StochX uses the critical values associated with the selected deterministic specification and compares:
+The decision is **not** made by comparing the DF/ADF statistic with an ordinary Student-t or normal critical value. StochX uses the critical values associated with the selected deterministic specification and compares:
 
 ```text
-Reject H0 when ADF statistic < the corresponding DF critical value.
+Reject H0 when the DF/ADF statistic < the corresponding non-standard DF critical value.
 ```
 
-The reported p-value is retained for reference, but it is explicitly labelled informational and is not used to replace the course's critical-value decision rule.
+The reported p-value is retained for reference, but is explicitly labelled informational and is not used to replace the course's critical-value decision rule.
 
-### Sequential workflow
+### Common ADF lag order
+
+The course first chooses the number of lagged differences required to control autocorrelation in the innovations. StochX selects that lag order once and then applies the same `p` to Models 3, 2, and 1.
 
 ```python
 report = dickey_fuller_sequential(
     wf["GDP"],
-    max_lags=2,
-    autolag=None,
+    max_lags=8,
+    autolag="AIC",
     alpha=0.05,
 )
+```
 
-print(report.summary())
+With `autolag=None`, `max_lags` is treated as the fixed common lag order. With an information criterion, the order is selected on Model 3 and then held fixed for the sequential specification tests.
+
+### Course-faithful sequential decision tree
+
+The workflow is not simply “stop at the first unit-root rejection”. It follows the conditional specification logic taught in the course:
+
+```text
+MODEL 3: constant + trend
+       |
+       +-- test γ = 0 with DF critical values
+       |
+       +-- reject H0
+       |     |
+       |     +-- test β = 0 with a standard two-sided critical value
+       |           |
+       |           +-- β significant -> retain Model 3 / TS
+       |           +-- β not significant -> continue to Model 2
+       |
+       +-- do not reject H0
+             |
+             +-- test H3,0: γ = 0 and β = 0 with non-standard F3 critical values
+                   |
+                   +-- reject H3,0 -> integrated Model 3 case
+                   +-- do not reject -> continue to Model 2
+
+MODEL 2: constant
+       |
+       +-- test γ = 0 with DF critical values
+       |
+       +-- reject H0
+       |     |
+       |     +-- test α = 0 with a standard two-sided critical value
+       |           |
+       |           +-- α significant -> retain Model 2 / TS
+       |           +-- α not significant -> continue to Model 1
+       |
+       +-- do not reject H0
+             |
+             +-- test H2,0: γ = 0 and α = 0 with non-standard F2 critical values
+                   |
+                   +-- reject H2,0 -> integrated Model 2 case
+                   +-- do not reject -> continue to Model 1
+
+MODEL 1: no constant, no trend
+       |
+       +-- test γ = 0 with Model 1 DF critical values
+       +-- reject -> stationary around zero
+       +-- do not reject -> difference-stationary / integrated candidate
+```
+
+The joint F decisions deliberately do **not** use ordinary Fisher p-values. StochX uses the non-standard F2/F3 critical values from the USTHB course tables and reports their source in the result object.
+
+### Unified Stage 7 results
+
+```python
 print(report.table())
+print(report.specification_table())
+print(report.summary())
 print(report.interpret())
 ```
 
-The workflow evaluates Model 3 first. If the unit-root null is not rejected, it proceeds to Model 2; if it is still not rejected, it proceeds to Model 1. Each model keeps its own regression-specific critical values and decision rule.
-
-The unified sequential table contains the test statistic, information p-value, 1%, 5%, and 10% critical values, and the decision at each specification.
+The main table reports each Model 3/2/1 DF/ADF statistic, p-value, 1%, 5%, and 10% critical values, lag order, and decision. The specification table reports the conditional trend/constant tests and the non-standard F3/F2 joint tests used by the decision tree.
