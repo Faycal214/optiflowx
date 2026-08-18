@@ -64,14 +64,59 @@ print(result.interpret())
 
 The result layer exposes coefficients, standard errors, t-statistics, p-values, information criteria, fitted values, residuals, forecasts, stability checks, and residual diagnostics where supported by the model.
 
-## Stationarity
+## Stationarity and Stage 7 — DF / ADF
 
-```python
-from stochx.timeseries import adf
+The Dickey-Fuller/ADF implementation follows the course convention of treating deterministic specifications separately:
 
-result = adf(wf["GDP"], regression="ct", lags=2, autolag=None)
-print(result.summary())
-print(result.interpret())
+```text
+Model 3: constant + deterministic trend
+Model 2: constant, no trend
+Model 1: no constant, no trend
 ```
 
-The deterministic specifications follow the course convention: no constant, constant, and constant plus trend. The sequential workflow is available through `dickey_fuller_sequential`.
+The ADF regression tests the coefficient on the lagged level:
+
+```text
+H0: gamma = 0   -> unit root / non-stationarity
+H1: gamma < 0   -> stationarity under the selected deterministic specification
+```
+
+Example:
+
+```python
+from stochx.timeseries import adf, dickey_fuller_sequential
+
+model3 = adf(wf["GDP"], regression="ct", lags=2, autolag=None)
+print(model3.summary())
+print(model3.table())
+print(model3.interpret())
+```
+
+### Non-standard Dickey-Fuller critical values
+
+The decision is **not** made by comparing the ADF statistic with an ordinary Student-t or normal critical value. StochX uses the critical values associated with the selected deterministic specification and compares:
+
+```text
+Reject H0 when ADF statistic < the corresponding DF critical value.
+```
+
+The reported p-value is retained for reference, but it is explicitly labelled informational and is not used to replace the course's critical-value decision rule.
+
+### Sequential workflow
+
+```python
+report = dickey_fuller_sequential(
+    wf["GDP"],
+    max_lags=2,
+    autolag=None,
+    alpha=0.05,
+)
+
+print(report.summary())
+print(report.table())
+print(report.interpret())
+```
+
+The workflow evaluates Model 3 first. If the unit-root null is not rejected, it proceeds to Model 2; if it is still not rejected, it proceeds to Model 1. Each model keeps its own regression-specific critical values and decision rule.
+
+The unified sequential table contains the test statistic, information p-value, 1%, 5%, and 10% critical values, and the decision at each specification.
