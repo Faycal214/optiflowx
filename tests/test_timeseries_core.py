@@ -41,12 +41,55 @@ def test_workfile_and_sample_workflow():
     assert wf.sample.stop == 41
 
 
+def test_eviews_expression_and_generation_workflow():
+    x = np.linspace(1.0, 50.0, 50)
+    y = 2.0 + 0.5 * x
+    wf = Workfile()
+    wf.add("X", x)
+    wf.add("Y", y)
+
+    assert wf.eval("X").nobs == 50
+    assert wf.eval("X(-1)").nmissing == 1
+    assert np.isnan(wf.eval("X(-1)").values[0])
+    assert wf.eval("X(1)").nmissing == 1
+    assert wf.eval("D(X)").nobs == 49
+    assert wf.eval("DLOG(X)").nobs == 49
+    assert np.isclose(wf.eval("@mean(X)"), np.mean(x))
+    assert np.isclose(wf.eval("@var(X)"), np.var(x, ddof=1))
+
+    dx = wf.generate("DX", "D(X)")
+    assert dx.nobs == 50
+    assert dx.nmissing == 1
+    assert np.allclose(dx.values[1:], np.diff(x))
+
+
+def test_eviews_style_equation_and_unified_results():
+    x = np.arange(1.0, 101.0)
+    y = 3.0 + 2.0 * x + np.sin(x)
+    wf = Workfile()
+    wf.add("X", x)
+    wf.add("Y", y)
+
+    result = wf.ls("Y C X", name="EQ01")
+    assert result.nobs == 100
+    assert {"Coefficient", "Std. Error", "t-Statistic", "Prob."}.issubset(result.table().columns)
+    assert "Equation: EQ01" in result.summary()
+    interpretation = result.interpret()
+    assert "statistically significant" in interpretation
+
+    lagged = wf.ls("Y C X(-1)", name="EQ02")
+    assert lagged.nobs == 99
+    assert "X(-1)" in lagged.table().index
+
+
 def test_simulation_and_identification_pipeline():
     y = ar(1, [0.6], 250, rng=0)
     ident = identify(y, nlags=12)
     assert ident["ACF"].nobs == 250
     result = estimate(y, p=1, d=0, q=0)
     assert result.params is not None
+    assert hasattr(result, "table")
+    assert hasattr(result, "interpret")
     corr = correlogram(y, nlags=12)
     assert {"AC", "PAC", "Q-Stat", "Prob."}.issubset(corr.columns)
 
