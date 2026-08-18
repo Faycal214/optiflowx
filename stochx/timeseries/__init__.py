@@ -6,6 +6,7 @@ stationarity, identification, estimation, validation and forecasting.
 """
 
 from .correlation import ACFResult, PACFResult, acf, pacf
+from .correlogram import correlogram
 from .decomposition import (
     DecompositionResult,
     decompose,
@@ -36,14 +37,15 @@ from .diagnostics import (
 from .forecasting import ForecastMetrics, drift_forecast, metrics, naive_forecast, prediction_interval, restore_differences
 from .identification import grid_search, identify
 from .models import TSResult, estimate, fit_ar, fit_arima, fit_arma, fit_ma, fit_sarima
+from .plotting import plot_correlogram, plot_decomposition, plot_forecast, plot_series
 from .regression import RegressionResult, ols, trend_terms
 from .series import TimeSeries
 from .simulation import ar, arma, ma, random_walk, sarma, simulate_process, white_noise
 from .stationarity import UnitRootResult, adf, classify_ts_ds, dickey_fuller_sequential, difference, kpss_test, phillips_perron, trend_regression
-from .plotting import plot_correlogram, plot_decomposition, plot_forecast, plot_series
+from .workfile import Workfile
 
 __all__ = [
-    "TimeSeries", "ACFResult", "PACFResult", "acf", "pacf",
+    "TimeSeries", "Workfile", "ACFResult", "PACFResult", "acf", "pacf", "correlogram",
     "UnitRootResult", "adf", "kpss_test", "phillips_perron", "dickey_fuller_sequential", "classify_ts_ds", "difference", "trend_regression",
     "DecompositionResult", "moving_average", "weighted_moving_average", "exponential_smoothing", "holt", "holt_winters", "decompose", "seasonal_difference", "seasonal_indices", "fisher_seasonality_test",
     "TSResult", "fit_ar", "fit_ma", "fit_arma", "fit_arima", "fit_sarima", "estimate",
