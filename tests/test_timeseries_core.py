@@ -8,6 +8,7 @@ from stochx.timeseries import (
     ar,
     correlogram,
     difference,
+    dickey_fuller,
     dickey_fuller_sequential,
     estimate,
     fisher_seasonality_test,
@@ -95,6 +96,15 @@ def test_simulation_and_identification_pipeline():
     assert hasattr(result, "interpret")
     corr = correlogram(y, nlags=12)
     assert {"AC", "PAC", "Q-Stat", "Prob."}.issubset(corr.columns)
+
+
+def test_dickey_fuller_is_unaugmented():
+    y = TimeSeries(random_walk(180, rng=3), name="Y")
+    result = dickey_fuller(y, regression="c", alpha=0.05)
+    assert result.test == "Augmented Dickey-Fuller Test"
+    assert result.lags == 0
+    assert result.regression == "c"
+    assert result.critical_value == result.critical_values["5%"]
 
 
 def test_adf_uses_regression_specific_nonstandard_critical_values():
