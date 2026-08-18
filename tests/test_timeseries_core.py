@@ -55,6 +55,9 @@ def test_stationarity_and_forecast_metrics():
     y = random_walk(120, rng=0)
     result = adf(y, regression="c", lags=1, autolag=None)
     assert np.isfinite(result.statistic)
+    assert result.pvalue is not None
+    assert {"1%", "5%", "10%"}.issubset(result.critical_values)
+    assert "Augmented Dickey-Fuller Test" in result.summary()
     assert difference(y, 1).nobs == 119
     ma = moving_average(y, 5)
     assert ma.nobs == 120
