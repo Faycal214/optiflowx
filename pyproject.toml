@@ -6,23 +6,28 @@ build-backend = "hatchling.build"
 name = "stochx"
 dynamic = ["version"]
 requires-python = ">=3.10"
-description = "A Python library for stochastic-process analysis, simulation, and finite-probability objects."
+description = "A Python library for stochastic-process analysis, time-series modelling, simulation, and forecasting."
 readme = "README.md"
 authors = [{ name = "Alikacem Faycal", email = "faycal213.dz@gmail.com" }]
 license = { text = "MIT" }
-dependencies = ["numpy", "scipy"]
+dependencies = [
+  "numpy",
+  "scipy",
+  "pandas",
+  "statsmodels",
+  "matplotlib",
+]
 keywords = [
   "stochastic processes",
   "probability",
-  "discrete-time Markov chains",
-  "continuous-time Markov chains",
-  "Poisson process",
-  "birth-death process",
-  "conditional expectation",
-  "martingales",
-  "stopping times",
-  "uniformization",
-  "stochastic simulation",
+  "time series",
+  "ARMA",
+  "ARIMA",
+  "SARIMA",
+  "forecasting",
+  "econometrics",
+  "simulation",
+  "Markov chains",
 ]
 
 classifiers = [
@@ -47,6 +52,7 @@ Issues = "https://github.com/Faycal214/stochx/issues"
 Changelog = "https://github.com/Faycal214/stochx/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
+timeseries = ["arch"]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
@@ -55,6 +61,7 @@ dev = [
     "mypy>=1.5",
     "build",
     "twine",
+    "arch",
 ]
 
 docs = [
