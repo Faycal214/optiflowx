@@ -20,14 +20,14 @@ from .regression import RegressionResult, ols, trend_terms
 from .results import ResultTable, UnifiedResult
 from .series import TimeSeries
 from .simulation import ar, arma, ma, random_walk, sarma, simulate_process, white_noise
-from .stationarity import UnitRootResult, adf, classify_ts_ds, dickey_fuller_sequential, difference, kpss_test, phillips_perron, trend_regression
+from .stationarity import DF_SPECIFICATIONS, SequentialDFResult, UnitRootResult, adf, classify_ts_ds, dickey_fuller_sequential, difference, kpss_test, phillips_perron, trend_regression
 from .theory import inverse_ar_coefficients, impulse_response, is_invertible_ma, is_stationary_ar, polynomial_roots, process_mean, theoretical_ar_acf, theoretical_ma_acf
 from .workfile import Workfile
 
 __all__ = [
     "TimeSeries", "Workfile", "Expression", "ExpressionError", "evaluate", "Equation", "EquationResult", "UnifiedResult", "ResultTable",
     "ACFResult", "PACFResult", "acf", "pacf", "correlogram",
-    "UnitRootResult", "adf", "kpss_test", "phillips_perron", "dickey_fuller_sequential", "classify_ts_ds", "difference", "trend_regression",
+    "DF_SPECIFICATIONS", "UnitRootResult", "SequentialDFResult", "adf", "kpss_test", "phillips_perron", "dickey_fuller_sequential", "classify_ts_ds", "difference", "trend_regression",
     "DecompositionResult", "moving_average", "weighted_moving_average", "exponential_smoothing", "holt", "holt_winters", "decompose", "seasonal_difference", "seasonal_indices", "fisher_seasonality_test",
     "TSResult", "fit_ar", "fit_ma", "fit_arma", "fit_arima", "fit_sarima", "estimate",
     "identify", "grid_search",
