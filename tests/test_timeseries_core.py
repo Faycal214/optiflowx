@@ -1,11 +1,14 @@
 import numpy as np
 
 from stochx.timeseries import (
+    DF_SPECIFICATIONS,
+    SequentialDFResult,
     TimeSeries,
     adf,
     ar,
     correlogram,
     difference,
+    dickey_fuller_sequential,
     estimate,
     fisher_seasonality_test,
     identify,
@@ -92,6 +95,47 @@ def test_simulation_and_identification_pipeline():
     assert hasattr(result, "interpret")
     corr = correlogram(y, nlags=12)
     assert {"AC", "PAC", "Q-Stat", "Prob."}.issubset(corr.columns)
+
+
+def test_adf_uses_regression_specific_nonstandard_critical_values():
+    y = TimeSeries(random_walk(200, rng=11), name="Y")
+    for regression in ("ct", "c", "n"):
+        result = adf(y, regression=regression, lags=1, autolag=None, alpha=0.05)
+        assert result.regression == regression
+        assert result.specification_label == DF_SPECIFICATIONS[regression]["label"]
+        assert {"1%", "5%", "10%"}.issubset(result.critical_values)
+        assert result.critical_value == result.critical_values["5%"]
+        assert result.decision in {"reject", "fail_to_reject"}
+        expected = "reject" if result.statistic < result.critical_values["5%"] else "fail_to_reject"
+        assert result.decision == expected
+        assert "ordinary" not in result.decision_rule.lower()
+        assert "Null hypothesis" in result.summary()
+        assert "Decision rule" in result.summary()
+        assert "not the decision rule" in result.summary()
+
+
+def test_adf_summary_exposes_course_hypotheses_and_interpretation():
+    y = TimeSeries(np.ones(120) + np.linspace(0.0, 1.0, 120), name="Y")
+    result = adf(y, regression="c", lags=1, autolag=None)
+    assert "γ = 0" in result.null_hypothesis
+    assert "γ < 0" in result.alternative_hypothesis
+    assert result.interpret() == result.conclusion
+    table = result.table()
+    assert {"Test Statistic", "Prob.*", "Critical Value", "Decision"}.issubset(table.columns)
+
+
+def test_sequential_df_adf_runs_model_3_model_2_model_1_and_selects_first_rejection():
+    stationary = TimeSeries(np.random.default_rng(7).normal(size=300), name="Y")
+    result = dickey_fuller_sequential(stationary, max_lags=1, autolag=None, alpha=0.05)
+    assert isinstance(result, SequentialDFResult)
+    assert [item.regression for item in result.tests] == ["ct", "c", "n"]
+    assert result.selected in result.tests
+    assert len(result.table()) == 3
+    assert {"ADF Statistic", "1% CV", "5% CV", "10% CV", "Decision"}.issubset(result.table().columns)
+    assert "Model 3" in result.summary()
+    assert "Model 2" in result.summary()
+    assert "Model 1" in result.summary()
+    assert result.interpret()
 
 
 def test_stationarity_and_forecast_metrics():
