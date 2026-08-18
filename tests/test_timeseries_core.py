@@ -5,7 +5,6 @@ from stochx.timeseries import (
     adf,
     ar,
     correlogram,
-    decompose,
     difference,
     estimate,
     fisher_seasonality_test,
@@ -30,13 +29,14 @@ def test_series_transformations_and_correlation():
     assert y.pacf(12).lags[-1] == 12
 
 
-def test_workfile_and_course_transforms():
+def test_workfile_and_sample_workflow():
     y = TimeSeries(np.arange(1.0, 51.0), name="Y", frequency="M")
+    dy = TimeSeries(np.r_[np.nan, np.diff(y.values)], name="D_Y", frequency="M")
     wf = Workfile()
     wf.add("Y", y.values)
-    wf.add("D_Y", y.diff().values)
+    wf.add("D_Y", dy.values)
     wf.set_sample(5, 40)
-    assert wf["Y"].nobs == 50
+    assert wf.nobs == 50
     assert wf.sample.start == 5
     assert wf.sample.stop == 41
 
@@ -51,7 +51,7 @@ def test_simulation_and_identification_pipeline():
     assert {"AC", "PAC", "Q-Stat", "Prob."}.issubset(corr.columns)
 
 
-def test_stationarity_decomposition_and_forecast_metrics():
+def test_stationarity_and_forecast_metrics():
     y = random_walk(120, rng=0)
     result = adf(y, regression="c", lags=1, autolag=None)
     assert np.isfinite(result.statistic)
