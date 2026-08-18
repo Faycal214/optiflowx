@@ -213,6 +213,20 @@ class TimeSeries:
             lines.insert(2, f"Frequency:             {self.frequency}")
         return "\n".join(lines)
 
+    def acf(self, nlags: int | None = None, *, alpha: float = 0.05):
+        """Estimate and return the sample autocorrelation function."""
+
+        from .correlation import acf
+
+        return acf(self, nlags=nlags, alpha=alpha)
+
+    def pacf(self, nlags: int | None = None, *, alpha: float = 0.05):
+        """Estimate and return the sample partial autocorrelation function."""
+
+        from .correlation import pacf
+
+        return pacf(self, nlags=nlags, alpha=alpha)
+
     def __repr__(self) -> str:
         return (
             f"TimeSeries(name={self.name!r}, nobs={self.nobs}, "
