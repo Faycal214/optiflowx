@@ -47,6 +47,10 @@ class UnitRootResult:
         lines.append(f"Conclusion: {self.conclusion}")
         return "\n".join(lines)
 
+    def interpret(self) -> str:
+        """Return the course-oriented interpretation of the test decision."""
+        return self.conclusion
+
 
 def _values(y: TimeSeries | Iterable[float]) -> np.ndarray:
     x = np.asarray(y.values if isinstance(y, TimeSeries) else list(y), dtype=float).reshape(-1)
@@ -66,18 +70,14 @@ def adf(
     autolag: str | None = "AIC",
     alpha: float = 0.05,
 ) -> UnitRootResult:
-    """Run the Augmented Dickey-Fuller test with configurable deterministic terms.
-
-    ``regression`` follows the three course specifications: ``n`` (no
-    constant), ``c`` (constant), and ``ct`` (constant plus trend).  Lagged
-    differences can be selected explicitly or by an information criterion,
-    following the course strategy for whitening the innovations.
-    """
+    """Run the Augmented Dickey-Fuller test with configurable deterministic terms."""
     x = _values(y)
     if regression not in {"n", "c", "ct"}:
         raise ValueError("regression must be 'n', 'c', or 'ct'")
     if lags is not None and (not isinstance(lags, int) or lags < 0):
         raise ValueError("lags must be a non-negative integer or None")
+    if not 0 < alpha < 1:
+        raise ValueError("alpha must lie strictly between 0 and 1")
     result = adfuller(x, regression=regression, maxlag=lags, autolag=autolag)
     if len(result) == 5:
         statistic, pvalue, usedlag, nobs, critical = result
