@@ -1,9 +1,9 @@
 """Stationarity, unit-root, TS/DS and differencing diagnostics.
 
-The DF/ADF workflow follows the course convention of testing the three
-possible deterministic specifications separately and making decisions from
-the regression-specific Dickey-Fuller critical values rather than ordinary
-Student-t / normal critical values.
+The DF/ADF implementation follows the USTHB course workflow: select a common
+ADF lag order, test Model 3 -> Model 2 -> Model 1, validate deterministic
+terms conditionally, and use specification-specific non-standard
+Dickey-Fuller critical values for unit-root and joint F decisions.
 """
 
 from __future__ import annotations
@@ -13,18 +13,74 @@ from typing import Iterable, Literal
 
 import numpy as np
 import pandas as pd
+from scipy import stats
 from statsmodels.tsa.stattools import adfuller, kpss
 
 from .series import TimeSeries
 
 
 DFRegression = Literal["n", "c", "ct"]
+Decision = Literal["reject", "fail_to_reject"]
 
 DF_SPECIFICATIONS: dict[str, dict[str, str]] = {
-    "n": {"label": "Model 1 — No constant, no trend", "equation": "ΔYₜ = γYₜ₋₁ + ΣφᵢΔYₜ₋ᵢ + εₜ", "deterministic_terms": "none"},
-    "c": {"label": "Model 2 — Constant, no trend", "equation": "ΔYₜ = α + γYₜ₋₁ + ΣφᵢΔYₜ₋ᵢ + εₜ", "deterministic_terms": "constant"},
-    "ct": {"label": "Model 3 — Constant and deterministic trend", "equation": "ΔYₜ = α + βt + γYₜ₋₁ + ΣφᵢΔYₜ₋ᵢ + εₜ", "deterministic_terms": "constant + trend"},
+    "n": {
+        "label": "Model 1 — No constant, no trend",
+        "equation": "ΔYₜ = γYₜ₋₁ + ΣφᵢΔYₜ₋ᵢ + εₜ",
+        "deterministic_terms": "none",
+    },
+    "c": {
+        "label": "Model 2 — Constant, no trend",
+        "equation": "ΔYₜ = α + γYₜ₋₁ + ΣφᵢΔYₜ₋ᵢ + εₜ",
+        "deterministic_terms": "constant",
+    },
+    "ct": {
+        "label": "Model 3 — Constant and deterministic trend",
+        "equation": "ΔYₜ = α + βt + γYₜ₋₁ + ΣφᵢΔYₜ₋ᵢ + εₜ",
+        "deterministic_terms": "constant + trend",
+    },
 }
+
+# Values reproduced from the USTHB DF critical-value tables cited in the course.
+# Rows are the tabulated sample sizes 50, 100, 250 and asymptotic infinity.
+DF_F_CRITICAL_VALUES: dict[str, dict[int | str, dict[str, float]]] = {
+    "F2": {
+        50: {"10%": 3.94, "5%": 4.86, "1%": 7.06},
+        100: {"10%": 3.86, "5%": 4.71, "1%": 6.70},
+        250: {"10%": 3.81, "5%": 4.63, "1%": 6.52},
+        "inf": {"10%": 3.78, "5%": 4.59, "1%": 6.43},
+    },
+    "F3": {
+        50: {"10%": 5.61, "5%": 6.73, "1%": 9.31},
+        100: {"10%": 5.47, "5%": 6.49, "1%": 8.73},
+        250: {"10%": 5.39, "5%": 6.34, "1%": 8.43},
+        "inf": {"10%": 5.34, "5%": 6.25, "1%": 8.27},
+    },
+}
+
+
+@dataclass(frozen=True)
+class SpecificationTestResult:
+    """Standard or Dickey-Fuller-specific test used to validate deterministic terms."""
+
+    name: str
+    null_hypothesis: str
+    alternative_hypothesis: str
+    statistic: float
+    critical_value: float
+    decision: Decision
+    alpha: float
+    source: str
+    detail: str = ""
+
+    @property
+    def rejects_null(self) -> bool:
+        return self.decision == "reject"
+
+    def summary(self) -> str:
+        return (
+            f"{self.name}: statistic={self.statistic:.6f}, critical={self.critical_value:.6f}, "
+            f"decision={'Reject H0' if self.rejects_null else 'Do not reject H0'}; {self.detail}"
+        )
 
 
 @dataclass(frozen=True)
@@ -40,50 +96,52 @@ class UnitRootResult:
     nobs: int
     null_hypothesis: str
     alternative_hypothesis: str
-    decision: Literal["reject", "fail_to_reject"]
+    decision: Decision
     alpha: float
     conclusion: str
     critical_value_source: str = "Regression-specific Dickey-Fuller critical values"
     specification_label: str = ""
+    coefficient: float | None = None
+    coefficient_name: str = "γ"
+    coefficient_tvalue: float | None = None
+    coefficient_pvalue: float | None = None
 
     @property
     def rejects_null(self) -> bool:
-        """Whether the unit-root null is rejected at the requested level."""
         return self.decision == "reject"
 
     @property
     def decision_rule(self) -> str:
-        """Return the inequality used by the test's critical-value decision rule."""
         if self.test == "KPSS Test":
             return f"Reject H0 when test statistic > {self.critical_value:.6f}."
         return f"Reject H0 when test statistic < {self.critical_value:.6f}."
 
     @property
     def _level_key(self) -> str:
-        """Return the critical-value key corresponding to the decision level."""
         return {0.01: "1%", 0.05: "5%", 0.10: "10%"}[self.alpha]
 
     @property
     def critical_value(self) -> float:
-        """Return the critical value used by the decision."""
         return float(self.critical_values[self._level_key])
 
     def table(self) -> pd.DataFrame:
-        """Return the unified single-test result table."""
-        return pd.DataFrame([{
-            "Test": self.test,
-            "Specification": self.specification_label or self.regression,
-            "Regression": self.regression,
-            "Lagged differences": self.lags,
-            "Observations": self.nobs,
-            "Test Statistic": self.statistic,
-            "Prob.*": self.pvalue,
-            "Critical Value": self.critical_value,
-            "Decision": "Reject H0" if self.rejects_null else "Do not reject H0",
-        }])
+        return pd.DataFrame(
+            [
+                {
+                    "Test": self.test,
+                    "Specification": self.specification_label or self.regression,
+                    "Regression": self.regression,
+                    "Lagged differences": self.lags,
+                    "Observations": self.nobs,
+                    "Test Statistic": self.statistic,
+                    "Prob.*": self.pvalue,
+                    "Critical Value": self.critical_value,
+                    "Decision": "Reject H0" if self.rejects_null else "Do not reject H0",
+                }
+            ]
+        )
 
     def summary(self) -> str:
-        """Render an EViews-style hypothesis/decision report."""
         lines = [
             f"{self.test}",
             "=" * 76,
@@ -96,47 +154,53 @@ class UnitRootResult:
             f"Null hypothesis (H0): {self.null_hypothesis}",
             f"Alternative (H1): {self.alternative_hypothesis}",
             "",
+            f"Coefficient: {self.coefficient_name} = {self.coefficient:.6f}" if self.coefficient is not None else "",
+            f"Coefficient t-statistic: {self.coefficient_tvalue:.6f}" if self.coefficient_tvalue is not None else "",
+            "",
             f"Test statistic: {self.statistic:.6f}",
         ]
         if self.pvalue is not None and np.isfinite(self.pvalue):
             lines.append(f"Prob.*: {self.pvalue:.6f}  [informational; not the decision rule]")
-        lines.extend([
-            "",
-            "Critical values:",
-            *[f"{level}: {value:.6f}" for level, value in self.critical_values.items()],
-            "",
-            f"Decision level: {self._level_key}",
-            f"Decision rule: {self.decision_rule}",
-            f"Critical-value source: {self.critical_value_source}",
-            f"Decision: {'Reject H0' if self.rejects_null else 'Do not reject H0'}",
-            f"Conclusion: {self.conclusion}",
-        ])
-        return "\n".join(lines)
+        lines.extend(
+            [
+                "",
+                "Critical values:",
+                *[f"{level}: {value:.6f}" for level, value in self.critical_values.items()],
+                "",
+                f"Decision level: {self._level_key}",
+                f"Decision rule: {self.decision_rule}",
+                f"Critical-value source: {self.critical_value_source}",
+                f"Decision: {'Reject H0' if self.rejects_null else 'Do not reject H0'}",
+                f"Conclusion: {self.conclusion}",
+            ]
+        )
+        return "\n".join(line for line in lines if line != "")
 
     def interpret(self) -> str:
-        """Return the course-oriented interpretation of the test decision."""
         return self.conclusion
 
 
 @dataclass(frozen=True)
 class SequentialDFResult:
-    """Structured result for the course's Model 3 → Model 2 → Model 1 workflow."""
+    """Complete USTHB Model 3 -> Model 2 -> Model 1 DF/ADF decision tree."""
 
     tests: tuple[UnitRootResult, ...]
     selected: UnitRootResult
     nature: str
     selection_rule: str
+    lag_order: int
+    lag_selection_method: str
+    specification_tests: tuple[SpecificationTestResult, ...] = ()
 
     @property
     def rejected_at_selected_specification(self) -> bool:
-        """Whether the selected specification rejects the unit-root null."""
         return self.selected.rejects_null
 
     def table(self) -> pd.DataFrame:
-        """Return a comparison table for all DF/ADF deterministic specifications."""
         rows = []
+        spec_map = {item.name: item for item in self.specification_tests}
         for result in self.tests:
-            rows.append({
+            row = {
                 "Model": result.specification_label,
                 "Regression": result.regression,
                 "Deterministic terms": DF_SPECIFICATIONS[result.regression]["deterministic_terms"],
@@ -148,27 +212,70 @@ class SequentialDFResult:
                 "5% CV": result.critical_values.get("5%", np.nan),
                 "10% CV": result.critical_values.get("10%", np.nan),
                 "Decision": "Reject H0" if result.rejects_null else "Do not reject H0",
-            })
+            }
+            if result.regression == "ct" and "Model 3 trend test" in spec_map:
+                spec = spec_map["Model 3 trend test"]
+                row["Deterministic test"] = spec.name
+                row["Deterministic statistic"] = spec.statistic
+                row["Deterministic critical"] = spec.critical_value
+                row["Deterministic decision"] = "Reject H0" if spec.rejects_null else "Do not reject H0"
+            elif result.regression == "c" and "Model 2 constant test" in spec_map:
+                spec = spec_map["Model 2 constant test"]
+                row["Deterministic test"] = spec.name
+                row["Deterministic statistic"] = spec.statistic
+                row["Deterministic critical"] = spec.critical_value
+                row["Deterministic decision"] = "Reject H0" if spec.rejects_null else "Do not reject H0"
+            rows.append(row)
         return pd.DataFrame(rows)
 
+    def specification_table(self) -> pd.DataFrame:
+        return pd.DataFrame(
+            [
+                {
+                    "Test": item.name,
+                    "Null": item.null_hypothesis,
+                    "Alternative": item.alternative_hypothesis,
+                    "Statistic": item.statistic,
+                    "Critical Value": item.critical_value,
+                    "Decision": "Reject H0" if item.rejects_null else "Do not reject H0",
+                    "Source": item.source,
+                }
+                for item in self.specification_tests
+            ]
+        )
+
     def summary(self) -> str:
-        """Render an EViews-style sequential DF/ADF report."""
-        return "\n".join([
+        sections = [
             "Dickey-Fuller / Augmented Dickey-Fuller Sequential Test",
             "=" * 76,
             "Course workflow: Model 3 → Model 2 → Model 1",
+            f"Common lag order: p = {self.lag_order} ({self.lag_selection_method})",
             "",
             self.table().to_string(index=False, float_format=lambda value: f"{value:.6f}"),
-            "",
-            f"Selected specification: {self.selected.specification_label}",
-            f"Selection rule: {self.selection_rule}",
-            f"Series classification: {self.nature}",
-            f"Interpretation: {self.selected.conclusion}",
-        ])
+        ]
+        if self.specification_tests:
+            sections.extend(["", "Conditional specification tests:", self.specification_table().to_string(index=False)])
+        sections.extend(
+            [
+                "",
+                f"Selected specification: {self.selected.specification_label}",
+                f"Selection rule: {self.selection_rule}",
+                f"Series classification: {self.nature}",
+                f"Interpretation: {self.interpret()}",
+            ]
+        )
+        return "\n".join(sections)
 
     def interpret(self) -> str:
-        """Return the final course-oriented sequential interpretation."""
-        return f"{self.selected.conclusion} Selected specification: {self.selected.specification_label}. Series classification: {self.nature}."
+        if self.selected.rejects_null:
+            return (
+                f"The unit-root null is rejected at the selected terminal specification ({self.selected.specification_label}). "
+                f"{self.nature}. {self.selection_rule}"
+            )
+        return (
+            f"The unit-root null is not rejected at the terminal specification ({self.selected.specification_label}). "
+            f"The series remains a difference-stationary / integrated candidate. {self.selection_rule}"
+        )
 
 
 def _values(y: TimeSeries | Iterable[float]) -> np.ndarray:
@@ -183,13 +290,158 @@ def _values(y: TimeSeries | Iterable[float]) -> np.ndarray:
 
 def _validate_alpha(alpha: float) -> None:
     if alpha not in {0.01, 0.05, 0.10}:
-        raise ValueError("alpha must be one of the non-standard DF levels: 0.01, 0.05, or 0.10")
+        raise ValueError("alpha must be one of the DF levels: 0.01, 0.05, or 0.10")
 
 
-def _decision(statistic: float, critical_values: dict[str, float], alpha: float) -> Literal["reject", "fail_to_reject"]:
+def _decision(statistic: float, critical_values: dict[str, float], alpha: float) -> Decision:
     _validate_alpha(alpha)
     level = {0.01: "1%", 0.05: "5%", 0.10: "10%"}[alpha]
     return "reject" if statistic < float(critical_values[level]) else "fail_to_reject"
+
+
+def _selected_common_lag(x: np.ndarray, *, max_lags: int | None, autolag: str | None) -> tuple[int, str]:
+    """Choose one ADF lag order before running the three deterministic models."""
+    if max_lags is not None and (not isinstance(max_lags, int) or max_lags < 0):
+        raise ValueError("max_lags must be a non-negative integer or None")
+    if autolag is None:
+        return int(max_lags or 0), "fixed"
+    probe = adfuller(x, regression="ct", maxlag=max_lags, autolag=autolag)
+    usedlag = int(probe[2])
+    return usedlag, f"{autolag} selected on Model 3"
+
+
+def _adf_regression_frame(x: np.ndarray, regression: DFRegression, lags: int) -> tuple[np.ndarray, np.ndarray, list[str]]:
+    """Construct the OLS regression used by DF/ADF with a fixed lag order."""
+    dy = np.diff(x)
+    start = lags
+    y = dy[start:]
+    columns: list[str] = []
+    parts: list[np.ndarray] = []
+
+    if regression in {"c", "ct"}:
+        parts.append(np.ones_like(y))
+        columns.append("const")
+    if regression == "ct":
+        # A linear trend spans the same column space regardless of whether it starts at 0 or 1.
+        trend = np.arange(start + 1, len(x), dtype=float)
+        parts.append(trend)
+        columns.append("trend")
+    parts.append(x[start:-1])
+    columns.append("gamma")
+    for j in range(1, lags + 1):
+        parts.append(dy[start - j : -j])
+        columns.append(f"diff_lag_{j}")
+    X = np.column_stack(parts)
+    return y, X, columns
+
+
+def _fit_df_regression(x: np.ndarray, regression: DFRegression, lags: int) -> dict[str, object]:
+    y, X, columns = _adf_regression_frame(x, regression, lags)
+    model = sm_ols(y, X)
+    params = model["params"]
+    stderr = model["stderr"]
+    tvalues = model["tvalues"]
+    pvalues = model["pvalues"]
+    return {"model": model, "params": params, "stderr": stderr, "tvalues": tvalues, "pvalues": pvalues, "columns": columns, "nobs": len(y)}
+
+
+def sm_ols(y: np.ndarray, X: np.ndarray) -> dict[str, object]:
+    """Small OLS helper kept local to avoid coupling the DF engine to the regression API."""
+    beta, _, _, _ = np.linalg.lstsq(X, y, rcond=None)
+    resid = y - X @ beta
+    dof = max(X.shape[0] - X.shape[1], 1)
+    sigma2 = float(resid @ resid) / dof
+    cov = sigma2 * np.linalg.pinv(X.T @ X)
+    stderr = np.sqrt(np.clip(np.diag(cov), 0.0, None))
+    with np.errstate(divide="ignore", invalid="ignore"):
+        tvalues = beta / stderr
+    pvalues = 2 * stats.t.sf(np.abs(tvalues), dof)
+    return {
+        "params": beta,
+        "stderr": stderr,
+        "tvalues": tvalues,
+        "pvalues": pvalues,
+        "resid": resid,
+        "ssr": float(resid @ resid),
+        "nobs": int(X.shape[0]),
+        "df_resid": int(dof),
+    }
+
+
+def _course_f_critical(model_name: Literal["F2", "F3"], nobs: int, alpha: float) -> tuple[float, str]:
+    _validate_alpha(alpha)
+    level = {0.01: "1%", 0.05: "5%", 0.10: "10%"}[alpha]
+    table = DF_F_CRITICAL_VALUES[model_name]
+    if nobs >= 250:
+        row = table["inf"] if nobs > 2500 else table[250]
+        label = "USTHB DF table, n=∞" if nobs > 2500 else "USTHB DF table, n=250"
+        return row[level], label
+    knots = [50, 100, 250]
+    nearest = min(knots, key=lambda k: abs(nobs - k))
+    return table[nearest][level], f"USTHB DF table, nearest tabulated n={nearest}"
+
+
+def _joint_f_test(x: np.ndarray, regression: Literal["ct", "c"], lags: int, alpha: float) -> SpecificationTestResult:
+    """Compute F3/F2 for the joint unit-root + deterministic-term null."""
+    unrestricted = _fit_df_regression(x, regression, lags)
+    if regression == "ct":
+        # H3,0: gamma=0 and beta=0; keep the constant and lagged differences.
+        y_r, X_ur, cols = _adf_regression_frame(x, regression, lags)
+        keep = [i for i, name in enumerate(cols) if name not in {"gamma", "trend"}]
+        X_r = X_ur[:, keep] if keep else np.empty((len(y_r), 0))
+        name = "Model 3 joint F test"
+        null = "H3,0: γ = 0 and β = 0"
+        alt = "At least one of γ or β is non-zero"
+        model_name = "F3"
+    else:
+        y_r, X_ur, cols = _adf_regression_frame(x, regression, lags)
+        keep = [i for i, col in enumerate(cols) if col != "gamma" and col != "const"]
+        X_r = X_ur[:, keep] if keep else np.empty((len(y_r), 0))
+        name = "Model 2 joint F test"
+        null = "H2,0: γ = 0 and α = 0"
+        alt = "At least one of γ or α is non-zero"
+        model_name = "F2"
+    restricted_ssr = float(np.sum((y_r - (X_r @ np.linalg.lstsq(X_r, y_r, rcond=None)[0] if X_r.shape[1] else np.zeros_like(y_r))) ** 2))
+    unrestricted_ssr = float(unrestricted["model"]["ssr"])
+    q = 2
+    df2 = int(unrestricted["model"]["df_resid"])
+    statistic = ((restricted_ssr - unrestricted_ssr) / q) / (unrestricted_ssr / df2)
+    critical, source = _course_f_critical(model_name, int(unrestricted["model"]["nobs"]), alpha)
+    decision: Decision = "reject" if statistic > critical else "fail_to_reject"
+    return SpecificationTestResult(
+        name=name,
+        null_hypothesis=null,
+        alternative_hypothesis=alt,
+        statistic=float(statistic),
+        critical_value=float(critical),
+        decision=decision,
+        alpha=alpha,
+        source=source,
+        detail=f"Compare F to the non-standard {model_name} critical value; ordinary F p-values are not used.",
+    )
+
+
+def _deterministic_term_test(df_result: dict[str, object], regression: Literal["ct", "c"], alpha: float) -> SpecificationTestResult:
+    params = np.asarray(df_result["params"])
+    tvalues = np.asarray(df_result["tvalues"])
+    critical = float(stats.norm.ppf(1 - alpha / 2))
+    if regression == "ct":
+        idx, label, null, alt = 1, "Model 3 trend test", "H0: β = 0", "H1: β ≠ 0"
+    else:
+        idx, label, null, alt = 0, "Model 2 constant test", "H0: α = 0", "H1: α ≠ 0"
+    statistic = float(tvalues[idx])
+    decision: Decision = "reject" if abs(statistic) > critical else "fail_to_reject"
+    return SpecificationTestResult(
+        name=label,
+        null_hypothesis=null,
+        alternative_hypothesis=alt,
+        statistic=statistic,
+        critical_value=critical,
+        decision=decision,
+        alpha=alpha,
+        source="Standard two-sided normal critical value, as used for deterministic-term checks in the course",
+        detail=f"Estimated coefficient = {params[idx]:.6f}.",
+    )
 
 
 def adf(
@@ -216,8 +468,10 @@ def adf(
         raise RuntimeError(f"unexpected statsmodels ADF result length: {len(result)}")
     critical_values = {str(key): float(value) for key, value in critical.items()}
     decision = _decision(float(statistic), critical_values, alpha)
+    reg = _fit_df_regression(x, regression, int(usedlag))
+    gamma_index = reg["columns"].index("gamma")
     if decision == "reject":
-        conclusion = f"Reject H0 at {int(alpha * 100)}%. There is evidence against a unit root under the {DF_SPECIFICATIONS[regression]['label'].lower()} specification."
+        conclusion = f"Reject H0 at {int(alpha * 100)}%. Evidence favors stationarity under the {DF_SPECIFICATIONS[regression]['label'].lower()} specification."
     else:
         conclusion = f"Do not reject H0 at {int(alpha * 100)}%. The unit-root null remains plausible under the {DF_SPECIFICATIONS[regression]['label'].lower()} specification."
     return UnitRootResult(
@@ -228,12 +482,15 @@ def adf(
         regression=regression,
         lags=int(usedlag),
         nobs=int(nobs),
-        null_hypothesis="γ = 0 (the series has a unit root / is non-stationary under the selected specification).",
-        alternative_hypothesis="γ < 0 (the series is stationary under the selected specification).",
+        null_hypothesis="γ = 0 (unit root / non-stationarity under the selected deterministic specification).",
+        alternative_hypothesis="γ < 0 (stationarity under the selected deterministic specification).",
         decision=decision,
         alpha=alpha,
         conclusion=conclusion,
         specification_label=DF_SPECIFICATIONS[regression]["label"],
+        coefficient=float(reg["params"][gamma_index]),
+        coefficient_tvalue=float(reg["tvalues"][gamma_index]),
+        coefficient_pvalue=float(reg["pvalues"][gamma_index]),
     )
 
 
@@ -249,47 +506,64 @@ def dickey_fuller_sequential(
     autolag: str | None = "AIC",
     alpha: float = 0.05,
 ) -> SequentialDFResult:
-    """Apply the course's sequential Model 3 → Model 2 → Model 1 DF/ADF workflow."""
+    """Apply the course's complete sequential Model 3 -> Model 2 -> Model 1 workflow."""
     _validate_alpha(alpha)
-    models = (
-        adf(y, regression="ct", lags=max_lags, autolag=autolag, alpha=alpha),
-        adf(y, regression="c", lags=max_lags, autolag=autolag, alpha=alpha),
-        adf(y, regression="n", lags=max_lags, autolag=autolag, alpha=alpha),
-    )
-    selected = models[-1]
-    nature = "difference-stationary / integrated candidate (DS)"
-    for result in models:
-        if result.rejects_null:
-            selected = result
-            if result.regression == "ct":
-                nature = "stationary around a deterministic trend (TS candidate)"
-            elif result.regression == "c":
-                nature = "stationary around a constant (TS candidate)"
-            else:
-                nature = "stationary around zero"
-            break
-    return SequentialDFResult(
-        tests=models,
-        selected=selected,
-        nature=nature,
-        selection_rule=(
-            "Start with Model 3 (constant + trend); if H0 is not rejected, proceed to Model 2; "
-            "if H0 is still not rejected, proceed to Model 1. At each step, use that specification's "
-            "Dickey-Fuller critical values rather than ordinary t critical values."
-        ),
-    )
+    x = _values(y)
+    common_lag, lag_method = _selected_common_lag(x, max_lags=max_lags, autolag=autolag)
+    models: list[UnitRootResult] = []
+    spec_tests: list[SpecificationTestResult] = []
+
+    model3 = adf(x, regression="ct", lags=common_lag, autolag=None, alpha=alpha)
+    models.append(model3)
+    model3_df = _fit_df_regression(x, "ct", common_lag)
+    if model3.rejects_null:
+        trend_test = _deterministic_term_test(model3_df, "ct", alpha)
+        spec_tests.append(trend_test)
+        if trend_test.rejects_null:
+            return SequentialDFResult(tuple(models), model3, "stationary around a deterministic trend (TS)", "Model 3 rejected the unit root and the deterministic trend was retained by the conditional β test.", common_lag, lag_method, tuple(spec_tests))
+        # Model 3 is rejected as an over-specified deterministic model: continue with Model 2.
+    else:
+        f3 = _joint_f_test(x, "ct", common_lag, alpha)
+        spec_tests.append(f3)
+        if f3.rejects_null:
+            return SequentialDFResult(tuple(models), model3, "I(1) with the Model 3 deterministic structure", "Model 3 did not reject the unit-root null and the joint H3,0 test rejected; the course classifies the series as integrated under Model 3.", common_lag, lag_method, tuple(spec_tests))
+
+    model2 = adf(x, regression="c", lags=common_lag, autolag=None, alpha=alpha)
+    models.append(model2)
+    model2_df = _fit_df_regression(x, "c", common_lag)
+    if model2.rejects_null:
+        constant_test = _deterministic_term_test(model2_df, "c", alpha)
+        spec_tests.append(constant_test)
+        if constant_test.rejects_null:
+            return SequentialDFResult(tuple(models), model2, "stationary around a constant (TS)", "Model 2 rejected the unit root and the constant was retained by the conditional α test.", common_lag, lag_method, tuple(spec_tests))
+        # Model 2 over-specified: continue with Model 1.
+    else:
+        f2 = _joint_f_test(x, "c", common_lag, alpha)
+        spec_tests.append(f2)
+        if f2.rejects_null:
+            return SequentialDFResult(tuple(models), model2, "I(1) with a constant (DS candidate)", "Model 2 did not reject the unit-root null and the joint H2,0 test rejected; the course retains Model 2 as the relevant integrated specification.", common_lag, lag_method, tuple(spec_tests))
+
+    model1 = adf(x, regression="n", lags=common_lag, autolag=None, alpha=alpha)
+    models.append(model1)
+    nature = "stationary around zero (TS)" if model1.rejects_null else "difference-stationary / integrated candidate (DS)"
+    return SequentialDFResult(tuple(models), model1, nature, "After Models 3 and 2 were not retained, the course completes the root test in Model 1 without constant or trend.", common_lag, lag_method, tuple(spec_tests))
 
 
 def kpss_test(y: TimeSeries | Iterable[float], *, regression: str = "c", nlags: str | int = "auto", alpha: float = 0.05) -> UnitRootResult:
-    """Run the KPSS stationarity test as a complementary diagnostic."""
+    """Run KPSS as a complementary stationarity diagnostic."""
     x = _values(y)
     statistic, pvalue, lags, critical = kpss(x, regression=regression, nlags=nlags)
     critical_values = {str(k): float(v) for k, v in critical.items()}
     _validate_alpha(alpha)
     level = {0.01: "1%", 0.05: "5%", 0.10: "10%"}[alpha]
-    decision = "reject" if statistic > critical_values[level] else "fail_to_reject"
+    decision: Decision = "reject" if statistic > critical_values[level] else "fail_to_reject"
     conclusion = f"Reject stationarity at {int(alpha * 100)}%; evidence favors non-stationarity." if decision == "reject" else f"Do not reject stationarity at {int(alpha * 100)}%."
-    return UnitRootResult("KPSS Test", float(statistic), float(pvalue), critical_values, regression if regression in {"n", "c", "ct"} else "c", int(lags), int(x.size - lags), "The series is stationary.", "The series is non-stationary.", decision, alpha, conclusion, critical_value_source="KPSS critical values", specification_label=f"KPSS regression={regression}")
+    return UnitRootResult(
+        "KPSS Test", float(statistic), float(pvalue), critical_values,
+        regression if regression in {"n", "c", "ct"} else "c", int(lags), int(x.size - lags),
+        "The series is stationary.", "The series is non-stationary.", decision, alpha, conclusion,
+        critical_value_source="KPSS critical values", specification_label=f"KPSS regression={regression}"
+    )
 
 
 def phillips_perron(y: TimeSeries | Iterable[float], *, trend: str = "c", lags: int | None = None) -> UnitRootResult:
@@ -304,7 +578,13 @@ def phillips_perron(y: TimeSeries | Iterable[float], *, trend: str = "c", lags: 
     test = PhillipsPerron(x, trend=trend, lags=lags)
     critical = {str(k): float(v) for k, v in test.critical_values.items()}
     decision = _decision(float(test.stat), critical, 0.05)
-    return UnitRootResult("Phillips-Perron Test", float(test.stat), float(test.pvalue), critical, trend, int(test.lags), int(test.nobs), "The series contains a unit root.", "The series is stationary.", decision, 0.05, "Reject the unit-root null at 5%; evidence favors stationarity." if decision == "reject" else "Do not reject the unit-root null at 5%; evidence favors non-stationarity.", critical_value_source="Phillips-Perron critical values", specification_label=f"Phillips-Perron trend={trend}")
+    return UnitRootResult(
+        "Phillips-Perron Test", float(test.stat), float(test.pvalue), critical, trend,
+        int(test.lags), int(test.nobs), "The series contains a unit root.", "The series is stationary.",
+        decision, 0.05,
+        "Reject the unit-root null at 5%; evidence favors stationarity." if decision == "reject" else "Do not reject the unit-root null at 5%; evidence favors non-stationarity.",
+        critical_value_source="Phillips-Perron critical values", specification_label=f"Phillips-Perron regression={trend}"
+    )
 
 
 def difference(y: TimeSeries, order: int = 1, seasonal_period: int | None = None) -> TimeSeries:
@@ -324,9 +604,9 @@ def difference(y: TimeSeries, order: int = 1, seasonal_period: int | None = None
 
 
 def classify_ts_ds(y: TimeSeries | Iterable[float]) -> dict[str, object]:
-    """Classify a series using the sequential DF/ADF workflow."""
+    """Classify a series with the course's sequential DF/ADF strategy."""
     report = dickey_fuller_sequential(y)
-    return {"tests": report.tests, "selected": report.selected, "nature": report.nature, "is_ts_candidate": "TS candidate" in report.nature, "is_ds_candidate": "DS" in report.nature}
+    return {"tests": report.tests, "selected": report.selected, "nature": report.nature, "is_ts_candidate": "TS" in report.nature, "is_ds_candidate": "DS" in report.nature}
 
 
 def trend_regression(y: TimeSeries | Iterable[float], *, degree: int = 1) -> pd.DataFrame:
@@ -338,4 +618,6 @@ def trend_regression(y: TimeSeries | Iterable[float], *, degree: int = 1) -> pd.
     fitted = X @ beta
     residual = x - fitted
     rows = [{"Term": "Intercept" if j == 0 else f"Trend^{j}", "Coefficient": float(beta[j])} for j in range(degree + 1)]
-    return pd.DataFrame(rows).assign(R2=float(1 - np.sum(residual**2) / np.sum((x - x.mean())**2)))
+    denom = np.sum((x - x.mean()) ** 2)
+    r2 = float(1 - np.sum(residual**2) / denom) if denom > 0 else float("nan")
+    return pd.DataFrame(rows).assign(R2=r2)
