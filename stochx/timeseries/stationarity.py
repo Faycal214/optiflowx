@@ -1,4 +1,4 @@
-"""Stationarity and unit-root diagnostics for time-series analysis."""
+"""Stationarity, unit-root, TS/DS and differencing diagnostics."""
 
 from __future__ import annotations
 
@@ -6,18 +6,19 @@ from dataclasses import dataclass
 from typing import Iterable
 
 import numpy as np
-from statsmodels.tsa.stattools import adfuller, kpss, phillips_perron
+import pandas as pd
+from statsmodels.tsa.stattools import adfuller, kpss
 
 from .series import TimeSeries
 
 
 @dataclass(frozen=True)
 class UnitRootResult:
-    """Structured output for a unit-root or stationarity test."""
+    """Structured unit-root result with course-oriented interpretation."""
 
     test: str
     statistic: float
-    pvalue: float
+    pvalue: float | None
     critical_values: dict[str, float]
     regression: str
     lags: int
@@ -26,50 +27,35 @@ class UnitRootResult:
     conclusion: str
 
     def summary(self) -> str:
-        """Return an EViews-style textual test summary."""
+        """Render an EViews-like unit-root test table."""
         lines = [
-            self.test,
-            "=" * len(self.test),
-            f"Regression: {self.regression}",
-            f"Included lags: {self.lags}",
+            f"{self.test}",
+            "=" * 72,
+            f"Test equation: {self.regression}",
             f"Included observations: {self.nobs}",
-            f"Test Statistic: {self.statistic:.6f}",
-            f"Prob.*: {self.pvalue:.6f}",
-            "Critical Values:",
+            f"Lagged differences: {self.lags}",
+            f"Test statistic: {self.statistic:.6f}",
         ]
-        lines.extend(f"  {key}: {value:.6f}" for key, value in self.critical_values.items())
+        if self.pvalue is not None and np.isfinite(self.pvalue):
+            lines.append(f"Prob.*: {self.pvalue:.6f}")
         lines.append("")
-        lines.append(f"Null Hypothesis: {self.null_hypothesis}")
+        lines.append("Critical Values:")
+        for level, value in self.critical_values.items():
+            lines.append(f"{level}: {value:.6f}")
+        lines.append("")
+        lines.append(f"Null: {self.null_hypothesis}")
         lines.append(f"Conclusion: {self.conclusion}")
         return "\n".join(lines)
 
-    def interpret(self) -> str:
-        """Return the course-oriented interpretation."""
-        return self.conclusion
-
 
 def _values(y: TimeSeries | Iterable[float]) -> np.ndarray:
-    values = np.asarray(y.values if isinstance(y, TimeSeries) else list(y), dtype=float)
-    if values.ndim != 1:
-        raise ValueError("series must be one-dimensional")
-    values = values[~np.isnan(values)]
-    if values.size < 10:
-        raise ValueError("at least 10 non-missing observations are required")
-    if np.any(np.isinf(values)):
-        raise ValueError("series must not contain infinite observations")
-    return values
-
-
-def difference(y: TimeSeries | Iterable[float], order: int = 1) -> TimeSeries:
-    """Return an ordinary difference of the requested order."""
-    if not isinstance(order, int) or order < 1:
-        raise ValueError("order must be a positive integer")
-    if isinstance(y, TimeSeries):
-        return y.diff(order)
-    values = _values(y)
-    for _ in range(order):
-        values = np.diff(values)
-    return TimeSeries(values, name=f"D({getattr(y, 'name', 'series')},{order})")
+    x = np.asarray(y.values if isinstance(y, TimeSeries) else list(y), dtype=float).reshape(-1)
+    x = x[~np.isnan(x)]
+    if x.size < 10:
+        raise ValueError("at least 10 observations are recommended for unit-root testing")
+    if np.any(np.isinf(x)):
+        raise ValueError("series must contain no infinite values")
+    return x
 
 
 def adf(
@@ -83,7 +69,7 @@ def adf(
     """Run the Augmented Dickey-Fuller test with configurable deterministic terms.
 
     ``regression`` follows the three course specifications: ``n`` (no
-    constant), ``c`` (constant), and ``ct`` (constant plus trend). Lagged
+    constant), ``c`` (constant), and ``ct`` (constant plus trend).  Lagged
     differences can be selected explicitly or by an information criterion,
     following the course strategy for whitening the innovations.
     """
@@ -99,24 +85,11 @@ def adf(
         statistic, pvalue, usedlag, nobs, critical, _ = result
     else:
         raise RuntimeError(f"unexpected statsmodels ADF result length: {len(result)}")
-    if not 0 < alpha < 1:
-        raise ValueError("alpha must lie strictly between 0 and 1")
-    critical_values = {str(k): float(v) for k, v in critical.items()}
-    if statistic < critical_values["5%"]:
+    if statistic < critical["5%"]:
         conclusion = "Reject the unit-root null at 5%; the series is consistent with stationarity under the selected deterministic specification."
     else:
         conclusion = "Do not reject the unit-root null at 5%; the series is consistent with non-stationarity under the selected deterministic specification."
-    return UnitRootResult(
-        "Augmented Dickey-Fuller Test",
-        float(statistic),
-        float(pvalue),
-        critical_values,
-        regression,
-        int(usedlag),
-        int(nobs),
-        "The series contains a unit root (non-stationary).",
-        conclusion,
-    )
+    return UnitRootResult("Augmented Dickey-Fuller Test", float(statistic), float(pvalue), {str(k): float(v) for k, v in critical.items()}, regression, int(usedlag), int(nobs), "The series contains a unit root (non-stationary).", conclusion)
 
 
 def dickey_fuller_sequential(
@@ -125,20 +98,11 @@ def dickey_fuller_sequential(
     max_lags: int | None = None,
     alpha: float = 0.05,
 ) -> dict[str, object]:
-    """Apply the course's sequential DF/ADF strategy over deterministic specifications."""
-    results: dict[str, UnitRootResult] = {}
-    for regression, label in [
-        ("ct", "model_3_trend_intercept"),
-        ("c", "model_2_intercept"),
-        ("n", "model_1_none"),
-    ]:
+    """Apply the course's sequential DF/ADF strategy over no-constant, constant, and trend specifications."""
+    results = {}
+    for regression, label in [("ct", "model_3_trend_intercept"), ("c", "model_2_intercept"), ("n", "model_1_none")]:
         results[label] = adf(y, regression=regression, lags=max_lags, autolag="AIC", alpha=alpha)
-
-    ordered = [
-        results["model_3_trend_intercept"],
-        results["model_2_intercept"],
-        results["model_1_none"],
-    ]
+    ordered = [results["model_3_trend_intercept"], results["model_2_intercept"], results["model_1_none"]]
     selected = ordered[-1]
     if ordered[0].statistic < ordered[0].critical_values["5%"]:
         selected = ordered[0]
@@ -161,25 +125,11 @@ def kpss_test(
     nlags: str | int = "auto",
     alpha: float = 0.05,
 ) -> UnitRootResult:
-    """Run the KPSS stationarity test."""
+    """Run the KPSS stationarity test as a complementary diagnostic."""
     x = _values(y)
     statistic, pvalue, lags, critical = kpss(x, regression=regression, nlags=nlags)
-    critical_values = {str(k): float(v) for k, v in critical.items()}
-    if pvalue < alpha:
-        conclusion = "Reject the stationarity null at the selected level; evidence indicates non-stationarity."
-    else:
-        conclusion = "Do not reject the stationarity null at the selected level."
-    return UnitRootResult(
-        "KPSS Test",
-        float(statistic),
-        float(pvalue),
-        critical_values,
-        regression,
-        int(lags),
-        int(x.size),
-        "The series is stationary under the selected deterministic specification.",
-        conclusion,
-    )
+    conclusion = "Reject stationarity at 5%; evidence favors non-stationarity." if statistic > critical["5%"] else "Do not reject stationarity at 5%."
+    return UnitRootResult("KPSS Test", float(statistic), float(pvalue), {str(k): float(v) for k, v in critical.items()}, regression, int(lags), int(x.size - lags), "The series is stationary.", conclusion)
 
 
 def phillips_perron(
@@ -187,43 +137,51 @@ def phillips_perron(
     *,
     trend: str = "c",
     lags: int | None = None,
-    alpha: float = 0.05,
 ) -> UnitRootResult:
-    """Run the Phillips-Perron unit-root test when available."""
+    """Run the Phillips-Perron unit-root test when the optional ``arch`` backend is installed."""
     x = _values(y)
-    result = phillips_perron(x, trend=trend, lags=lags)
-    statistic, pvalue, critical = result[0], result[1], result[2]
-    critical_values = {str(k): float(v) for k, v in critical.items()}
-    conclusion = (
-        "Reject the unit-root null at the selected level."
-        if statistic < critical_values["5%"]
-        else "Do not reject the unit-root null at the selected level."
-    )
-    used_lags = int(result[3]) if len(result) > 3 else (0 if lags is None else lags)
-    return UnitRootResult(
-        "Phillips-Perron Test",
-        float(statistic),
-        float(pvalue),
-        critical_values,
-        trend,
-        used_lags,
-        int(x.size),
-        "The series contains a unit root (non-stationary).",
-        conclusion,
-    )
+    if trend not in {"n", "c", "ct"}:
+        raise ValueError("trend must be 'n', 'c', or 'ct'")
+    try:
+        from arch.unitroot import PhillipsPerron
+    except ImportError as exc:
+        raise ImportError("Phillips-Perron requires the optional 'arch' dependency. Install with: pip install arch") from exc
+    test = PhillipsPerron(x, trend=trend, lags=lags)
+    critical = {str(k): float(v) for k, v in test.critical_values.items()}
+    conclusion = "Reject the unit-root null at 5%; evidence favors stationarity." if test.stat < critical["5%"] else "Do not reject the unit-root null at 5%; evidence favors non-stationarity."
+    return UnitRootResult("Phillips-Perron Test", float(test.stat), float(test.pvalue), critical, trend, int(test.lags), int(test.nobs), "The series contains a unit root.", conclusion)
 
 
-def trend_regression(y: TimeSeries | Iterable[float]) -> tuple[np.ndarray, np.ndarray]:
-    """Return fitted values and residuals from a deterministic linear trend."""
+def difference(y: TimeSeries, order: int = 1, seasonal_period: int | None = None) -> TimeSeries:
+    """Apply ordinary and/or seasonal differencing operators."""
+    if order < 0:
+        raise ValueError("order must be non-negative")
+    result = y
+    for _ in range(order):
+        result = result.diff(1)
+    if seasonal_period is not None:
+        if seasonal_period < 1 or seasonal_period >= result.nobs:
+            raise ValueError("seasonal_period must be positive and smaller than the series length")
+        values = result.values[seasonal_period:] - result.values[:-seasonal_period]
+        index = result.index[seasonal_period:] if result.index is not None else None
+        result = TimeSeries(values, index=index, name=f"DS{seasonal_period}({result.name})", frequency=result.frequency)
+    return result
+
+
+def classify_ts_ds(y: TimeSeries | Iterable[float]) -> dict[str, object]:
+    """Classify a series as TS-like, DS-like, or inconclusive using the sequential test workflow."""
+    report = dickey_fuller_sequential(y)
+    nature = str(report["nature"])
+    return {**report, "is_ts_candidate": "trend" in nature or "intercept" in nature, "is_ds_candidate": "DS" in nature}
+
+
+def trend_regression(y: TimeSeries | Iterable[float], *, degree: int = 1) -> pd.DataFrame:
+    """Estimate a deterministic polynomial trend and return coefficients and residuals."""
     x = _values(y)
     t = np.arange(1, x.size + 1, dtype=float)
-    design = np.column_stack([np.ones_like(t), t])
-    beta = np.linalg.lstsq(design, x, rcond=None)[0]
-    fitted = design @ beta
-    return fitted, x - fitted
-
-
-def classify_ts_ds(y: TimeSeries | Iterable[float]) -> str:
-    """Classify a series using the course-oriented sequential DF strategy."""
-    result = dickey_fuller_sequential(y)
-    return str(result["nature"])
+    X = np.column_stack([t**j for j in range(degree + 1)])
+    beta = np.linalg.lstsq(X, x, rcond=None)[0]
+    fitted = X @ beta
+    residual = x - fitted
+    rows = [{"Term": "Intercept" if j == 0 else f"Trend^{j}", "Coefficient": float(beta[j])} for j in range(degree + 1)]
+    return pd.DataFrame(rows).assign(R2=float(1 - np.sum(residual**2) / np.sum((x - x.mean())**2)))
