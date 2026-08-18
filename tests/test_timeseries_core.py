@@ -1,6 +1,7 @@
 import numpy as np
 
 from stochx.timeseries import (
+    DF_F_CRITICAL_VALUES,
     DF_SPECIFICATIONS,
     SequentialDFResult,
     TimeSeries,
@@ -134,18 +135,44 @@ def test_adf_summary_exposes_course_hypotheses_and_interpretation():
     assert {"Test Statistic", "Prob.*", "Critical Value", "Decision"}.issubset(table.columns)
 
 
-def test_sequential_df_adf_runs_model_3_model_2_model_1_and_selects_first_rejection():
+def test_sequential_df_uses_one_common_lag_across_all_models():
     stationary = TimeSeries(np.random.default_rng(7).normal(size=300), name="Y")
+    result = dickey_fuller_sequential(stationary, max_lags=4, autolag="AIC", alpha=0.05)
+    assert isinstance(result, SequentialDFResult)
+    assert result.lag_order >= 0
+    assert len({item.lags for item in result.tests}) == 1
+    assert all(item.lags == result.lag_order for item in result.tests)
+    assert "Model 3" in result.summary()
+
+
+def test_sequential_df_reports_conditional_specification_tests():
+    stationary = TimeSeries(5.0 + np.random.default_rng(12).normal(scale=0.25, size=300), name="Y")
     result = dickey_fuller_sequential(stationary, max_lags=1, autolag=None, alpha=0.05)
     assert isinstance(result, SequentialDFResult)
-    assert [item.regression for item in result.tests] == ["ct", "c", "n"]
+    assert any(item.name in {"Model 3 trend test", "Model 2 constant test"} for item in result.specification_tests)
+    assert "Conditional specification tests" in result.summary() if result.specification_tests else True
+
+
+def test_sequential_df_reports_nonstandard_f2_f3_decisions_for_unit_root_candidate():
+    y = TimeSeries(random_walk(300, rng=41), name="Y")
+    result = dickey_fuller_sequential(y, max_lags=2, autolag=None, alpha=0.05)
+    assert isinstance(result, SequentialDFResult)
+    joint_tests = [item for item in result.specification_tests if item.name in {"Model 3 joint F test", "Model 2 joint F test"}]
+    assert joint_tests
+    assert all("ordinary F" not in item.detail for item in joint_tests)
+    for item in joint_tests:
+        assert item.source.startswith("USTHB DF table")
+    assert DF_F_CRITICAL_VALUES["F2"][100]["5%"] == 4.71
+    assert DF_F_CRITICAL_VALUES["F3"][100]["5%"] == 6.49
+
+
+def test_sequential_df_table_and_interpretation_are_unified():
+    trend = TimeSeries(0.5 * np.arange(1.0, 301.0) + np.random.default_rng(4).normal(scale=0.5, size=300), name="Y")
+    result = dickey_fuller_sequential(trend, max_lags=1, autolag=None, alpha=0.05)
+    assert {"Model", "ADF Statistic", "5% CV", "Decision"}.issubset(result.table().columns)
     assert result.selected in result.tests
-    assert len(result.table()) == 3
-    assert {"ADF Statistic", "1% CV", "5% CV", "10% CV", "Decision"}.issubset(result.table().columns)
-    assert "Model 3" in result.summary()
-    assert "Model 2" in result.summary()
-    assert "Model 1" in result.summary()
     assert result.interpret()
+    assert result.summary()
 
 
 def test_stationarity_and_forecast_metrics():
