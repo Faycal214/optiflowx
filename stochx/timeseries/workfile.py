@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, Mapping
+from typing import Iterable
 
 import numpy as np
 import pandas as pd
@@ -106,13 +106,49 @@ class Workfile:
         """Return series names in insertion order."""
         return list(self.series)
 
-    def set_sample(self, start: int = 0, end: int | None = None) -> "Workfile":
-        """Set the current estimation sample by positional bounds."""
+    def set_sample(self, start: int | str = 0, end: int | str | None = None) -> "Workfile":
+        """Set the current estimation sample by positions or matching index labels."""
         if self.nobs == 0:
             raise ValueError("cannot set a sample on an empty workfile")
+
+        if isinstance(start, str):
+            parts = start.split()
+            if len(parts) not in {1, 2}:
+                raise ValueError("sample string must be 'start' or 'start end'")
+            start_label = parts[0]
+            end_label = parts[1] if len(parts) == 2 else parts[0]
+            reference = next(iter(self.series.values()))
+            if reference.index is None:
+                raise ValueError("string samples require an indexed workfile")
+            labels = list(reference.index)
+            try:
+                start_pos = labels.index(start_label)
+            except ValueError:
+                start_pos = next((i for i, value in enumerate(labels) if str(value) == start_label), -1)
+            try:
+                end_pos = labels.index(end_label)
+            except ValueError:
+                end_pos = next((i for i, value in enumerate(labels) if str(value) == end_label), -1)
+            if start_pos < 0 or end_pos < 0:
+                # Also support pandas-compatible datetime labels.
+                try:
+                    target_start = pd.Timestamp(start_label)
+                    target_end = pd.Timestamp(end_label)
+                    parsed = pd.to_datetime(pd.Index(labels))
+                    start_pos = int(np.where(parsed == target_start)[0][0])
+                    end_pos = int(np.where(parsed == target_end)[0][0])
+                except Exception as exc:  # noqa: BLE001
+                    raise ValueError(f"could not resolve sample labels {start_label!r}, {end_label!r}") from exc
+            start, end = start_pos, end_pos
+
+        if not isinstance(start, int):
+            raise TypeError("sample start must be an integer position or label string")
         if start < 0 or start >= self.nobs:
             raise ValueError("sample start is outside the workfile")
-        end = self.nobs - 1 if end is None else end
+        if end is None:
+            end = self.nobs - 1
+        if not isinstance(end, int):
+            raise TypeError("sample end must be an integer position or label string")
         if end < start or end >= self.nobs:
             raise ValueError("sample end is outside the workfile")
         self.sample_start = start
@@ -130,17 +166,31 @@ class Workfile:
         """Return the named series restricted to the current sample."""
         return self.get(name)[self.sample]
 
-    def generate(self, name: str, expression, *, overwrite: bool = False) -> TimeSeries:
-        """Generate a new series using a callable or simple expression callable.
+    def eval(self, expression: str):
+        """Evaluate an EViews-inspired time-series expression."""
+        from .expression import evaluate
 
-        Expression may be a callable receiving this workfile. The callable can
-        combine existing series and NumPy operations without introducing an
-        EViews-specific parser into the numerical core.
-        """
+        return evaluate(expression, self)
+
+    def generate(self, name: str, expression, *, overwrite: bool = False) -> TimeSeries:
+        """Generate a new series using an expression string or callable."""
         if name in self.series and not overwrite:
             raise ValueError(f"series {name!r} already exists; set overwrite=True")
-        values = expression(self) if callable(expression) else expression
-        return self.add(name, values)
+        if isinstance(expression, str):
+            values = self.eval(expression)
+        elif callable(expression):
+            values = expression(self)
+        else:
+            values = expression
+        if not isinstance(values, TimeSeries):
+            if not self.series:
+                raise ValueError("a generated scalar requires an existing reference series")
+            values = TimeSeries(np.full(self.nobs, float(values)), name=name, frequency=self.frequency)
+        return self.add(name, values.copy(name=name))
+
+    def series_from_expression(self, name: str, expression: str, *, overwrite: bool = False) -> TimeSeries:
+        """Convenience alias for EViews-style ``series name = expression`` generation."""
+        return self.generate(name, expression, overwrite=overwrite)
 
     def lag(self, name: str, periods: int = 1) -> TimeSeries:
         """Return a lagged workfile series."""
@@ -149,6 +199,20 @@ class Workfile:
     def diff(self, name: str, periods: int = 1) -> TimeSeries:
         """Return an ordinary difference of a workfile series."""
         return self.get(name).diff(periods)
+
+    def equation(self, name: str = "EQ01", specification: str = ""):
+        """Create an equation object attached to this workfile."""
+        from .equation import Equation
+
+        return Equation(self, name=name, specification=specification)
+
+    def ls(self, specification: str, *, name: str = "EQ01"):
+        """Estimate an OLS equation using EViews-like ``Y C X(-1)`` syntax."""
+        return self.equation(name, specification).ls()
+
+    def estimate(self, specification: str, *, method: str = "LS", name: str = "EQ01"):
+        """Estimate an equation using the supported EViews-style estimator."""
+        return self.equation(name, specification).estimate(method=method)
 
     def describe(self) -> pd.DataFrame:
         """Return an EViews-style descriptive-statistics table for all series."""
