@@ -1,5 +1,5 @@
 site_name: StochX
-site_description: A Python library for stochastic-process mathematics.
+site_description: A Python library for stochastic-process mathematics and time-series analysis.
 repo_url: https://github.com/Faycal214/stochx
 repo_name: Faycal214/stochx
 
@@ -15,6 +15,7 @@ nav:
   - Package / API:
       - Course → API Map: course-map.md
       - Architecture: architecture.md
+      - Time Series: time_series.md
       - API Reference:
           - Overview: api/index.md
           - MarkovChain: api/markov_chain.md
