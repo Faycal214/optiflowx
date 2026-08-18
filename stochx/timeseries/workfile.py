@@ -110,7 +110,6 @@ class Workfile:
         """Set the current estimation sample by positions or matching index labels."""
         if self.nobs == 0:
             raise ValueError("cannot set a sample on an empty workfile")
-
         if isinstance(start, str):
             parts = start.split()
             if len(parts) not in {1, 2}:
@@ -121,26 +120,16 @@ class Workfile:
             if reference.index is None:
                 raise ValueError("string samples require an indexed workfile")
             labels = list(reference.index)
-            try:
-                start_pos = labels.index(start_label)
-            except ValueError:
-                start_pos = next((i for i, value in enumerate(labels) if str(value) == start_label), -1)
-            try:
-                end_pos = labels.index(end_label)
-            except ValueError:
-                end_pos = next((i for i, value in enumerate(labels) if str(value) == end_label), -1)
+            start_pos = next((i for i, value in enumerate(labels) if str(value) == start_label), -1)
+            end_pos = next((i for i, value in enumerate(labels) if str(value) == end_label), -1)
             if start_pos < 0 or end_pos < 0:
-                # Also support pandas-compatible datetime labels.
                 try:
-                    target_start = pd.Timestamp(start_label)
-                    target_end = pd.Timestamp(end_label)
                     parsed = pd.to_datetime(pd.Index(labels))
-                    start_pos = int(np.where(parsed == target_start)[0][0])
-                    end_pos = int(np.where(parsed == target_end)[0][0])
+                    start_pos = int(np.where(parsed == pd.Timestamp(start_label))[0][0])
+                    end_pos = int(np.where(parsed == pd.Timestamp(end_label))[0][0])
                 except Exception as exc:  # noqa: BLE001
                     raise ValueError(f"could not resolve sample labels {start_label!r}, {end_label!r}") from exc
             start, end = start_pos, end_pos
-
         if not isinstance(start, int):
             raise TypeError("sample start must be an integer position or label string")
         if start < 0 or start >= self.nobs:
@@ -172,6 +161,21 @@ class Workfile:
 
         return evaluate(expression, self)
 
+    def _pad_to_workfile(self, value: TimeSeries, *, name: str) -> TimeSeries:
+        """Align a shorter expression result to the workfile with leading NaNs."""
+        if value.nobs == self.nobs:
+            return value.copy(name=name)
+        if value.nobs > self.nobs:
+            raise ValueError("expression result is longer than the workfile")
+        pad = self.nobs - value.nobs
+        values = np.r_[np.full(pad, np.nan), value.values]
+        if self.series:
+            reference = next(iter(self.series.values()))
+            index = reference.index
+        else:
+            index = None
+        return TimeSeries(values, index=index, name=name, frequency=self.frequency)
+
     def generate(self, name: str, expression, *, overwrite: bool = False) -> TimeSeries:
         """Generate a new series using an expression string or callable."""
         if name in self.series and not overwrite:
@@ -186,7 +190,7 @@ class Workfile:
             if not self.series:
                 raise ValueError("a generated scalar requires an existing reference series")
             values = TimeSeries(np.full(self.nobs, float(values)), name=name, frequency=self.frequency)
-        return self.add(name, values.copy(name=name))
+        return self.add(name, self._pad_to_workfile(values, name=name))
 
     def series_from_expression(self, name: str, expression: str, *, overwrite: bool = False) -> TimeSeries:
         """Convenience alias for EViews-style ``series name = expression`` generation."""
