@@ -21,11 +21,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install stochastic runtime and test dependencies
+      - name: Install runtime and test dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e . --no-deps
-          pip install numpy scipy pytest
+          pip install -e .
+          pip install pytest
       - name: Run full test suite
         run: |
           pytest -q tests --disable-warnings
