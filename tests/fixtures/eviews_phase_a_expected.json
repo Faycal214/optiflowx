@@ -4,110 +4,111 @@
     "workfile": "Results.wf1",
     "data_file": "Data.xlsx",
     "sample": "1960M01 2011M12",
-    "observations": 624
+    "observations": 624,
+    "reference_precision": "EViews display precision; numeric outputs are preserved as strings"
   },
   "equations": {
     "EQ01": {
       "specification": "LOG(M1) C LOG(IP) LOG(CPI) TBILL",
       "nobs": 624,
       "coefficients": {
-        "C": [0.859324, 0.042875, 20.04261, 0.0],
-        "LOG(IP)": [0.196359, 0.025865, 7.591598, 0.0],
-        "LOG(CPI)": [1.055454, 0.015406, 68.51129, 0.0],
-        "TBILL": [-0.021441, 0.000986, -21.74826, 0.0]
+        "C": {"coefficient": "0.859324", "std_error": "0.042875", "t_stat": "20.04261", "p_value": "0.0"},
+        "LOG(IP)": {"coefficient": "0.196359", "std_error": "0.025865", "t_stat": "7.591598", "p_value": "0.0"},
+        "LOG(CPI)": {"coefficient": "1.055454", "std_error": "0.015406", "t_stat": "68.51129", "p_value": "0.0"},
+        "TBILL": {"coefficient": "-0.021441", "std_error": "0.000986", "t_stat": "-21.74826", "p_value": "0.0"}
       },
       "statistics": {
-        "R-squared": 0.992558,
-        "Adjusted R-squared": 0.992522,
-        "S.E. of regression": 0.071357,
-        "Sum squared resid": 3.156971,
-        "Log likelihood": 763.9820,
-        "Akaike info criterion": -2.435840,
-        "Schwarz criterion": -2.407403,
-        "Hannan-Quinn criterion": -2.424789,
-        "F-statistic": 27564.63,
-        "Prob(F-statistic)": 0.0,
-        "Durbin-Watson": 0.027685
+        "R-squared": "0.992558",
+        "Adjusted R-squared": "0.992522",
+        "S.E. of regression": "0.071357",
+        "Sum squared resid": "3.156971",
+        "Log likelihood": "763.9820",
+        "Akaike info criterion": "-2.435840",
+        "Schwarz criterion": "-2.407403",
+        "Hannan-Quinn criterion": "-2.424789",
+        "F-statistic": "27564.63",
+        "Prob(F-statistic)": "0.0",
+        "Durbin-Watson": "0.027685"
       }
     },
     "EQ02": {
       "specification": "LOG(M1) C LOG(CPI) LOG(CPI(-1)) LOG(CPI(-2))",
       "nobs": 622,
       "coefficients": {
-        "C": [1.019323, 0.026417, 38.58627, 0.0],
-        "LOG(CPI)": [-2.672317, 1.531671, -1.744707, 0.08153],
-        "LOG(CPI(-1))": [-2.267378, 2.754062, -0.823285, 0.41066],
-        "LOG(CPI(-2))": [6.117664, 1.530592, 3.996926, 0.0001]
+        "C": {"coefficient": "1.019323", "std_error": "0.026417", "t_stat": "38.58627", "p_value": "0.0"},
+        "LOG(CPI)": {"coefficient": "-2.672317", "std_error": "1.531671", "t_stat": "-1.744707", "p_value": "0.08153"},
+        "LOG(CPI(-1))": {"coefficient": "-2.267378", "std_error": "2.754062", "t_stat": "-0.823285", "p_value": "0.41066"},
+        "LOG(CPI(-2))": {"coefficient": "6.117664", "std_error": "1.530592", "t_stat": "3.996926", "p_value": "0.0001"}
       },
       "statistics": {
-        "R-squared": 0.986847,
-        "Adjusted R-squared": 0.986783,
-        "S.E. of regression": 0.094614,
-        "Sum squared resid": 5.532245,
-        "Log likelihood": 586.0700,
-        "Akaike info criterion": -1.871608,
-        "Schwarz criterion": -1.843100,
-        "Hannan-Quinn criterion": -1.860528,
-        "F-statistic": 15455.37,
-        "Prob(F-statistic)": 0.0,
-        "Durbin-Watson": 0.031493
+        "R-squared": "0.986847",
+        "Adjusted R-squared": "0.986783",
+        "S.E. of regression": "0.094614",
+        "Sum squared resid": "5.532245",
+        "Log likelihood": "586.0700",
+        "Akaike info criterion": "-1.871608",
+        "Schwarz criterion": "-1.843100",
+        "Hannan-Quinn criterion": "-1.860528",
+        "F-statistic": "15455.37",
+        "Prob(F-statistic)": "0.0",
+        "Durbin-Watson": "0.031493"
       }
     },
     "EQ02A": {
       "specification": "M1 C CPI(0 to -12)",
       "nobs": 612,
       "coefficients": {
-        "C": [-104.7026, 8.063640, -12.98453, 0.0],
-        "CPI": [-4.664840, 10.94955, -0.426030, 0.6702],
-        "CPI(-1)": [-1.266860, 20.40829, -0.062076, 0.9505],
-        "CPI(-2)": [-5.402067, 22.00400, -0.245504, 0.8062],
-        "CPI(-3)": [6.963252, 22.13892, 0.314525, 0.7532],
-        "CPI(-4)": [-0.714523, 22.17279, -0.032225, 0.9743],
-        "CPI(-5)": [-2.113962, 22.32003, -0.094711, 0.9246],
-        "CPI(-6)": [-2.018993, 22.43649, -0.089987, 0.9283],
-        "CPI(-7)": [4.547749, 22.34103, 0.203560, 0.8388],
-        "CPI(-8)": [-4.054178, 22.21367, -0.182508, 0.8552],
-        "CPI(-9)": [-1.175856, 22.21645, -0.052927, 0.9578],
-        "CPI(-10)": [3.759427, 22.10938, 0.170038, 0.8650],
-        "CPI(-11)": [-23.07787, 20.53068, -1.124067, 0.2614],
-        "CPI(-12)": [37.26513, 11.04690, 3.373355, 0.0008]
+        "C": {"coefficient": "-104.7026", "std_error": "8.063640", "t_stat": "-12.98453", "p_value": "0.0"},
+        "CPI": {"coefficient": "-4.664840", "std_error": "10.94955", "t_stat": "-0.426030", "p_value": "0.6702"},
+        "CPI(-1)": {"coefficient": "-1.266860", "std_error": "20.40829", "t_stat": "-0.062076", "p_value": "0.9505"},
+        "CPI(-2)": {"coefficient": "-5.402067", "std_error": "22.00400", "t_stat": "-0.245504", "p_value": "0.8062"},
+        "CPI(-3)": {"coefficient": "6.963252", "std_error": "22.13892", "t_stat": "0.314525", "p_value": "0.7532"},
+        "CPI(-4)": {"coefficient": "-0.714523", "std_error": "22.17279", "t_stat": "-0.032225", "p_value": "0.9743"},
+        "CPI(-5)": {"coefficient": "-2.113962", "std_error": "22.32003", "t_stat": "-0.094711", "p_value": "0.9246"},
+        "CPI(-6)": {"coefficient": "-2.018993", "std_error": "22.43649", "t_stat": "-0.089987", "p_value": "0.9283"},
+        "CPI(-7)": {"coefficient": "4.547749", "std_error": "22.34103", "t_stat": "0.203560", "p_value": "0.8388"},
+        "CPI(-8)": {"coefficient": "-4.054178", "std_error": "22.21367", "t_stat": "-0.182508", "p_value": "0.8552"},
+        "CPI(-9)": {"coefficient": "-1.175856", "std_error": "22.21645", "t_stat": "-0.052927", "p_value": "0.9578"},
+        "CPI(-10)": {"coefficient": "3.759427", "std_error": "22.10938", "t_stat": "0.170038", "p_value": "0.8650"},
+        "CPI(-11)": {"coefficient": "-23.07787", "std_error": "20.53068", "t_stat": "-1.124067", "p_value": "0.2614"},
+        "CPI(-12)": {"coefficient": "37.26513", "std_error": "11.04690", "t_stat": "3.373355", "p_value": "0.0008"}
       },
       "statistics": {
-        "R-squared": 0.968625,
-        "Adjusted R-squared": 0.967943,
-        "S.E. of regression": 89.77775,
-        "Sum squared resid": 4819906.017,
-        "Log likelihood": -3613.679,
-        "Akaike info criterion": 11.85516,
-        "Schwarz criterion": 11.95620,
-        "Hannan-Quinn criterion": 11.89446,
-        "F-statistic": 1420.155,
-        "Prob(F-statistic)": 0.0,
-        "Durbin-Watson": 0.027281
+        "R-squared": "0.968625",
+        "Adjusted R-squared": "0.967943",
+        "S.E. of regression": "89.77775",
+        "Sum squared resid": "4819906.017",
+        "Log likelihood": "-3613.679",
+        "Akaike info criterion": "11.85516",
+        "Schwarz criterion": "11.95620",
+        "Hannan-Quinn criterion": "11.89446",
+        "F-statistic": "1420.155",
+        "Prob(F-statistic)": "0.0",
+        "Durbin-Watson": "0.027281"
       }
     },
     "EQ03": {
       "specification": "LOG(M1) C LOG(M1(-1)) LOG(CPI) LOG(CPI(-1)) LOG(CPI(-2))",
       "nobs": 622,
       "coefficients": {
-        "C": [0.010950, 0.003446, 3.178026, 0.0016],
-        "LOG(M1(-1))": [0.994099, 0.002849, 348.9773, 0.0],
-        "LOG(CPI)": [0.070822, 0.109118, 0.649043, 0.5166],
-        "LOG(CPI(-1))": [-0.421052, 0.195764, -2.150816, 0.0319],
-        "LOG(CPI(-2))": [0.357229, 0.110003, 3.247445, 0.0012]
+        "C": {"coefficient": "0.010950", "std_error": "0.003446", "t_stat": "3.178026", "p_value": "0.0016"},
+        "LOG(M1(-1))": {"coefficient": "0.994099", "std_error": "0.002849", "t_stat": "348.9773", "p_value": "0.0"},
+        "LOG(CPI)": {"coefficient": "0.070822", "std_error": "0.109118", "t_stat": "0.649043", "p_value": "0.5166"},
+        "LOG(CPI(-1))": {"coefficient": "-0.421052", "std_error": "0.195764", "t_stat": "-2.150816", "p_value": "0.0319"},
+        "LOG(CPI(-2))": {"coefficient": "0.357229", "std_error": "0.110003", "t_stat": "3.247445", "p_value": "0.0012"}
       },
       "statistics": {
-        "R-squared": 0.999934,
-        "Adjusted R-squared": 0.999933,
-        "S.E. of regression": 0.006723,
-        "Sum squared resid": 0.027887,
-        "Log likelihood": 2231.322,
-        "Akaike info criterion": -7.158591,
-        "Schwarz criterion": -7.122956,
-        "Hannan-Quinn criterion": -7.144741,
-        "F-statistic": 2326285.0,
-        "Prob(F-statistic)": 0.0,
-        "Durbin-Watson": 1.486173
+        "R-squared": "0.999934",
+        "Adjusted R-squared": "0.999933",
+        "S.E. of regression": "0.006723",
+        "Sum squared resid": "0.027887",
+        "Log likelihood": "2231.322",
+        "Akaike info criterion": "-7.158591",
+        "Schwarz criterion": "-7.122956",
+        "Hannan-Quinn criterion": "-7.144741",
+        "F-statistic": "2326285.0",
+        "Prob(F-statistic)": "0.0",
+        "Durbin-Watson": "1.486173"
       }
     }
   }
