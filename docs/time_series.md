@@ -59,12 +59,17 @@ result = wf.ls(specification, name="EQ20", start_params=eviews_reference_vector)
 The result exposes:
 
 ```python
-result.params       # C, structural coefficients, AR(...), MA(...), SIGMASQ
-result.statistics() # AIC, Schwarz, Hannan-Quinn, etc.
-result.roots_report()
+result.params             # C, structural coefficients, AR(...), MA(...), SIGMASQ
+result.statistics()       # AIC, Schwarz, Hannan-Quinn, etc.
+result.roots_report()     # inverse AR/MA roots
+result.covariance_method  # "outer product of gradients (OPG)"
+result.covariance_matrix()# coefficient covariance matrix
+result.bse                # OPG standard errors
+result.tvalues            # coefficient / OPG standard error
+result.pvalues            # two-sided Student-t probabilities
 ```
 
-`roots_report()` follows EViews and returns **inverse characteristic roots** rather than the raw polynomial roots.
+For ARMA maximum-likelihood equations, the covariance matrix is formed from the inverse of the sum of per-observation score outer products. The Phase B benchmark uses this OPG information matrix directly, matching the published EViews equation output. EViews identifies its displayed covariance method as the outer product of gradients. citeturn753676search0
 
 The official benchmark covers:
 
@@ -75,7 +80,7 @@ EQ20: AR(1) + MA(1)
 EQ21: AR(1 to 2) + MA(1)
 ```
 
-The Phase B numerical regression tests assert coefficient-by-coefficient parity, `SIGMASQ`, inverse AR/MA roots, AIC, Schwarz and Hannan-Quinn at the precision displayed by EViews. The EViews OPG covariance convention for standard errors is intentionally tracked as a separate parity target.
+The Phase B numerical regression tests assert coefficient-by-coefficient parity, `SIGMASQ`, inverse AR/MA roots, AIC, Schwarz, Hannan-Quinn, OPG variance diagonals, standard errors, t-statistics and p-values at the precision supported by the published EViews output. The published screenshots do not expose the off-diagonal covariance elements, so those cannot be asserted independently from the supplied benchmark.
 
 ## Serial-correlation diagnostics
 
