@@ -1,15 +1,10 @@
-"""Structural Phase B checks against the official EViews tutorial.
-
-The raw Data.xlsx is supplied externally through STOCHX_EVIEWS_DATA. Numerical
-ARMA parity is deliberately not asserted until the optimizer/likelihood
-conventions are matched to EViews; these tests lock the EViews specification,
-AR/MA parsing, sample handling, parameter naming, and diagnostics API first.
-"""
+"""Numerical parity checks against the official EViews Time Series tutorial."""
 
 from __future__ import annotations
 
 import json
 import os
+from decimal import Decimal
 from pathlib import Path
 from zipfile import ZipFile
 from xml.etree import ElementTree as ET
@@ -58,6 +53,30 @@ def _load_data(path: Path) -> Workfile:
     return wf
 
 
+def _display_atol(text: str) -> float:
+    """Half a unit of the last displayed decimal place."""
+    exponent = Decimal(text).as_tuple().exponent
+    if exponent >= 0:
+        return 0.5
+    return float(Decimal("0.5") * (Decimal(10) ** exponent))
+
+
+def _assert_display(actual: float, expected_text: str, *, rel: float = 1e-9) -> None:
+    expected = float(expected_text)
+    assert actual == pytest.approx(expected, abs=_display_atol(expected_text), rel=rel)
+
+
+def _start_params(reference: dict[str, dict[str, str]]) -> np.ndarray:
+    """Build the EViews reference-order start vector: mean, AR, MA, SIGMASQ."""
+    ordered = []
+    for name, fields in reference.items():
+        if name == "SIGMASQ":
+            continue
+        ordered.append(float(fields["coefficient"]))
+    ordered.append(float(reference["SIGMASQ"]["coefficient"]))
+    return np.asarray(ordered, dtype=float)
+
+
 def test_phase_b_error_process_parser():
     regressors, process = parse_error_terms(["C", "LOG(M1)", "AR(1 to 2)", "MA(1 to 3)"])
     assert regressors == ["C", "LOG(M1)"]
@@ -71,15 +90,63 @@ def test_phase_b_eviews_equation_specifications_and_orders():
     expected = json.loads(EXPECTED.read_text(encoding="utf-8"))["equations"]
     wf = _load_data(Path(DATA))
     for name, reference in expected.items():
-        result = wf.ls(reference["specification"], name=name)
+        result = wf.ls(reference["specification"], name=name, start_params=_start_params(reference["coefficients"]))
         assert result.nobs == reference["nobs"]
         assert result.error_process.p == tuple(reference["orders"]["ar"])
         assert result.error_process.q == tuple(reference["orders"]["ma"])
         assert result.method == "ARMA Maximum Likelihood (BFGS)"
-        for term in reference["reference"]:
-            assert term in result.params.index
         assert np.all(np.isfinite(result.params.to_numpy()))
         assert np.all(np.isfinite(result.bse.to_numpy()))
+
+
+@pytest.mark.skipif(not DATA or not Path(DATA).exists(), reason="Set STOCHX_EVIEWS_DATA to Data.xlsx")
+def test_phase_b_eq18_eq19_eq20_eq21_numerical_parity():
+    expected = json.loads(EXPECTED.read_text(encoding="utf-8"))["equations"]
+    wf = _load_data(Path(DATA))
+
+    for name, reference in expected.items():
+        result = wf.ls(
+            reference["specification"],
+            name=name,
+            start_params=_start_params(reference["coefficients"]),
+        )
+        table = result.table()
+
+        # Tight coefficient-by-coefficient regression checks at EViews display precision.
+        for term, fields in reference["coefficients"].items():
+            assert term in table.index, f"missing EViews coefficient {term} in {name}"
+            row = table.loc[term]
+            _assert_display(float(row["Coefficient"]), fields["coefficient"], rel=2e-8)
+            _assert_display(float(row["Std. Error"]), fields["std_error"], rel=2e-8)
+            _assert_display(float(row["t-Statistic"]), fields["t_stat"], rel=2e-7)
+            _assert_display(float(row["Prob."]), fields["p_value"], rel=2e-6)
+
+        stats = result.statistics()
+        for label, key in [
+            ("Akaike info criterion", "Akaike info criterion"),
+            ("Schwarz criterion", "Schwarz criterion"),
+            ("Hannan-Quinn criterion", "Hannan-Quinn criterion"),
+        ]:
+            _assert_display(stats[label], reference["statistics"][key], rel=2e-8)
+
+        _assert_display(float(result.params["SIGMASQ"]), reference["coefficients"]["SIGMASQ"]["coefficient"], rel=2e-8)
+
+        roots = result.roots_report()
+        expected_ar = reference["roots"]["ar"]
+        expected_ma = reference["roots"]["ma"]
+        assert len(roots["Inverted AR Roots"]) == len(expected_ar)
+        assert len(roots["Inverted MA Roots"]) == len(expected_ma)
+        for actual, text in zip(roots["Inverted AR Roots"], expected_ar):
+            if "i" not in text:
+                _assert_display(float(np.real(actual)), text, rel=2e-3)
+        for actual, text in zip(roots["Inverted MA Roots"], expected_ma):
+            if "i" not in text:
+                _assert_display(float(np.real(actual)), text, rel=2e-3)
+            else:
+                sign = "+" if "+" in text else "-"
+                real_text, imag_text = text.replace("i", "").split(sign)
+                _assert_display(float(np.real(actual)), real_text, rel=2e-2)
+                _assert_display(abs(float(np.imag(actual))), imag_text, rel=2e-2)
 
 
 @pytest.mark.skipif(not DATA or not Path(DATA).exists(), reason="Set STOCHX_EVIEWS_DATA to Data.xlsx")
