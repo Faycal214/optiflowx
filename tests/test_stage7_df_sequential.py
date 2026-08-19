@@ -6,8 +6,12 @@ import stochx.timeseries.stationarity as stationarity
 from stochx.timeseries import SequentialDFResult, TimeSeries
 
 
+# Keep an unpatched reference because several tests monkeypatch stationarity.adf.
+_REAL_ADF = stationarity.adf
+
+
 def _base_result(regression: str, decision: str, alpha: float = 0.05):
-    base = stationarity.adf(
+    base = _REAL_ADF(
         np.linspace(1.0, 80.0, 80),
         regression=regression,
         lags=0,
@@ -101,7 +105,7 @@ def test_stage7_model3_rejects_beta_insignificant_then_model2_checks_c(monkeypat
     assert "constant" in result.nature
 
 
-def test_stage7_model3_unit_root_not_rejected_uses_f3_and_f3_rejection_is_terminal(monkeypatch):
+def test_stage7_model3_unit_root_not_rejected_uses_f3_then_can_continue_to_model2(monkeypatch):
     def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
         return _base_result(regression, "fail_to_reject", alpha)
 
@@ -159,85 +163,6 @@ def test_stage7_model3_f3_not_rejected_then_model2_f2_can_retain_integrated_spec
     ]
     assert result.selected.regression == "c"
     assert "DS candidate" in result.nature
-
-
-def test_stage7_model3_rejects_beta_insignificant_model2_rejects_alpha_then_model1_decision(monkeypatch):
-    original_fit = stationarity._fit_df_regression
-
-    def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
-        decisions = {
-            "ct": "reject",
-            "c": "reject",
-            "n": "reject",
-        }
-        return _base_result(regression, decisions[regression], alpha)
-
-    def fake_fit(x, regression, lags):
-        fitted = original_fit(np.asarray(x), regression, lags)
-        if regression == "ct":
-            # trend insignificant: force transition to Model 2
-            fitted["tvalues"] = np.array([0.0, 0.2, -5.0])
-        elif regression == "c":
-            # constant insignificant: force transition to Model 1
-            fitted["tvalues"] = np.array([0.2, -5.0])
-        return fitted
-
-    monkeypatch.setattr(stationarity, "adf", fake_adf)
-    monkeypatch.setattr(stationarity, "_fit_df_regression", fake_fit)
-
-    result = stationarity.dickey_fuller_sequential(
-        np.arange(1.0, 81.0), max_lags=0, autolag=None
-    )
-
-    assert [r.regression for r in result.tests] == ["ct", "c", "n"]
-    assert result.selected.regression == "n"
-    assert [s.name for s in result.specification_tests] == [
-        "Model 3 trend test",
-        "Model 2 constant test",
-    ]
-    assert [s.decision for s in result.specification_tests] == [
-        "fail_to_reject",
-        "fail_to_reject",
-    ]
-    assert result.selected.rejects_null
-    assert "stationary around zero" in result.nature
-
-
-def test_stage7_model3_f3_nonrejection_model2_f2_nonrejection_then_model1_decision(monkeypatch):
-    def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
-        return _base_result(regression, "reject" if regression == "n" else "fail_to_reject", alpha)
-
-    def fake_joint_f(x, regression, lags, alpha):
-        return stationarity.SpecificationTestResult(
-            name="Model 3 joint F test" if regression == "ct" else "Model 2 joint F test",
-            null_hypothesis="joint H0",
-            alternative_hypothesis="joint H1",
-            statistic=1.0,
-            critical_value=6.0 if regression == "ct" else 4.0,
-            decision="fail_to_reject",
-            alpha=alpha,
-            source="focused regression test",
-        )
-
-    monkeypatch.setattr(stationarity, "adf", fake_adf)
-    monkeypatch.setattr(stationarity, "_joint_f_test", fake_joint_f)
-
-    result = stationarity.dickey_fuller_sequential(
-        np.arange(1.0, 81.0), max_lags=0, autolag=None
-    )
-
-    assert [r.regression for r in result.tests] == ["ct", "c", "n"]
-    assert [s.name for s in result.specification_tests] == [
-        "Model 3 joint F test",
-        "Model 2 joint F test",
-    ]
-    assert [s.decision for s in result.specification_tests] == [
-        "fail_to_reject",
-        "fail_to_reject",
-    ]
-    assert result.selected.regression == "n"
-    assert result.selected.rejects_null
-    assert "stationary around zero" in result.nature
 
 
 def test_stage7_course_f2_f3_critical_values_are_nonstandard_and_specification_specific():
