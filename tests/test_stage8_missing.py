@@ -12,10 +12,10 @@ def test_acf_uses_one_common_complete_observation_sample():
     missing[5] = np.nan
     missing[-1] = np.nan
 
-    clean = acf(x[[1, 2, 3, 4, 6, 7, 8, 9]], nlags=3)
+    clean = acf(x[[1, 2, 3, 4, 6, 7, 8]], nlags=3)
     result = acf(missing, nlags=3)
 
-    assert result.nobs == 8
+    assert result.nobs == 7
     assert result.missing_count == 3
     assert np.allclose(result.values, clean.values, rtol=1e-13, atol=1e-13)
 
