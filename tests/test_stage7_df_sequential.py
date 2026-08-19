@@ -131,7 +131,7 @@ def test_stage7_model3_unit_root_not_rejected_uses_f3_then_can_continue_to_model
     assert result.selected.regression == "ct"
     assert result.specification_tests[0].name == "Model 3 joint F test"
     assert result.specification_tests[0].decision == "reject"
-    assert "integrated" in result.nature
+    assert result.nature.startswith("I(1)")
 
 
 def test_stage7_model3_f3_not_rejected_then_model2_f2_can_retain_integrated_specification(monkeypatch):
