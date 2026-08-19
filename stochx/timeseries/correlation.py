@@ -1,4 +1,19 @@
-"""ACF and PACF calculations following the course identification workflow."""
+"""EViews-style autocorrelation and partial-autocorrelation calculations.
+
+Stage 8.2 freezes the numerical core used by the correlogram and later
+Box-Jenkins identification workflow:
+
+* AC uses EViews' common-overall-mean convention:
+
+    rho_k = sum_{t=k+1}^n (x_t-xbar)(x_{t-k}-xbar)
+            / sum_{t=1}^n (x_t-xbar)^2
+
+* PAC uses the recursive Box-Jenkins / Durbin-Levinson construction from
+  the already-computed autocorrelations.
+
+Confidence bands are retained here as the existing large-sample API; their
+finite-sample EViews parity is a later Stage 8.5 task.
+"""
 
 from __future__ import annotations
 
@@ -13,7 +28,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class ACFResult:
-    """Autocorrelation function and its large-sample confidence bands."""
+    """Autocorrelation function and large-sample confidence bands."""
 
     lags: np.ndarray
     values: np.ndarray
@@ -30,25 +45,26 @@ class ACFResult:
     def table(self) -> list[dict[str, float | int | bool]]:
         """Return rows suitable for tabular display or export."""
 
+        significant = self.significant()
         return [
             {
                 "Lag": int(lag),
                 "AC": float(value),
                 "Lower": float(lower),
                 "Upper": float(upper),
-                "Significant": bool(significant),
+                "Significant": bool(sig),
             }
-            for lag, value, lower, upper, significant in zip(
+            for lag, value, lower, upper, sig in zip(
                 self.lags,
                 self.values,
                 self.lower,
                 self.upper,
-                self.significant(),
+                significant,
             )
         ]
 
     def summary(self) -> str:
-        """Return an EViews-like correlogram table."""
+        """Return an EViews-like autocorrelation table."""
 
         lines = [
             f"Autocorrelation for {self.series_name}",
@@ -67,7 +83,8 @@ class ACFResult:
     def interpret(self) -> str:
         """Provide a first-pass identification interpretation."""
 
-        sig_lags = [int(lag) for lag in self.lags[1:] if self.significant()[lag]]
+        significant = self.significant()
+        sig_lags = [int(lag) for lag in self.lags[1:] if significant[lag]]
         if not sig_lags:
             return "No non-zero autocorrelation is outside the 5% confidence bands."
         return (
@@ -79,7 +96,7 @@ class ACFResult:
 
 @dataclass(frozen=True)
 class PACFResult:
-    """Partial autocorrelation function and its large-sample confidence bands."""
+    """Partial autocorrelation function and large-sample confidence bands."""
 
     lags: np.ndarray
     values: np.ndarray
@@ -96,25 +113,26 @@ class PACFResult:
     def table(self) -> list[dict[str, float | int | bool]]:
         """Return rows suitable for tabular display or export."""
 
+        significant = self.significant()
         return [
             {
                 "Lag": int(lag),
                 "PAC": float(value),
                 "Lower": float(lower),
                 "Upper": float(upper),
-                "Significant": bool(significant),
+                "Significant": bool(sig),
             }
-            for lag, value, lower, upper, significant in zip(
+            for lag, value, lower, upper, sig in zip(
                 self.lags,
                 self.values,
                 self.lower,
                 self.upper,
-                self.significant(),
+                significant,
             )
         ]
 
     def summary(self) -> str:
-        """Return an EViews-like partial correlogram table."""
+        """Return an EViews-like partial-correlogram table."""
 
         lines = [
             f"Partial Autocorrelation for {self.series_name}",
@@ -147,6 +165,12 @@ class PACFResult:
 
 
 def _clean_values(series: TimeSeries | np.ndarray | list[float]) -> tuple[np.ndarray, str]:
+    """Return finite, non-missing observations and a display name.
+
+    Stage 8.1 defines a common complete-observation policy; AC and PAC
+    therefore share exactly the same cleaned sample and effective nobs.
+    """
+
     if hasattr(series, "values"):
         values = np.asarray(series.values, dtype=float)
         name = getattr(series, "name", "series")
@@ -155,12 +179,22 @@ def _clean_values(series: TimeSeries | np.ndarray | list[float]) -> tuple[np.nda
         name = "series"
     if values.ndim != 1:
         raise ValueError("series must be one-dimensional")
+    if np.any(np.isinf(values)):
+        raise ValueError("series must not contain infinite observations")
     values = values[~np.isnan(values)]
     if values.size < 2:
         raise ValueError("at least two non-missing observations are required")
-    if np.any(np.isinf(values)):
-        raise ValueError("series must not contain infinite observations")
     return values, str(name)
+
+
+def _validate_inputs(nobs: int, nlags: int | None, alpha: float) -> int:
+    if nlags is None:
+        nlags = min(36, nobs // 4)
+    if not isinstance(nlags, int) or isinstance(nlags, bool) or nlags < 0:
+        raise ValueError("nlags must be a non-negative integer")
+    if not 0 < alpha < 1:
+        raise ValueError("alpha must lie strictly between 0 and 1")
+    return min(nlags, nobs - 1)
 
 
 def acf(
@@ -169,40 +203,71 @@ def acf(
     *,
     alpha: float = 0.05,
 ) -> ACFResult:
-    """Estimate the autocorrelation function for lags ``0..nlags``.
+    """Estimate the EViews-style autocorrelation function for lags 0..nlags.
 
-    The estimator uses the empirical autocovariance convention from the
-    course material, with a lag-specific denominator ``T-k``. Confidence
-    bands use the standard large-sample ``± z_(1-alpha/2)/sqrt(T)`` rule.
+    For k >= 1, StochX uses the EViews convention locked in Stage 8.1:
+
+        rho_k = sum_{t=k+1}^n (x_t-xbar)(x_{t-k}-xbar)
+                / sum_{t=1}^n (x_t-xbar)^2
+
+    A single overall sample mean is used in numerator and denominator.  The
+    public correlogram will display only lags 1..nlags; lag 0 is retained in
+    this low-level API because AC(0)=1 is needed by the PAC recursion.
     """
 
     values, name = _clean_values(series)
     nobs = values.size
-    if nlags is None:
-        nlags = min(36, nobs // 4)
-    if not isinstance(nlags, int) or nlags < 0:
-        raise ValueError("nlags must be a non-negative integer")
-    nlags = min(nlags, nobs - 1)
-    if not 0 < alpha < 1:
-        raise ValueError("alpha must lie strictly between 0 and 1")
+    nlags = _validate_inputs(nobs, nlags, alpha)
 
     centered = values - values.mean()
-    variance = np.dot(centered, centered) / nobs
-    if variance <= 0:
+    denominator = float(np.dot(centered, centered))
+    if denominator <= 0.0:
         raise ValueError("ACF is undefined for a constant series")
 
     result = np.empty(nlags + 1, dtype=float)
     result[0] = 1.0
     for lag in range(1, nlags + 1):
-        covariance = np.dot(centered[lag:], centered[:-lag]) / (nobs - lag)
-        result[lag] = covariance / variance
+        result[lag] = float(np.dot(centered[lag:], centered[:-lag]) / denominator)
 
     z = _normal_critical_value(alpha)
     bound = z / np.sqrt(nobs)
-    lags = np.arange(nlags + 1)
+    lags = np.arange(nlags + 1, dtype=int)
     lower = np.full(nlags + 1, -bound, dtype=float)
     upper = np.full(nlags + 1, bound, dtype=float)
     return ACFResult(lags, result, lower, upper, nobs, name)
+
+
+def _recursive_pacf(ac_values: np.ndarray) -> np.ndarray:
+    """Compute PACF recursively from AC using the Box-Jenkins recursion."""
+
+    nlags = len(ac_values) - 1
+    pac_values = np.ones(nlags + 1, dtype=float)
+    if nlags == 0:
+        return pac_values
+
+    previous = np.empty(0, dtype=float)
+    for k in range(1, nlags + 1):
+        numerator = float(ac_values[k])
+        if k > 1:
+            numerator -= float(np.dot(previous, ac_values[k - 1 : 0 : -1]))
+
+        denominator = 1.0
+        if k > 1:
+            denominator -= float(np.dot(previous, ac_values[1:k]))
+        if abs(denominator) <= np.finfo(float).eps:
+            raise ValueError("PACF recursion is singular at lag {0}".format(k))
+
+        phi_kk = numerator / denominator
+        current = np.empty(k, dtype=float)
+        if k == 1:
+            current[0] = phi_kk
+        else:
+            current[:-1] = previous - phi_kk * previous[::-1]
+            current[-1] = phi_kk
+        previous = current
+        pac_values[k] = phi_kk
+
+    return pac_values
 
 
 def pacf(
@@ -211,41 +276,23 @@ def pacf(
     *,
     alpha: float = 0.05,
 ) -> PACFResult:
-    """Estimate the PACF through the Yule-Walker equations.
+    """Estimate the EViews/course recursive partial autocorrelation function.
 
-    For each lag ``k``, the returned PACF is the final coefficient in the
-    linear projection on the first ``k`` lags, matching the course definition.
+    PAC is obtained from the AC sequence using the recursive Box-Jenkins /
+    Durbin-Levinson construction.  At lag k, the final recursive coefficient
+    is the reported PAC(k).
     """
 
     values, name = _clean_values(series)
     nobs = values.size
-    if nlags is None:
-        nlags = min(36, nobs // 4)
-    if not isinstance(nlags, int) or nlags < 0:
-        raise ValueError("nlags must be a non-negative integer")
-    nlags = min(nlags, nobs - 1)
-    if not 0 < alpha < 1:
-        raise ValueError("alpha must lie strictly between 0 and 1")
+    nlags = _validate_inputs(nobs, nlags, alpha)
 
     ac_values = acf(values, nlags=nlags, alpha=alpha).values
-    pac_values = np.ones(nlags + 1, dtype=float)
-    pac_values[0] = 1.0
-
-    for k in range(1, nlags + 1):
-        matrix = np.empty((k, k), dtype=float)
-        for i in range(k):
-            for j in range(k):
-                matrix[i, j] = ac_values[abs(i - j)]
-        rhs = ac_values[1 : k + 1]
-        try:
-            coefficients = np.linalg.solve(matrix, rhs)
-        except np.linalg.LinAlgError as exc:
-            raise ValueError("PACF calculation failed because the Yule-Walker system is singular") from exc
-        pac_values[k] = coefficients[-1]
+    pac_values = _recursive_pacf(ac_values)
 
     z = _normal_critical_value(alpha)
     bound = z / np.sqrt(nobs)
-    lags = np.arange(nlags + 1)
+    lags = np.arange(nlags + 1, dtype=int)
     lower = np.full(nlags + 1, -bound, dtype=float)
     upper = np.full(nlags + 1, bound, dtype=float)
     return PACFResult(lags, pac_values, lower, upper, nobs, name)
