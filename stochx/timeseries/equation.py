@@ -26,10 +26,8 @@ def _expand_eviews_ranges(specification: str) -> list[str]:
     i = 0
     while i < len(tokens):
         token = tokens[i]
-        # EViews range syntax is normally written with spaces: ``X(0 to -12)``.
         if i + 2 < len(tokens) and re.match(r"^[A-Za-z_][A-Za-z0-9_]*\(\s*-?\d+$", token) and tokens[i + 1].lower() == "to":
-            candidate = f"{token} {tokens[i + 1]} {tokens[i + 2]}"
-            candidate = candidate.replace(" ", "")
+            candidate = f"{token} {tokens[i + 1]} {tokens[i + 2]}".replace(" ", "")
             match = re.match(r"^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\((-?\d+)to(-?\d+)\)$", candidate, re.IGNORECASE)
             if match:
                 name = match.group("name")
@@ -124,7 +122,7 @@ class Equation:
         names: list[str] = []
         for token in tokens[1:]:
             if token.upper() == "C":
-                regressors.append(pd.Series(np.ones(dependent.nobs), index=dependent.index))
+                regressors.append(pd.Series(np.ones(dependent.nobs), index=dependent.index, name="C"))
                 names.append("C")
                 continue
             try:
@@ -138,7 +136,7 @@ class Equation:
             series = value[self.workfile.sample]
             if series.nobs != dependent.nobs:
                 raise ValueError(f"regressor {token!r} has incompatible length")
-            regressors.append(pd.Series(series.values, index=series.index))
+            regressors.append(pd.Series(series.values, index=series.index, name=token))
             names.append(token)
 
         frame = pd.DataFrame({dependent_name: dependent.values}, index=dependent.index)
@@ -147,8 +145,8 @@ class Equation:
         frame = frame.replace([np.inf, -np.inf], np.nan).dropna()
         if frame.empty:
             raise ValueError("no observations remain after applying the equation sample")
-        y = frame[dependent_name].to_numpy(dtype=float)
-        X = frame[names].to_numpy(dtype=float)
+        y = frame[dependent_name]
+        X = frame[names]
         model = sm.OLS(y, X)
         result = model.fit()
         sample = f"{frame.index[0]} {frame.index[-1]}" if frame.index is not None and len(frame.index) else None
