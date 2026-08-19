@@ -36,7 +36,6 @@ def test_stage7_common_lag_order_is_used_for_all_models(monkeypatch):
         autolag=None,
         alpha=0.05,
     )
-
     assert isinstance(result, SequentialDFResult)
     assert [r.regression for r in result.tests] == ["ct", "c", "n"]
     assert [r.lags for r in result.tests] == [2, 2, 2]
@@ -46,24 +45,17 @@ def test_stage7_common_lag_order_is_used_for_all_models(monkeypatch):
 
 def test_stage7_model3_rejects_and_beta_is_significant(monkeypatch):
     original_fit = stationarity._fit_df_regression
-
     def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
         return _base_result(regression, "reject" if regression == "ct" else "fail_to_reject", alpha)
-
     def fake_fit(x, regression, lags):
         fitted = original_fit(np.asarray(x), regression, lags)
         if regression == "ct":
             fitted["tvalues"] = np.array([0.0, 3.0, -5.0])
             fitted["params"] = np.array([1.0, 2.0, -0.5])
         return fitted
-
     monkeypatch.setattr(stationarity, "adf", fake_adf)
     monkeypatch.setattr(stationarity, "_fit_df_regression", fake_fit)
-
-    result = stationarity.dickey_fuller_sequential(
-        np.arange(1.0, 81.0), max_lags=0, autolag=None
-    )
-
+    result = stationarity.dickey_fuller_sequential(np.arange(1.0, 81.0), max_lags=0, autolag=None)
     assert result.selected.regression == "ct"
     assert result.specification_tests[0].name == "Model 3 trend test"
     assert result.specification_tests[0].decision == "reject"
@@ -72,14 +64,8 @@ def test_stage7_model3_rejects_and_beta_is_significant(monkeypatch):
 
 def test_stage7_model3_rejects_beta_insignificant_then_model2_checks_c(monkeypatch):
     original_fit = stationarity._fit_df_regression
-
     def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
-        return _base_result(
-            regression,
-            "reject" if regression in {"ct", "c"} else "fail_to_reject",
-            alpha,
-        )
-
+        return _base_result(regression, "reject" if regression in {"ct", "c"} else "fail_to_reject", alpha)
     def fake_fit(x, regression, lags):
         fitted = original_fit(np.asarray(x), regression, lags)
         if regression == "ct":
@@ -87,28 +73,19 @@ def test_stage7_model3_rejects_beta_insignificant_then_model2_checks_c(monkeypat
         elif regression == "c":
             fitted["tvalues"] = np.array([3.0, -5.0])
         return fitted
-
     monkeypatch.setattr(stationarity, "adf", fake_adf)
     monkeypatch.setattr(stationarity, "_fit_df_regression", fake_fit)
-
-    result = stationarity.dickey_fuller_sequential(
-        np.arange(1.0, 81.0), max_lags=0, autolag=None
-    )
-
+    result = stationarity.dickey_fuller_sequential(np.arange(1.0, 81.0), max_lags=0, autolag=None)
     assert result.selected.regression == "c"
-    assert [s.name for s in result.specification_tests] == [
-        "Model 3 trend test",
-        "Model 2 constant test",
-    ]
+    assert [s.name for s in result.specification_tests] == ["Model 3 trend test", "Model 2 constant test"]
     assert result.specification_tests[0].decision == "fail_to_reject"
     assert result.specification_tests[1].decision == "reject"
     assert "constant" in result.nature
 
 
-def test_stage7_model3_unit_root_not_rejected_uses_f3_then_can_continue_to_model2(monkeypatch):
+def test_stage7_model3_unit_root_not_rejected_and_f3_rejects(monkeypatch):
     def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
         return _base_result(regression, "fail_to_reject", alpha)
-
     def fake_joint_f(x, regression, lags, alpha):
         return stationarity.SpecificationTestResult(
             name="Model 3 joint F test" if regression == "ct" else "Model 2 joint F test",
@@ -117,27 +94,20 @@ def test_stage7_model3_unit_root_not_rejected_uses_f3_then_can_continue_to_model
             statistic=99.0 if regression == "ct" else 1.0,
             critical_value=6.0 if regression == "ct" else 4.0,
             decision="reject" if regression == "ct" else "fail_to_reject",
-            alpha=alpha,
-            source="focused regression test",
+            alpha=alpha, source="focused regression test",
         )
-
     monkeypatch.setattr(stationarity, "adf", fake_adf)
     monkeypatch.setattr(stationarity, "_joint_f_test", fake_joint_f)
-
-    result = stationarity.dickey_fuller_sequential(
-        np.arange(1.0, 81.0), max_lags=0, autolag=None
-    )
-
+    result = stationarity.dickey_fuller_sequential(np.arange(1.0, 81.0), max_lags=0, autolag=None)
     assert result.selected.regression == "ct"
     assert result.specification_tests[0].name == "Model 3 joint F test"
     assert result.specification_tests[0].decision == "reject"
     assert result.nature.startswith("I(1)")
 
 
-def test_stage7_model3_f3_not_rejected_then_model2_f2_can_retain_integrated_specification(monkeypatch):
+def test_stage7_model3_f3_not_rejected_then_model2_f2_rejects(monkeypatch):
     def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
         return _base_result(regression, "fail_to_reject", alpha)
-
     def fake_joint_f(x, regression, lags, alpha):
         return stationarity.SpecificationTestResult(
             name="Model 3 joint F test" if regression == "ct" else "Model 2 joint F test",
@@ -146,23 +116,65 @@ def test_stage7_model3_f3_not_rejected_then_model2_f2_can_retain_integrated_spec
             statistic=1.0 if regression == "ct" else 99.0,
             critical_value=6.0 if regression == "ct" else 4.0,
             decision="fail_to_reject" if regression == "ct" else "reject",
-            alpha=alpha,
-            source="focused regression test",
+            alpha=alpha, source="focused regression test",
         )
-
     monkeypatch.setattr(stationarity, "adf", fake_adf)
     monkeypatch.setattr(stationarity, "_joint_f_test", fake_joint_f)
-
-    result = stationarity.dickey_fuller_sequential(
-        np.arange(1.0, 81.0), max_lags=0, autolag=None
-    )
-
-    assert [s.name for s in result.specification_tests] == [
-        "Model 3 joint F test",
-        "Model 2 joint F test",
-    ]
+    result = stationarity.dickey_fuller_sequential(np.arange(1.0, 81.0), max_lags=0, autolag=None)
+    assert [s.name for s in result.specification_tests] == ["Model 3 joint F test", "Model 2 joint F test"]
     assert result.selected.regression == "c"
-    assert "DS candidate" in result.nature
+    assert result.nature.endswith("DS candidate)")
+
+
+def test_stage7_model1_terminal_after_beta_and_alpha_are_insignificant(monkeypatch):
+    original_fit = stationarity._fit_df_regression
+    calls = []
+    def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
+        calls.append(regression)
+        return _base_result(regression, "reject", alpha)
+    def fake_fit(x, regression, lags):
+        fitted = original_fit(np.asarray(x), regression, lags)
+        if regression == "ct":
+            fitted["tvalues"] = np.array([0.1, 0.2, -5.0])
+        elif regression == "c":
+            fitted["tvalues"] = np.array([0.2, -5.0])
+        return fitted
+    monkeypatch.setattr(stationarity, "adf", fake_adf)
+    monkeypatch.setattr(stationarity, "_fit_df_regression", fake_fit)
+    result = stationarity.dickey_fuller_sequential(np.arange(1.0, 81.0), max_lags=0, autolag=None)
+    assert calls == ["ct", "c", "n"]
+    assert [item.regression for item in result.tests] == ["ct", "c", "n"]
+    assert [item.name for item in result.specification_tests] == ["Model 3 trend test", "Model 2 constant test"]
+    assert [item.decision for item in result.specification_tests] == ["fail_to_reject", "fail_to_reject"]
+    assert result.selected.regression == "n"
+    assert result.selected.rejects_null
+    assert result.nature == "stationary around zero (TS)"
+
+
+def test_stage7_model1_terminal_after_f3_and_f2_non_rejection(monkeypatch):
+    calls = []
+    def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
+        calls.append(("adf", regression))
+        return _base_result(regression, "reject" if regression == "n" else "fail_to_reject", alpha)
+    def fake_joint_f(x, regression, lags, alpha):
+        calls.append(("f", regression))
+        return stationarity.SpecificationTestResult(
+            name="Model 3 joint F test" if regression == "ct" else "Model 2 joint F test",
+            null_hypothesis="H0: joint deterministic specification",
+            alternative_hypothesis="H1: joint specification alternative",
+            statistic=1.0,
+            critical_value=6.49 if regression == "ct" else 4.71,
+            decision="fail_to_reject",
+            alpha=alpha, source="focused regression test",
+        )
+    monkeypatch.setattr(stationarity, "adf", fake_adf)
+    monkeypatch.setattr(stationarity, "_joint_f_test", fake_joint_f)
+    result = stationarity.dickey_fuller_sequential(np.arange(1.0, 81.0), max_lags=0, autolag=None)
+    assert calls == [("adf", "ct"), ("f", "ct"), ("adf", "c"), ("f", "c"), ("adf", "n")]
+    assert [item.regression for item in result.tests] == ["ct", "c", "n"]
+    assert result.selected.regression == "n"
+    assert result.selected.rejects_null
+    assert result.nature == "stationary around zero (TS)"
 
 
 def test_stage7_course_f2_f3_critical_values_are_nonstandard_and_specification_specific():
@@ -178,26 +190,27 @@ def test_stage7_course_f2_f3_critical_values_are_nonstandard_and_specification_s
 def test_stage7_interpretation_reports_terminal_course_decision(monkeypatch):
     def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
         return _base_result(regression, "fail_to_reject", alpha)
-
     monkeypatch.setattr(stationarity, "adf", fake_adf)
-    monkeypatch.setattr(
-        stationarity,
-        "_joint_f_test",
-        lambda x, regression, lags, alpha: stationarity.SpecificationTestResult(
-            name="Model 3 joint F test" if regression == "ct" else "Model 2 joint F test",
-            null_hypothesis="H0: joint deterministic specification",
-            alternative_hypothesis="H1: joint specification alternative",
-            statistic=1.0,
-            critical_value=6.0 if regression == "ct" else 4.0,
-            decision="fail_to_reject",
-            alpha=alpha,
-            source="focused regression test",
-        ),
-    )
-
-    result = stationarity.dickey_fuller_sequential(
-        np.arange(1.0, 81.0), max_lags=0, autolag=None
-    )
+    monkeypatch.setattr(stationarity, "_joint_f_test", lambda x, regression, lags, alpha: stationarity.SpecificationTestResult(
+        name="Model 3 joint F test" if regression == "ct" else "Model 2 joint F test",
+        null_hypothesis="H0: joint deterministic specification",
+        alternative_hypothesis="H1: joint specification alternative",
+        statistic=1.0, critical_value=6.0 if regression == "ct" else 4.0,
+        decision="fail_to_reject", alpha=alpha, source="focused regression test",
+    ))
+    result = stationarity.dickey_fuller_sequential(np.arange(1.0, 81.0), max_lags=0, autolag=None)
     text = result.interpret()
     assert "unit-root null" in text
     assert "terminal specification" in text
+
+
+def test_stage7_uses_eviews_lag_lead_sign_convention():
+    from stochx.timeseries.workfile import Workfile
+    wf = Workfile()
+    wf.add("X", np.arange(1.0, 6.0))
+    lag = wf.eval("X(-1)")
+    lead = wf.eval("X(1)")
+    assert np.isnan(lag.values[0])
+    assert np.allclose(lag.values[1:], np.arange(1.0, 5.0))
+    assert np.allclose(lead.values[:-1], np.arange(2.0, 6.0))
+    assert np.isnan(lead.values[-1])
