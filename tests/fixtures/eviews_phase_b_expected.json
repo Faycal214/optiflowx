@@ -1,0 +1,73 @@
+{
+  "source": {
+    "product": "EViews Time Series Estimation tutorial",
+    "workfile": "Results.wf1",
+    "data_file": "Data.xlsx",
+    "sample": "1960M01 2011M12",
+    "observations": 624,
+    "method": "ARMA Maximum Likelihood (BFGS)"
+  },
+  "equations": {
+    "EQ18": {
+      "specification": "TBILL C LOG(M1) LOG(CPI) LOG(IP) @TREND MA(1)",
+      "nobs": 624,
+      "orders": {"ar": [], "ma": [1]},
+      "reference": {
+        "C": "-58.29338",
+        "LOG(M1)": "-10.01354",
+        "LOG(CPI)": "20.34622",
+        "LOG(IP)": "13.90759",
+        "@TREND": "-0.067423",
+        "MA(1)": "0.906602",
+        "SIGMASQ": "0.745412"
+      }
+    },
+    "EQ19": {
+      "specification": "TBILL C LOG(M1) LOG(CPI) LOG(IP) @TREND MA(1 to 3)",
+      "nobs": 624,
+      "orders": {"ar": [], "ma": [1, 2, 3]},
+      "reference": {
+        "C": "-54.99223",
+        "LOG(M1)": "-8.913111",
+        "LOG(CPI)": "19.38389",
+        "LOG(IP)": "12.25341",
+        "@TREND": "-0.065006",
+        "MA(1)": "1.494225",
+        "MA(2)": "1.245272",
+        "MA(3)": "0.586943",
+        "SIGMASQ": "0.271224"
+      }
+    },
+    "EQ20": {
+      "specification": "TBILL C LOG(M1) LOG(CPI) LOG(IP) @TREND AR(1) MA(1)",
+      "nobs": 624,
+      "orders": {"ar": [1], "ma": [1]},
+      "reference": {
+        "C": "-54.95901",
+        "LOG(M1)": "-2.766148",
+        "LOG(CPI)": "13.33536",
+        "LOG(IP)": "9.209863",
+        "@TREND": "-0.062635",
+        "AR(1)": "0.944015",
+        "MA(1)": "0.421720",
+        "SIGMASQ": "0.165917"
+      }
+    },
+    "EQ21": {
+      "specification": "TBILL C LOG(M1) LOG(CPI) LOG(IP) @TREND AR(1 to 2) MA(1)",
+      "nobs": 624,
+      "orders": {"ar": [1, 2], "ma": [1]},
+      "reference": {
+        "C": "-56.92676",
+        "LOG(M1)": "-2.435588",
+        "LOG(CPI)": "12.80266",
+        "LOG(IP)": "9.844700",
+        "@TREND": "-0.063479",
+        "AR(1)": "0.713765",
+        "AR(2)": "0.227503",
+        "MA(1)": "0.618351",
+        "SIGMASQ": "0.164751"
+      }
+    }
+  }
+}
