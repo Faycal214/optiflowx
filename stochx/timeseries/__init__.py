@@ -17,7 +17,7 @@ from .forecasting import ForecastMetrics, drift_forecast, metrics, naive_forecas
 from .identification import grid_search, identify
 from .interpretation import interpret_correlogram
 from .models import TSResult, estimate, fit_ar, fit_arima, fit_arma, fit_ma, fit_sarima
-from .plotting import plot_correlogram, plot_decomposition, plot_forecast, plot_series
+from .plotting import plot_correlogram, plot_decomposition, plot_eviews_correlogram, plot_forecast, plot_series
 from .regression import RegressionResult, ols, trend_terms
 from .results import ResultTable, UnifiedResult
 from .series import TimeSeries
@@ -54,7 +54,7 @@ __all__ = [
     "TestResult", "durbin_watson_test", "breusch_godfrey", "breusch_godfrey_raw", "box_pierce", "ljung_box", "jarque_bera", "mean_zero_test", "normality_ks", "variance_ratio_test", "breusch_pagan", "arch_test", "residual_diagnostics", "roots_report", "redundancy_check",
     "ForecastMetrics", "metrics", "prediction_interval", "restore_differences", "naive_forecast", "drift_forecast",
     "RegressionResult", "ols", "trend_terms",
-    "white_noise", "ar", "ma", "random_walk", "sarma", "simulate_process",
-    "polynomial_roots", "is_stationary_ar", "is_invertible_ma", "process_mean", "impulse_response", "inverse_ar_coefficients", "theoretical_ma_acf", "theoretical_ar_acf",
-    "plot_series", "plot_correlogram", "plot_forecast", "plot_decomposition",
+    "white_noise", "ar", "ma", "arma", "random_walk", "sarma", "simulate_process",
+    "polynomial_roots", "is_stationary_ar", "is_invertible_ma", "process_mean", "impulse_response", "inverse_ar_coefficients", "theoretical_ar_acf", "theoretical_ma_acf",
+    "plot_series", "plot_correlogram", "plot_eviews_correlogram", "plot_forecast", "plot_decomposition",
 ]
