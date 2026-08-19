@@ -50,6 +50,49 @@ print(eq.interpret())
 
 `C` denotes the constant. Lags and other StochX expressions can be used as regressors.
 
+## Phase B — serial correlation and ARMA error correction
+
+Phase B adds the EViews tutorial's error-process syntax to the equation layer. `AR(n)` and `MA(n)` terms describe the **regression disturbance**, not observed regressors. Ranges such as `AR(1 to 2)` and `MA(1 to 3)` expand into the corresponding contiguous error orders.
+
+```python
+eq = wf.ls(
+    "TBILL C LOG(M1) LOG(CPI) LOG(IP) @TREND AR(1) MA(1)",
+    name="EQ20",
+)
+```
+
+For the official EViews Time Series tutorial benchmark, the current Phase B fixture covers:
+
+```text
+EQ18: MA(1)
+EQ19: MA(1 to 3)
+EQ20: AR(1) + MA(1)
+EQ21: AR(1 to 2) + MA(1)
+```
+
+These use maximum-likelihood estimation with BFGS, matching the estimation method displayed by EViews in the tutorial. The current implementation deliberately treats the numerical optimizer/likelihood convention as a separate parity target; Phase B tests first lock the exact specifications, sample size, parameter names, and error orders.
+
+`@TREND` is supported as a deterministic trend regressor in these equations.
+
+## Serial-correlation diagnostics
+
+The equation result exposes a Breusch-Godfrey test:
+
+```python
+bg = eq.serial_correlation(lags=1)
+print(bg)
+```
+
+The LM and F versions are also available:
+
+```python
+from stochx.timeseries import breusch_godfrey_raw
+
+print(breusch_godfrey_raw(eq.result, lags=1))
+```
+
+The null hypothesis is no residual serial correlation through the requested order. Durbin-Watson, Box-Pierce and Ljung-Box remain available in the general diagnostic layer.
+
 ## Model results
 
 AR, MA, ARMA, ARIMA and SARIMA results expose a common interface:
