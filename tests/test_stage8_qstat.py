@@ -3,13 +3,7 @@ import pandas as pd
 import pytest
 from scipy.stats import chi2
 
-from stochx.timeseries import (
-    CorrelogramResult,
-    ar,
-    arma,
-    correlogram,
-    white_noise,
-)
+from stochx.timeseries import CorrelogramResult, ar, arma, correlogram, white_noise
 from stochx.timeseries.correlogram import ljung_box
 from stochx.timeseries.correlation import acf
 
@@ -98,6 +92,35 @@ def test_correlogram_metadata_and_q_arrays_are_consistent():
     assert result.Prob.shape == result.lags.shape
     assert result.DF.shape == result.lags.shape
     assert np.all(np.diff(result.Q_Stat) >= -1e-12)
+
+
+def test_stage8_5_ordinary_correlogram_exposes_eviews_bands():
+    result = correlogram(white_noise(150, rng=7), nlags=10, model_df=0, alpha=0.05)
+    expected = 2.0 / np.sqrt(150)
+
+    assert result.band_method == "approx_two_standard_errors"
+    assert result.band_multiplier == 2.0
+    assert np.isclose(result.band_standard_error, 1.0 / np.sqrt(150))
+    assert np.isclose(result.band_half_width, expected)
+    assert np.isclose(result.band_confidence_level, 2.0 * 0.9772498680518208 - 1.0)
+    np.testing.assert_allclose(result.ac_lower, -expected, rtol=1e-15, atol=1e-15)
+    np.testing.assert_allclose(result.ac_upper, expected, rtol=1e-15, atol=1e-15)
+    np.testing.assert_allclose(result.pac_lower, -expected, rtol=1e-15, atol=1e-15)
+    np.testing.assert_allclose(result.pac_upper, expected, rtol=1e-15, atol=1e-15)
+
+
+def test_stage8_5_residual_correlogram_bands_use_shared_effective_nobs_and_ignore_model_df():
+    result = correlogram(arma(p=1, q=1, phi=[0.45], theta=[0.25], n=300, rng=42), nlags=8, model_df=2, alpha=0.05)
+    expected = 2.0 / np.sqrt(300)
+
+    assert result.nobs == 300
+    assert result.model_df == 2
+    assert result.band_multiplier == 2.0
+    assert np.isclose(result.band_half_width, expected)
+    np.testing.assert_allclose(result.ac_lower, -expected, rtol=1e-15, atol=1e-15)
+    np.testing.assert_allclose(result.ac_upper, expected, rtol=1e-15, atol=1e-15)
+    np.testing.assert_allclose(result.pac_lower, -expected, rtol=1e-15, atol=1e-15)
+    np.testing.assert_allclose(result.pac_upper, expected, rtol=1e-15, atol=1e-15)
 
 
 def test_model_df_must_be_nonnegative_and_lags_valid():
