@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 
 import numpy as np
 import pandas as pd
@@ -10,6 +11,50 @@ import statsmodels.api as sm
 
 from .expression import ExpressionError, evaluate
 from .results import UnifiedResult
+
+
+_RANGE_RE = re.compile(
+    r"^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\(\s*(?P<start>-?\d+)\s+to\s+(?P<end>-?\d+)\s*\)$",
+    re.IGNORECASE,
+)
+
+
+def _expand_eviews_ranges(specification: str) -> list[str]:
+    """Expand EViews lag/lead ranges such as ``CPI(0 to -12)``."""
+    tokens = specification.split()
+    expanded: list[str] = []
+    i = 0
+    while i < len(tokens):
+        token = tokens[i]
+        # EViews range syntax is normally written with spaces: ``X(0 to -12)``.
+        if i + 2 < len(tokens) and re.match(r"^[A-Za-z_][A-Za-z0-9_]*\(\s*-?\d+$", token) and tokens[i + 1].lower() == "to":
+            candidate = f"{token} {tokens[i + 1]} {tokens[i + 2]}"
+            candidate = candidate.replace(" ", "")
+            match = re.match(r"^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\((-?\d+)to(-?\d+)\)$", candidate, re.IGNORECASE)
+            if match:
+                name = match.group("name")
+                start = int(match.group(2))
+                end = int(match.group(3))
+                step = 1 if end >= start else -1
+                for offset in range(start, end + step, step):
+                    if offset == 0:
+                        expanded.append(name)
+                    else:
+                        expanded.append(f"{name}({offset})")
+                i += 3
+                continue
+        match = _RANGE_RE.match(token)
+        if match:
+            name = match.group("name")
+            start = int(match.group("start"))
+            end = int(match.group("end"))
+            step = 1 if end >= start else -1
+            for offset in range(start, end + step, step):
+                expanded.append(name if offset == 0 else f"{name}({offset})")
+        else:
+            expanded.append(token)
+        i += 1
+    return expanded
 
 
 @dataclass
@@ -47,7 +92,7 @@ class Equation:
         spec = (specification or self.specification).strip()
         if not spec:
             raise ValueError("an equation specification is required")
-        tokens = spec.split()
+        tokens = _expand_eviews_ranges(spec)
         if len(tokens) < 2:
             raise ValueError("OLS specification must contain a dependent variable and at least one regressor")
         dependent_name = tokens[0]
