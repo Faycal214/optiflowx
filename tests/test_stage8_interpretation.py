@@ -55,17 +55,33 @@ def test_stage8_8_residual_interpretation_reports_model_df_and_ignores_nonpositi
 
 
 def test_stage8_8_no_significant_spikes_is_reported_cleanly():
-    result = correlogram(white_noise(120, rng=21), nlags=6)
+    result = CorrelogramResult(
+        lags=np.arange(1, 4),
+        ac=np.array([0.02, -0.03, 0.01]),
+        pac=np.array([-0.01, 0.02, -0.02]),
+        q_stat=np.array([0.1, 0.2, 0.3]),
+        pvalues=np.array([0.75, 0.85, 0.95]),
+        df=np.array([1, 2, 3]),
+        nobs=100,
+        nlags=3,
+        model_df=0,
+        alpha=0.05,
+        series_name="WN",
+        ac_lower=np.full(3, -0.20),
+        ac_upper=np.full(3, 0.20),
+        pac_lower=np.full(3, -0.20),
+        pac_upper=np.full(3, 0.20),
+    )
     text = interpret_correlogram(result)
 
-    assert "No AC spikes are outside the displayed confidence bands." in text or "Significant AC spikes" in text
-    assert "No PAC spikes are outside the displayed confidence bands." in text or "Significant PAC spikes" in text
-    assert "Ljung-Box" in text
+    assert "No AC spikes are outside the displayed confidence bands." in text
+    assert "No PAC spikes are outside the displayed confidence bands." in text
+    assert "does not reject the no-autocorrelation null" in text
 
 
 def test_stage8_8_max_spikes_and_alpha_are_deterministic():
     result = _result_with_spikes()
-    text = interpret_correlogram(result, alpha=0.10, max_spikes=1)
+    text = interpret_correlogram(result, alpha=0.01, max_spikes=1)
 
     assert "Significant AC spikes at lag(s) 1." in text
     assert "Significant PAC spikes at lag(s) 2." in text
