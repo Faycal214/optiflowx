@@ -21,6 +21,7 @@ from .results import ResultTable, UnifiedResult
 from .series import TimeSeries
 from .simulation import ar, arma, ma, random_walk, sarma, simulate_process, white_noise
 from .stationarity import (
+    DF_CRITICAL_VALUES,
     DF_F_CRITICAL_VALUES,
     DF_SPECIFICATIONS,
     SequentialDFResult,
@@ -41,7 +42,7 @@ from .workfile import Workfile
 __all__ = [
     "TimeSeries", "Workfile", "Expression", "ExpressionError", "evaluate", "Equation", "EquationResult", "UnifiedResult", "ResultTable",
     "ACFResult", "PACFResult", "acf", "pacf", "correlogram",
-    "DF_SPECIFICATIONS", "DF_F_CRITICAL_VALUES", "UnitRootResult", "SpecificationTestResult", "SequentialDFResult",
+    "DF_SPECIFICATIONS", "DF_CRITICAL_VALUES", "DF_F_CRITICAL_VALUES", "UnitRootResult", "SpecificationTestResult", "SequentialDFResult",
     "adf", "dickey_fuller", "kpss_test", "phillips_perron", "dickey_fuller_sequential", "classify_ts_ds", "difference", "trend_regression",
     "DecompositionResult", "moving_average", "weighted_moving_average", "exponential_smoothing", "holt", "holt_winters", "decompose", "seasonal_difference", "seasonal_indices", "fisher_seasonality_test",
     "TSResult", "fit_ar", "fit_ma", "fit_arma", "fit_arima", "fit_sarima", "estimate",
