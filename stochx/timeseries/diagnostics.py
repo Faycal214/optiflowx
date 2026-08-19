@@ -10,6 +10,8 @@ from scipy import stats
 from statsmodels.stats.stattools import durbin_watson
 from statsmodels.stats.diagnostic import acorr_breusch_godfrey, acorr_ljungbox, het_breuschpagan, het_arch
 
+from .correlogram import CorrelogramResult, correlogram
+
 
 @dataclass(frozen=True)
 class TestResult:
@@ -96,6 +98,32 @@ def ljung_box(residuals, lags: int = 12, *, model_df: int = 0, alpha: float = 0.
         raise ValueError("lags must exceed model_df")
     result = acorr_ljungbox(x, lags=[lags], model_df=model_df, return_df=True).iloc[-1]
     return TestResult("Ljung-Box", float(result["lb_stat"]), float(result["lb_pvalue"]), "All residual autocorrelations through K are zero", "At least one residual autocorrelation is non-zero", alpha)
+
+
+def residual_correlogram(residuals, *, lags: int = 12, model_df: int = 0, alpha: float = 0.05) -> CorrelogramResult:
+    """Return the frozen EViews-style correlogram for model residuals.
+
+    This is the canonical residual-correlogram entry point for the model
+    diagnostics workflow. It delegates all numerical work to
+    :func:`stochx.timeseries.correlogram`, so AC, PAC, Q-Stat, Prob., DF,
+    confidence bands, missing-value handling, aliases and immutability all
+    remain governed by the Stage 8 contract.
+    """
+    if not isinstance(lags, int) or isinstance(lags, bool) or lags < 1:
+        raise ValueError("lags must be a positive integer")
+    return correlogram(residuals, nlags=lags, model_df=model_df, alpha=alpha)
+
+
+def residual_diagnostics_correlogram(result, *, lags: int = 12, alpha: float = 0.05) -> CorrelogramResult:
+    """Build the canonical residual correlogram from a fitted TSResult-like model.
+
+    ``model_df`` follows the frozen Stage 8 residual convention: estimated
+    AR and MA orders are deducted from the Ljung-Box degrees of freedom.
+    """
+    order = getattr(result, "order", None)
+    p = int(order[0]) if order else 0
+    q = int(order[2]) if order and len(order) >= 3 else 0
+    return residual_correlogram(result.residuals, lags=lags, model_df=p + q, alpha=alpha)
 
 
 def jarque_bera(residuals, *, alpha: float = 0.05) -> TestResult:
