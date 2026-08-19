@@ -12,13 +12,6 @@ from .results import UnifiedResult
 from .series import TimeSeries
 
 
-def _as_series(y: TimeSeries | Iterable[float]) -> pd.Series:
-    if isinstance(y, TimeSeries):
-        index = y.index if y.index is not None else None
-        return pd.Series(y.values, index=index, name=y.name, dtype=float)
-    return pd.Series(np.asarray(list(y), dtype=float), dtype=float)
-
-
 @dataclass
 class TSResult(UnifiedResult):
     """Unified StochX result wrapper around a fitted time-series model."""
@@ -52,6 +45,16 @@ class TSResult(UnifiedResult):
             q=self.order[2] if self.order else 0,
         )
 
+    def residual_correlogram(self, lags: int = 12, *, alpha: float = 0.05):
+        """Return the frozen EViews-style correlogram of model residuals."""
+        from .diagnostics import residual_diagnostics_correlogram
+
+        return residual_diagnostics_correlogram(self, lags=lags, alpha=alpha)
+
+    def correlogram(self, lags: int = 12, *, alpha: float = 0.05):
+        """Alias for :meth:`residual_correlogram` in the diagnostics workflow."""
+        return self.residual_correlogram(lags=lags, alpha=alpha)
+
     def roots(self) -> dict[str, np.ndarray]:
         """Return AR and MA roots when available."""
         ar_roots = np.asarray(getattr(self.result, "arroots", []), dtype=complex)
@@ -71,6 +74,13 @@ class TSResult(UnifiedResult):
         stability = self.stability()
         root_statement = f"Stability check: stationary={stability['stationary']}, invertible={stability['invertible']}."
         return f"{base} {root_statement}"
+
+
+def _as_series(y: TimeSeries | Iterable[float]) -> pd.Series:
+    if isinstance(y, TimeSeries):
+        index = y.index if y.index is not None else None
+        return pd.Series(y.values, index=index, name=y.name, dtype=float)
+    return pd.Series(np.asarray(list(y), dtype=float), dtype=float)
 
 
 def _result(model_name: str, model: Any, result: Any, y, order, seasonal_order=None) -> TSResult:
