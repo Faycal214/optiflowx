@@ -15,6 +15,7 @@ from .equation import Equation, EquationResult
 from .expression import Expression, ExpressionError, evaluate
 from .forecasting import ForecastMetrics, drift_forecast, metrics, naive_forecast, prediction_interval, restore_differences
 from .identification import grid_search, identify
+from .interpretation import interpret_correlogram
 from .models import TSResult, estimate, fit_ar, fit_arima, fit_arma, fit_ma, fit_sarima
 from .plotting import plot_correlogram, plot_decomposition, plot_forecast, plot_series
 from .regression import RegressionResult, ols, trend_terms
@@ -44,7 +45,7 @@ from .workfile import Workfile
 __all__ = [
     "TimeSeries", "Workfile", "Expression", "ExpressionError", "evaluate", "Equation", "EquationResult", "UnifiedResult", "ResultTable",
     "ErrorProcess", "parse_error_terms",
-    "ACFResult", "PACFResult", "acf", "pacf", "CorrelogramResult", "LjungBoxResult", "correlogram", "correlogram_ljung_box", "ljung_box", "format_correlogram_table", "format_correlogram",
+    "ACFResult", "PACFResult", "acf", "pacf", "CorrelogramResult", "LjungBoxResult", "correlogram", "correlogram_ljung_box", "ljung_box", "format_correlogram_table", "format_correlogram", "interpret_correlogram",
     "DF_SPECIFICATIONS", "DF_CRITICAL_VALUES", "DF_F_CRITICAL_VALUES", "UnitRootResult", "SpecificationTestResult", "SequentialDFResult",
     "adf", "dickey_fuller", "kpss_test", "phillips_perron", "dickey_fuller_sequential", "classify_ts_ds", "difference", "trend_regression",
     "DecompositionResult", "moving_average", "weighted_moving_average", "exponential_smoothing", "holt", "holt_winters", "decompose", "seasonal_difference", "seasonal_indices", "fisher_seasonality_test",
