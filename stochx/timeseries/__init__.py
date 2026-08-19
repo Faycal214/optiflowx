@@ -10,7 +10,7 @@ from .arma_errors import ErrorProcess, parse_error_terms
 from .correlation import ACFResult, PACFResult, acf, pacf
 from .correlogram import CorrelogramResult, LjungBoxResult, correlogram, ljung_box as correlogram_ljung_box
 from .decomposition import DecompositionResult, decompose, exponential_smoothing, fisher_seasonality_test, holt, holt_winters, moving_average, seasonal_difference, seasonal_indices, weighted_moving_average
-from .diagnostics import TestResult, arch_test, box_pierce, breusch_godfrey, breusch_godfrey_raw, breusch_pagan, durbin_watson_test, jarque_bera, ljung_box, mean_zero_test, normality_ks, redundancy_check, residual_diagnostics, roots_report, variance_ratio_test
+from .diagnostics import TestResult, arch_test, box_pierce, breusch_godfrey, breusch_godfrey_raw, breusch_pagan, durbin_watson_test, jarque_bera, ljung_box, mean_zero_test, normality_ks, redundancy_check, residual_correlogram, residual_diagnostics, residual_diagnostics_correlogram, roots_report, variance_ratio_test
 from .equation import Equation, EquationResult
 from .expression import Expression, ExpressionError, evaluate
 from .forecasting import ForecastMetrics, drift_forecast, metrics, naive_forecast, prediction_interval, restore_differences
@@ -51,7 +51,7 @@ __all__ = [
     "DecompositionResult", "moving_average", "weighted_moving_average", "exponential_smoothing", "holt", "holt_winters", "decompose", "seasonal_difference", "seasonal_indices", "fisher_seasonality_test",
     "TSResult", "fit_ar", "fit_ma", "fit_arma", "fit_arima", "fit_sarima", "estimate",
     "identify", "grid_search",
-    "TestResult", "durbin_watson_test", "breusch_godfrey", "breusch_godfrey_raw", "box_pierce", "ljung_box", "jarque_bera", "mean_zero_test", "normality_ks", "variance_ratio_test", "breusch_pagan", "arch_test", "residual_diagnostics", "roots_report", "redundancy_check",
+    "TestResult", "durbin_watson_test", "breusch_godfrey", "breusch_godfrey_raw", "box_pierce", "ljung_box", "jarque_bera", "mean_zero_test", "normality_ks", "variance_ratio_test", "breusch_pagan", "arch_test", "residual_correlogram", "residual_diagnostics_correlogram", "residual_diagnostics", "roots_report", "redundancy_check",
     "ForecastMetrics", "metrics", "prediction_interval", "restore_differences", "naive_forecast", "drift_forecast",
     "RegressionResult", "ols", "trend_terms",
     "white_noise", "ar", "ma", "arma", "random_walk", "sarma", "simulate_process",
