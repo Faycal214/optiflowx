@@ -193,13 +193,14 @@ def test_sequential_branch_model3_rejects_beta_insignificant_then_model2(monkeyp
     from dataclasses import replace
 
     original_adf = stationarity.adf
+    original_fit = stationarity._fit_df_regression
 
     def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
         base = original_adf(np.arange(1.0, 80.0), regression=regression, lags=0, autolag=None, alpha=alpha)
         return replace(base, decision="reject" if regression in {"ct", "c"} else "fail_to_reject")
 
     def fake_fit(x, regression, lags):
-        base = stationarity._fit_df_regression(np.arange(1.0, 80.0), regression, 0)
+        base = original_fit(np.arange(1.0, 80.0), regression, 0)
         if regression == "ct":
             base["tvalues"] = np.array([0.0, 0.2, -5.0])
         elif regression == "c":
