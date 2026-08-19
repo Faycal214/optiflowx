@@ -135,12 +135,14 @@ def _eval_node(node: ast.AST, workfile) -> TimeSeries | float:
         if _IDENTIFIER.match(function_name) is None:
             raise ExpressionError("invalid function name")
         args = [_eval_node(arg, workfile) for arg in node.args]
-        # EViews-style X(-1), X(1) syntax: a named workfile series behaves as a lag/lead function.
+        # EViews-style X(-1), X(1) syntax uses negative integers for lags and
+        # positive integers for leads. TimeSeries.lag() uses the opposite sign
+        # convention internally, so translate the expression sign here.
         if function_name in workfile.series and len(args) == 1 and isinstance(args[0], (int, float)):
             periods = int(args[0])
             if periods != args[0]:
                 raise ExpressionError("lag/lead periods must be integers")
-            return _lag(_series(workfile, function_name), periods)
+            return _lag(_series(workfile, function_name), -periods)
         return _function(function_name, args, workfile)
     raise ExpressionError(f"unsupported expression component: {ast.dump(node, include_attributes=False)}")
 
