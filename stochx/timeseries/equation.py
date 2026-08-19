@@ -51,6 +51,22 @@ def _expand_eviews_ranges(specification: str) -> list[str]:
     return expanded
 
 
+def _rename_arma_parameters(series: pd.Series, error_process: ErrorProcess) -> pd.Series:
+    """Map statsmodels ARMA parameter labels onto EViews names."""
+    if not (error_process.max_p or error_process.max_q):
+        return series
+    mapping: dict[str, str] = {}
+    for name in series.index:
+        text = str(name)
+        if text.startswith("ar.L"):
+            mapping[text] = f"AR({int(text[4:])})"
+        elif text.startswith("ma.L"):
+            mapping[text] = f"MA({int(text[4:])})"
+        elif text.lower() in {"sigma2", "sigmasq"}:
+            mapping[text] = "SIGMASQ"
+    return series.rename(index=mapping)
+
+
 @dataclass
 class EquationResult(UnifiedResult):
     """OLS or ARMA-error equation result with EViews-style output."""
@@ -61,14 +77,16 @@ class EquationResult(UnifiedResult):
     def _parameter_series(self, attribute: str) -> pd.Series:
         value = getattr(self.result, attribute, pd.Series(dtype=float))
         if isinstance(value, pd.Series):
-            return value.astype(float)
-        array = np.asarray(value, dtype=float).reshape(-1)
-        names = getattr(self.result, "param_names", None)
-        if names is None:
-            names = getattr(getattr(self.result, "model", None), "param_names", None)
-        if names is None or len(names) != len(array):
-            names = list(range(len(array)))
-        return pd.Series(array, index=names, dtype=float)
+            series = value.astype(float)
+        else:
+            array = np.asarray(value, dtype=float).reshape(-1)
+            names = getattr(self.result, "param_names", None)
+            if names is None:
+                names = getattr(getattr(self.result, "model", None), "param_names", None)
+            if names is None or len(names) != len(array):
+                names = list(range(len(array)))
+            series = pd.Series(array, index=names, dtype=float)
+        return _rename_arma_parameters(series, self.error_process)
 
     @property
     def params(self) -> pd.Series:
@@ -98,6 +116,21 @@ class EquationResult(UnifiedResult):
         index = getattr(getattr(model_data, "data", None), "row_labels", None) if model_data is not None else None
         return pd.Series(values, index=index, name=f"RESID({self.dependent})")
 
+    @property
+    def inverted_ar_roots(self) -> np.ndarray:
+        """Return EViews-style inverse AR characteristic roots."""
+        roots = np.asarray(getattr(self.result, "arroots", np.array([], dtype=complex)), dtype=complex)
+        return 1.0 / roots if roots.size else roots
+
+    @property
+    def inverted_ma_roots(self) -> np.ndarray:
+        """Return EViews-style inverse MA characteristic roots."""
+        roots = np.asarray(getattr(self.result, "maroots", np.array([], dtype=complex)), dtype=complex)
+        return 1.0 / roots if roots.size else roots
+
+    def roots_report(self) -> dict[str, np.ndarray]:
+        return {"Inverted AR Roots": self.inverted_ar_roots, "Inverted MA Roots": self.inverted_ma_roots}
+
     def statistics(self) -> dict[str, float]:
         """Return EViews-normalized regression statistics."""
         nobs = float(self.nobs)
@@ -105,31 +138,27 @@ class EquationResult(UnifiedResult):
         llf = float(getattr(self.result, "llf", np.nan))
         raw_scale = float(getattr(self.result, "scale", np.nan))
         if self.error_process.max_p or self.error_process.max_q:
+            sigma2 = float(self.params.get("SIGMASQ", raw_scale))
             residuals = np.asarray(self.residuals, dtype=float)
             valid = residuals[np.isfinite(residuals)]
-            ssr = float(np.dot(valid, valid)) if valid.size else np.nan
-            sigma2 = float(getattr(self.result, "scale", np.nan))
-            model_params = self.params
-            if "sigma2" in model_params.index:
-                sigma2 = float(model_params["sigma2"])
+            ssr = float(sigma2 * nobs) if np.isfinite(sigma2) else float(np.dot(valid, valid)) if valid.size else np.nan
             sse = float(np.sqrt(sigma2)) if np.isfinite(sigma2) and sigma2 >= 0 else np.nan
-            y = getattr(getattr(self.result, "model", None), "endog", None)
-            y = np.asarray(y, dtype=float).reshape(-1) if y is not None else np.array([])
-            fitted = np.asarray(self.fittedvalues, dtype=float)
-            if y.size and fitted.size == y.size:
-                r2 = 1.0 - float(np.sum((y - fitted) ** 2)) / float(np.sum((y - y.mean()) ** 2))
-                adj = 1.0 - (1.0 - r2) * (nobs - 1.0) / max(nobs - len(model_params), 1.0)
-            else:
-                r2 = adj = np.nan
-            dw_num = float(np.sum(np.diff(valid) ** 2)) if valid.size > 1 else np.nan
-            dw_den = float(np.sum(valid ** 2)) if valid.size else np.nan
-            dw = dw_num / dw_den if dw_den else np.nan
             if np.isfinite(llf) and nobs > 0:
                 aic = -2.0 * llf / nobs + 2.0 * nparams / nobs
                 bic = -2.0 * llf / nobs + nparams * np.log(nobs) / nobs
                 hqic = -2.0 * llf / nobs + 2.0 * nparams * np.log(np.log(nobs)) / nobs
             else:
                 aic = bic = hqic = np.nan
+            y = getattr(getattr(self.result, "model", None), "endog", None)
+            y = np.asarray(y, dtype=float).reshape(-1) if y is not None else np.array([])
+            fitted = np.asarray(self.fittedvalues, dtype=float)
+            if y.size and fitted.size == y.size:
+                r2 = 1.0 - float(np.sum((y - fitted) ** 2)) / float(np.sum((y - y.mean()) ** 2))
+                adj = 1.0 - (1.0 - r2) * (nobs - 1.0) / max(nobs - len(self.params), 1.0)
+            else:
+                r2 = adj = np.nan
+            dw_num = float(np.sum(np.diff(valid) ** 2)) if valid.size > 1 else np.nan
+            dw_den = float(np.sum(valid ** 2)) if valid.size else np.nan
             return {
                 "R-squared": r2,
                 "Adjusted R-squared": adj,
@@ -139,7 +168,7 @@ class EquationResult(UnifiedResult):
                 "Akaike info criterion": aic,
                 "Schwarz criterion": bic,
                 "Hannan-Quinn criterion": hqic,
-                "Durbin-Watson": dw,
+                "Durbin-Watson": dw_num / dw_den if dw_den else np.nan,
                 "F-statistic": np.nan,
                 "Prob(F-statistic)": np.nan,
             }
@@ -164,7 +193,6 @@ class EquationResult(UnifiedResult):
         }
 
     def serial_correlation(self, lags: int = 1):
-        """Run a Breusch-Godfrey LM test on the fitted equation."""
         from .diagnostics import breusch_godfrey
         return breusch_godfrey(self.result, lags=lags)
 
@@ -188,7 +216,8 @@ class Equation:
                 names.append("C")
                 continue
             if token.upper() == "@TREND":
-                frame["@TREND"] = np.arange(1, dependent.nobs + 1, dtype=float)
+                # EViews @TREND is zero-based within the estimation sample.
+                frame["@TREND"] = np.arange(dependent.nobs, dtype=float)
                 names.append("@TREND")
                 continue
             try:
@@ -206,8 +235,8 @@ class Equation:
             names.append(token)
         return frame[names], error_process
 
-    def ls(self, specification: str | None = None) -> EquationResult:
-        """Estimate an OLS or ARMA-error equation using EViews-like syntax."""
+    def ls(self, specification: str | None = None, *, start_params: np.ndarray | list[float] | None = None) -> EquationResult:
+        """Estimate an OLS or EViews-style ARMA-error equation using BFGS ML."""
         spec = (specification or self.specification).strip()
         if not spec:
             raise ValueError("an equation specification is required")
@@ -229,10 +258,13 @@ class Equation:
                 exog=exog,
                 order=(error_process.max_p, 0, error_process.max_q),
                 trend="n",
-                enforce_stationarity=False,
-                enforce_invertibility=False,
+                enforce_stationarity=True,
+                enforce_invertibility=True,
             )
-            result = model.fit(method="bfgs", disp=False, maxiter=1000)
+            kwargs = {"method": "bfgs", "disp": False, "maxiter": 1000}
+            if start_params is not None:
+                kwargs["start_params"] = np.asarray(start_params, dtype=float)
+            result = model.fit(**kwargs)
             method = "ARMA Maximum Likelihood (BFGS)"
         else:
             model = sm.OLS(y, exog)
@@ -252,11 +284,11 @@ class Equation:
         self.result = wrapped
         return wrapped
 
-    def estimate(self, method: str = "LS", specification: str | None = None) -> EquationResult:
+    def estimate(self, method: str = "LS", specification: str | None = None, *, start_params: np.ndarray | list[float] | None = None) -> EquationResult:
         """Estimate using LS/OLS or ARMA maximum likelihood error terms."""
         method_upper = method.upper().replace(" ", "")
         if method_upper in {"LS", "OLS", "MCO", "ML", "ARMA", "ARMAX"}:
-            return self.ls(specification)
+            return self.ls(specification, start_params=start_params)
         raise NotImplementedError("Equation supports LS/OLS and ARMA-error maximum likelihood")
 
     def show(self) -> str:
