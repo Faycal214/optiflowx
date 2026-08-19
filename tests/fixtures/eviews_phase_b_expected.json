@@ -5,69 +5,87 @@
     "data_file": "Data.xlsx",
     "sample": "1960M01 2011M12",
     "observations": 624,
-    "method": "ARMA Maximum Likelihood (BFGS)"
+    "method": "ARMA Maximum Likelihood (BFGS)",
+    "trend": "@TREND starts at 0 within the estimation sample",
+    "root_convention": "EViews reports inverse characteristic roots"
   },
   "equations": {
     "EQ18": {
       "specification": "TBILL C LOG(M1) LOG(CPI) LOG(IP) @TREND MA(1)",
       "nobs": 624,
       "orders": {"ar": [], "ma": [1]},
-      "reference": {
-        "C": "-58.29338",
-        "LOG(M1)": "-10.01354",
-        "LOG(CPI)": "20.34622",
-        "LOG(IP)": "13.90759",
-        "@TREND": "-0.067423",
-        "MA(1)": "0.906602",
-        "SIGMASQ": "0.745412"
-      }
+      "coefficients": {
+        "C": {"coefficient":"-58.29338","std_error":"4.560925","t_stat":"-12.78104","p_value":"0.0000"},
+        "LOG(M1)": {"coefficient":"-10.01354","std_error":"0.891650","t_stat":"-11.23036","p_value":"0.0000"},
+        "LOG(CPI)": {"coefficient":"20.34622","std_error":"0.686036","t_stat":"29.65768","p_value":"0.0000"},
+        "LOG(IP)": {"coefficient":"13.90759","std_error":"0.817128","t_stat":"17.02009","p_value":"0.0000"},
+        "@TREND": {"coefficient":"-0.067423","std_error":"0.003613","t_stat":"-18.65948","p_value":"0.0000"},
+        "MA(1)": {"coefficient":"0.906602","std_error":"0.016854","t_stat":"53.79295","p_value":"0.0000"},
+        "SIGMASQ": {"coefficient":"0.745412","std_error":"0.043239","t_stat":"17.23938","p_value":"0.0000"}
+      },
+      "statistics": {
+        "R-squared":"0.914663","Adjusted R-squared":"0.913833","S.E. of regression":"0.868256","Sum squared resid":"465.1369","Log likelihood":"-794.6090","Akaike info criterion":"2.569260","Schwarz criterion":"2.619024","Hannan-Quinn criterion":"2.588598","F-statistic":"1102.191","Prob(F-statistic)":"0.000000","Durbin-Watson":"0.492218"
+      },
+      "roots": {"ar": [], "ma": ["-0.91"]}
     },
     "EQ19": {
       "specification": "TBILL C LOG(M1) LOG(CPI) LOG(IP) @TREND MA(1 to 3)",
       "nobs": 624,
       "orders": {"ar": [], "ma": [1, 2, 3]},
-      "reference": {
-        "C": "-54.99223",
-        "LOG(M1)": "-8.913111",
-        "LOG(CPI)": "19.38389",
-        "LOG(IP)": "12.25341",
-        "@TREND": "-0.065006",
-        "MA(1)": "1.494225",
-        "MA(2)": "1.245272",
-        "MA(3)": "0.586943",
-        "SIGMASQ": "0.271224"
-      }
+      "coefficients": {
+        "C": {"coefficient":"-54.99223","std_error":"6.419515","t_stat":"-8.566415","p_value":"0.0000"},
+        "LOG(M1)": {"coefficient":"-8.913111","std_error":"1.181876","t_stat":"-7.541494","p_value":"0.0000"},
+        "LOG(CPI)": {"coefficient":"19.38389","std_error":"0.852676","t_stat":"22.73300","p_value":"0.0000"},
+        "LOG(IP)": {"coefficient":"12.25341","std_error":"1.110789","t_stat":"11.03127","p_value":"0.0000"},
+        "@TREND": {"coefficient":"-0.065006","std_error":"0.005198","t_stat":"-12.50512","p_value":"0.0000"},
+        "MA(1)": {"coefficient":"1.494225","std_error":"0.017448","t_stat":"85.63869","p_value":"0.0000"},
+        "MA(2)": {"coefficient":"1.245272","std_error":"0.028195","t_stat":"44.16674","p_value":"0.0000"},
+        "MA(3)": {"coefficient":"0.586943","std_error":"0.023470","t_stat":"25.00781","p_value":"0.0000"},
+        "SIGMASQ": {"coefficient":"0.272124","std_error":"0.011602","t_stat":"23.45360","p_value":"0.0000"}
+      },
+      "statistics": {
+        "R-squared":"0.968846","Adjusted R-squared":"0.968441","S.E. of regression":"0.525458","Sum squared resid":"169.8053","Log likelihood":"-480.7690","Akaike info criterion":"1.569772","Schwarz criterion":"1.633755","Hannan-Quinn criterion":"1.596466","F-statistic":"2390.734","Prob(F-statistic)":"0.000000","Durbin-Watson":"1.588388"
+      },
+      "roots": {"ar": [], "ma": ["-0.33+0.77i","-0.33-0.77i","-0.84"]}
     },
     "EQ20": {
       "specification": "TBILL C LOG(M1) LOG(CPI) LOG(IP) @TREND AR(1) MA(1)",
       "nobs": 624,
       "orders": {"ar": [1], "ma": [1]},
-      "reference": {
-        "C": "-54.95901",
-        "LOG(M1)": "-2.766148",
-        "LOG(CPI)": "13.33536",
-        "LOG(IP)": "9.209863",
-        "@TREND": "-0.062635",
-        "AR(1)": "0.944015",
-        "MA(1)": "0.421720",
-        "SIGMASQ": "0.165917"
-      }
+      "coefficients": {
+        "C": {"coefficient":"-54.95901","std_error":"16.83223","t_stat":"-3.265105","p_value":"0.0012"},
+        "LOG(M1)": {"coefficient":"-2.766148","std_error":"2.515193","t_stat":"-1.099776","p_value":"0.2719"},
+        "LOG(CPI)": {"coefficient":"13.33536","std_error":"4.284563","t_stat":"3.112420","p_value":"0.0019"},
+        "LOG(IP)": {"coefficient":"9.209863","std_error":"2.037330","t_stat":"4.520555","p_value":"0.0000"},
+        "@TREND": {"coefficient":"-0.062635","std_error":"0.017744","t_stat":"-3.530000","p_value":"0.0004"},
+        "AR(1)": {"coefficient":"0.944015","std_error":"0.015368","t_stat":"61.42789","p_value":"0.0000"},
+        "MA(1)": {"coefficient":"0.421720","std_error":"0.014887","t_stat":"28.32834","p_value":"0.0000"},
+        "SIGMASQ": {"coefficient":"0.165917","std_error":"0.004893","t_stat":"33.91041","p_value":"0.0000"}
+      },
+      "statistics": {
+        "R-squared":"0.981005","Adjusted R-squared":"0.980789","S.E. of regression":"0.409965","Sum squared resid":"103.5320","Log likelihood":"-326.5237","Akaike info criterion":"1.072191","Schwarz criterion":"1.129065","Hannan-Quinn criterion":"1.094292","F-statistic":"4544.873","Prob(F-statistic)":"0.000000","Durbin-Watson":"2.054379"
+      },
+      "roots": {"ar":["0.94"], "ma":["-0.42"]}
     },
     "EQ21": {
       "specification": "TBILL C LOG(M1) LOG(CPI) LOG(IP) @TREND AR(1 to 2) MA(1)",
       "nobs": 624,
       "orders": {"ar": [1, 2], "ma": [1]},
-      "reference": {
-        "C": "-56.92676",
-        "LOG(M1)": "-2.435588",
-        "LOG(CPI)": "12.80266",
-        "LOG(IP)": "9.844700",
-        "@TREND": "-0.063479",
-        "AR(1)": "0.713765",
-        "AR(2)": "0.227503",
-        "MA(1)": "0.618351",
-        "SIGMASQ": "0.164751"
-      }
+      "coefficients": {
+        "C": {"coefficient":"-56.92676","std_error":"17.37443","t_stat":"-3.281567","p_value":"0.0011"},
+        "LOG(M1)": {"coefficient":"-2.435588","std_error":"2.563601","t_stat":"-0.950065","p_value":"0.3425"},
+        "LOG(CPI)": {"coefficient":"12.80266","std_error":"4.398146","t_stat":"2.910921","p_value":"0.0037"},
+        "LOG(IP)": {"coefficient":"9.844700","std_error":"2.029720","t_stat":"4.850275","p_value":"0.0000"},
+        "@TREND": {"coefficient":"-0.063479","std_error":"0.018378","t_stat":"-3.454037","p_value":"0.0006"},
+        "AR(1)": {"coefficient":"0.713765","std_error":"0.043304","t_stat":"16.48259","p_value":"0.0000"},
+        "AR(2)": {"coefficient":"0.227503","std_error":"0.044395","t_stat":"5.124579","p_value":"0.0000"},
+        "MA(1)": {"coefficient":"0.618351","std_error":"0.042066","t_stat":"14.69954","p_value":"0.0000"},
+        "SIGMASQ": {"coefficient":"0.164751","std_error":"0.005299","t_stat":"31.09019","p_value":"0.0000"}
+      },
+      "statistics": {
+        "R-squared":"0.981139","Adjusted R-squared":"0.980893","S.E. of regression":"0.408855","Sum squared resid":"102.8048","Log likelihood":"-324.3407","Akaike info criterion":"1.068400","Schwarz criterion":"1.132383","Hannan-Quinn criterion":"1.093263","F-statistic":"3998.940","Prob(F-statistic)":"0.000000","Durbin-Watson":"1.994871"
+      },
+      "roots": {"ar":["0.95","-0.24"], "ma":["-0.62"]}
     }
   }
 }
