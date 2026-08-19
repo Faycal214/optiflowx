@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 from statsmodels.stats.stattools import durbin_watson
-from statsmodels.stats.diagnostic import acorr_ljungbox, het_breuschpagan, het_arch
+from statsmodels.stats.diagnostic import acorr_breusch_godfrey, acorr_ljungbox, het_breuschpagan, het_arch
 
 
 @dataclass(frozen=True)
@@ -25,7 +25,7 @@ class TestResult:
     @property
     def reject(self) -> bool:
         """Whether the null hypothesis is rejected at ``alpha``."""
-        return bool(self.pvalue < self.alpha)
+        return bool(self.pvalue < self.alpha) if np.isfinite(self.pvalue) else False
 
     @property
     def conclusion(self) -> str:
@@ -41,8 +41,41 @@ def durbin_watson_test(residuals) -> TestResult:
     """Return the Durbin-Watson statistic for first-order residual autocorrelation."""
     x = _clean(residuals)
     dw = float(durbin_watson(x))
-    # DW is not naturally a single-p-value test, so expose distance from 2 as a descriptive test object.
     return TestResult("Durbin-Watson", dw, np.nan, "No first-order residual autocorrelation", "Residual autocorrelation is present")
+
+
+def breusch_godfrey(result, lags: int = 1, *, alpha: float = 0.05) -> TestResult:
+    """Run the Breusch-Godfrey LM test on a fitted regression result.
+
+    H0 is no serial correlation through the requested residual lag order.
+    The reported statistic is the LM (chi-square) form, matching the
+    EViews residual-diagnostics view; the auxiliary-regression F form can be
+    obtained from the returned result by calling ``breusch_godfrey_raw``.
+    """
+    if not isinstance(lags, int) or lags < 1:
+        raise ValueError("lags must be a positive integer")
+    lm_stat, lm_pvalue, _, _ = acorr_breusch_godfrey(result, nlags=lags, store=False)
+    return TestResult(
+        "Breusch-Godfrey LM",
+        float(lm_stat),
+        float(lm_pvalue),
+        f"No residual serial correlation through lag {lags}",
+        f"Residual serial correlation exists through lag {lags}",
+        alpha,
+    )
+
+
+def breusch_godfrey_raw(result, lags: int = 1) -> dict[str, float]:
+    """Return both LM and F forms of the Breusch-Godfrey test."""
+    if not isinstance(lags, int) or lags < 1:
+        raise ValueError("lags must be a positive integer")
+    lm_stat, lm_pvalue, f_stat, f_pvalue = acorr_breusch_godfrey(result, nlags=lags, store=False)
+    return {
+        "LM statistic": float(lm_stat),
+        "LM p-value": float(lm_pvalue),
+        "F-statistic": float(f_stat),
+        "F p-value": float(f_pvalue),
+    }
 
 
 def box_pierce(residuals, lags: int = 12, *, model_df: int = 0, alpha: float = 0.05) -> TestResult:
