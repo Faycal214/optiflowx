@@ -37,13 +37,14 @@ from .stationarity import (
     phillips_perron,
     trend_regression,
 )
-from .theory import inverse_ar_coefficients, impulse_response, is_invertible_ma, polynomial_roots, process_mean, theoretical_ar_acf, theoretical_ma_acf, is_stationary_ar
+from .table_formatting import format_correlogram, format_correlogram_table
+from .theory import inverse_ar_coefficients, impulse_response, is_invertible_ma, is_stationary_ar, polynomial_roots, process_mean, theoretical_ar_acf, theoretical_ma_acf
 from .workfile import Workfile
 
 __all__ = [
     "TimeSeries", "Workfile", "Expression", "ExpressionError", "evaluate", "Equation", "EquationResult", "UnifiedResult", "ResultTable",
     "ErrorProcess", "parse_error_terms",
-    "ACFResult", "PACFResult", "acf", "pacf", "CorrelogramResult", "LjungBoxResult", "correlogram", "correlogram_ljung_box", "ljung_box",
+    "ACFResult", "PACFResult", "acf", "pacf", "CorrelogramResult", "LjungBoxResult", "correlogram", "correlogram_ljung_box", "ljung_box", "format_correlogram_table", "format_correlogram",
     "DF_SPECIFICATIONS", "DF_CRITICAL_VALUES", "DF_F_CRITICAL_VALUES", "UnitRootResult", "SpecificationTestResult", "SequentialDFResult",
     "adf", "dickey_fuller", "kpss_test", "phillips_perron", "dickey_fuller_sequential", "classify_ts_ds", "difference", "trend_regression",
     "DecompositionResult", "moving_average", "weighted_moving_average", "exponential_smoothing", "holt", "holt_winters", "decompose", "seasonal_difference", "seasonal_indices", "fisher_seasonality_test",
@@ -52,7 +53,7 @@ __all__ = [
     "TestResult", "durbin_watson_test", "breusch_godfrey", "breusch_godfrey_raw", "box_pierce", "ljung_box", "jarque_bera", "mean_zero_test", "normality_ks", "variance_ratio_test", "breusch_pagan", "arch_test", "residual_diagnostics", "roots_report", "redundancy_check",
     "ForecastMetrics", "metrics", "prediction_interval", "restore_differences", "naive_forecast", "drift_forecast",
     "RegressionResult", "ols", "trend_terms",
-    "white_noise", "ar", "ma", "arma", "random_walk", "sarma", "simulate_process",
+    "white_noise", "ar", "ma", "random_walk", "sarma", "simulate_process",
     "polynomial_roots", "is_stationary_ar", "is_invertible_ma", "process_mean", "impulse_response", "inverse_ar_coefficients", "theoretical_ma_acf", "theoretical_ar_acf",
     "plot_series", "plot_correlogram", "plot_forecast", "plot_decomposition",
 ]
