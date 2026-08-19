@@ -1,14 +1,16 @@
 """Numerical parity checks against the official EViews Time Series tutorial.
 
 The raw Data.xlsx file is deliberately not vendored into StochX. Set
-STOCHX_EVIEWS_DATA to its local path to run these checks. When the benchmark
-asset is absent, the parity test is skipped rather than inventing data.
+STOCHX_EVIEWS_DATA to its local path to run these checks. Reference values are
+stored as display-preserving strings so rounded EViews output is not mistaken
+for machine-precision ground truth.
 """
 
 from __future__ import annotations
 
 import json
 import os
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from zipfile import ZipFile
 from xml.etree import ElementTree as ET
@@ -69,8 +71,44 @@ def _load_eviews_xlsx(path: Path) -> tuple[list[str], dict[str, np.ndarray]]:
     return dates, {key: np.asarray(value, dtype=float) for key, value in columns.items()}
 
 
-def _assert_float(actual: float, expected: float, *, atol: float = 1e-5) -> None:
-    assert actual == pytest.approx(expected, abs=atol, rel=1e-8)
+def _display_tolerance(expected_text: str) -> float:
+    """Return half of the last displayed decimal unit in an EViews string."""
+    try:
+        value = Decimal(expected_text)
+    except (InvalidOperation, ValueError) as exc:
+        raise ValueError(f"invalid numeric reference {expected_text!r}") from exc
+    exponent = value.as_tuple().exponent
+    if exponent >= 0:
+        return 0.5
+    return float(Decimal("0.5") * (Decimal(10) ** exponent))
+
+
+def _assert_eviews_value(
+    actual: float,
+    expected_text: str,
+    *,
+    kind: str,
+    rel: float = 1e-10,
+    atol_override: float | None = None,
+) -> None:
+    """Compare a numerical result against an EViews display value by field type."""
+    expected = float(expected_text)
+    if atol_override is not None:
+        atol = atol_override
+    elif kind == "coefficient" or kind == "std_error":
+        atol = _display_tolerance(expected_text)
+    elif kind == "t_stat":
+        atol = _display_tolerance(expected_text)
+    elif kind == "p_value":
+        # EViews often prints highly significant p-values as 0.0/0.0000;
+        # preserve a tight, practical probability tolerance in that case.
+        atol = max(_display_tolerance(expected_text), 5e-5)
+    elif kind == "statistic":
+        atol = _display_tolerance(expected_text)
+    else:
+        raise ValueError(f"unknown parity field kind: {kind!r}")
+
+    assert actual == pytest.approx(expected, abs=atol, rel=rel)
 
 
 def _build_workfile(path: Path) -> Workfile:
@@ -100,17 +138,18 @@ def test_eviews_phase_a_eq01_eq02_eq02a_eq03_numerical_parity():
         reference = expected[name]
         assert result.nobs == reference["nobs"]
 
-        for term, values in reference["coefficients"].items():
-            assert term in result.table().index, f"missing EViews regressor {term} in {name}"
-            row = result.table().loc[term]
-            _assert_float(float(row["Coefficient"]), values[0])
-            _assert_float(float(row["Std. Error"]), values[1])
-            _assert_float(float(row["t-Statistic"]), values[2], atol=2e-4)
-            _assert_float(float(row["Prob."]), values[3], atol=2e-4)
+        result_table = result.table()
+        for term, fields in reference["coefficients"].items():
+            assert term in result_table.index, f"missing EViews regressor {term} in {name}"
+            row = result_table.loc[term]
+            _assert_eviews_value(float(row["Coefficient"]), fields["coefficient"], kind="coefficient")
+            _assert_eviews_value(float(row["Std. Error"]), fields["std_error"], kind="std_error")
+            _assert_eviews_value(float(row["t-Statistic"]), fields["t_stat"], kind="t_stat")
+            _assert_eviews_value(float(row["Prob."]), fields["p_value"], kind="p_value")
 
         stats = result.statistics()
         for label, expected_value in reference["statistics"].items():
-            _assert_float(stats[label], expected_value, atol=2e-4)
+            _assert_eviews_value(stats[label], expected_value, kind="statistic")
 
 
 def test_eviews_phase_a_range_expansion_and_observation_count_without_data():
