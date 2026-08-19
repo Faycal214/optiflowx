@@ -81,54 +81,55 @@ H0: γ = 0   -> unit root / non-stationarity
 H1: γ < 0   -> stationarity under the selected deterministic specification
 ```
 
-Example:
+## Course critical values
 
-```python
-from stochx.timeseries import adf, dickey_fuller_sequential
+Stage 7 does not use `statsmodels`' critical-value dictionary to make the DF/ADF decision. StochX carries the course's Dickey-Fuller table values explicitly for Models 1, 2 and 3 at n=50, 100, 250 and asymptotic infinity.
 
-model3 = adf(wf["GDP"], regression="ct", lags=2, autolag=None)
-print(model3.summary())
-print(model3.table())
-print(model3.interpret())
-```
-
-### Non-standard Dickey-Fuller critical values
-
-The decision is **not** made by comparing the DF/ADF statistic with an ordinary Student-t or normal critical value. StochX uses the critical values associated with the selected deterministic specification and compares:
+The table-row convention is explicit:
 
 ```text
-Reject H0 when the DF/ADF statistic < the corresponding non-standard DF critical value.
+n <= 50      -> n=50 row
+50 < n <=100 -> n=100 row
+100 < n<=250 -> n=250 row
+n > 250      -> asymptotic (n=∞) row
 ```
 
-The reported p-value is retained for reference, but is explicitly labelled informational and is not used to replace the course's critical-value decision rule.
+This reproduces the course's worked ADF example where 91 effective observations are compared with the 100-observation row. The reported p-value remains informational; the course critical-value inequality is the decision rule.
 
-### Common ADF lag order
+The public constants are:
 
-The course first chooses the number of lagged differences required to control autocorrelation in the innovations. StochX selects that lag order once and then applies the same `p` to Models 3, 2, and 1.
+```python
+from stochx.timeseries import DF_CRITICAL_VALUES, DF_F_CRITICAL_VALUES
+```
+
+## Common ADF lag order and residual whitening
+
+The course introduces lagged differences to whiten the innovations and recommends the minimal specification that removes residual autocorrelation. Stage 7 therefore chooses the smallest common `p` whose Model 3 residuals pass a Ljung-Box whiteness check through the requested diagnostic lag horizon.
 
 ```python
 report = dickey_fuller_sequential(
     wf["GDP"],
     max_lags=8,
-    autolag="AIC",
+    autolag="AIC",      # retained for API compatibility; the sequential workflow uses whitening/parsimony
+    whitening_lags=12,
     alpha=0.05,
 )
 ```
 
-With `autolag=None`, `max_lags` is treated as the fixed common lag order. With an information criterion, the order is selected on Model 3 and then held fixed for the sequential specification tests.
+The selected `p` is then held fixed for Models 3, 2 and 1. The result reports whether whitening was achieved or whether the maximum permitted lag was used as a fallback. Supplying `autolag=None` keeps an explicitly fixed common lag order for TP work.
 
-### Course-faithful sequential decision tree
+## Course-faithful sequential decision tree
 
 The workflow is not simply “stop at the first unit-root rejection”. It follows the conditional specification logic taught in the course:
 
 ```text
 MODEL 3: constant + trend
        |
-       +-- test γ = 0 with DF critical values
+       +-- test γ = 0 with Model 3 DF critical values
        |
        +-- reject H0
        |     |
-       |     +-- test β = 0 with a standard two-sided critical value
+       |     +-- test β = 0 with a standard Student-t critical value
        |           |
        |           +-- β significant -> retain Model 3 / TS
        |           +-- β not significant -> continue to Model 2
@@ -142,11 +143,11 @@ MODEL 3: constant + trend
 
 MODEL 2: constant
        |
-       +-- test γ = 0 with DF critical values
+       +-- test γ = 0 with Model 2 DF critical values
        |
        +-- reject H0
        |     |
-       |     +-- test α = 0 with a standard two-sided critical value
+       |     +-- test α = 0 with a standard Student-t critical value
        |           |
        |           +-- α significant -> retain Model 2 / TS
        |           +-- α not significant -> continue to Model 1
@@ -165,9 +166,9 @@ MODEL 1: no constant, no trend
        +-- do not reject -> difference-stationary / integrated candidate
 ```
 
-The joint F decisions deliberately do **not** use ordinary Fisher p-values. StochX uses the non-standard F2/F3 critical values from the USTHB course tables and reports their source in the result object.
+The F2/F3 decisions use the USTHB non-standard critical values and deliberately do not use ordinary Fisher p-values.
 
-### Unified Stage 7 results
+## Unified Stage 7 results
 
 ```python
 print(report.table())
@@ -176,4 +177,4 @@ print(report.summary())
 print(report.interpret())
 ```
 
-The main table reports each Model 3/2/1 DF/ADF statistic, p-value, 1%, 5%, and 10% critical values, lag order, and decision. The specification table reports the conditional trend/constant tests and the non-standard F3/F2 joint tests used by the decision tree.
+The main table reports each Model 3/2/1 DF/ADF statistic, p-value, 1%, 5%, and 10% course critical values, lag order, and decision. The specification table reports the conditional trend/constant tests and the non-standard F3/F2 joint tests used by the decision tree.
