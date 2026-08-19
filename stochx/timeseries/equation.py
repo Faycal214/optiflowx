@@ -37,10 +37,7 @@ def _expand_eviews_ranges(specification: str) -> list[str]:
                 end = int(match.group(3))
                 step = 1 if end >= start else -1
                 for offset in range(start, end + step, step):
-                    if offset == 0:
-                        expanded.append(name)
-                    else:
-                        expanded.append(f"{name}({offset})")
+                    expanded.append(name if offset == 0 else f"{name}({offset})")
                 i += 3
                 continue
         match = _RANGE_RE.match(token)
@@ -76,6 +73,32 @@ class EquationResult(UnifiedResult):
         model_data = getattr(self.result, "model", None)
         index = getattr(getattr(model_data, "data", None), "row_labels", None) if model_data is not None else None
         return pd.Series(values, index=index, name=f"RESID({self.dependent})")
+
+    def statistics(self) -> dict[str, float]:
+        """Return EViews-normalized regression statistics."""
+        nobs = float(self.nobs)
+        nparams = float(len(self.params))
+        llf = float(getattr(self.result, "llf", np.nan))
+        scale = float(getattr(self.result, "scale", np.nan))
+        if np.isfinite(llf) and nobs > 0:
+            aic = -2.0 * llf / nobs + 2.0 * nparams / nobs
+            bic = -2.0 * llf / nobs + nparams * np.log(nobs) / nobs
+            hqic = -2.0 * llf / nobs + 2.0 * nparams * np.log(np.log(nobs)) / nobs
+        else:
+            aic = bic = hqic = float("nan")
+        return {
+            "R-squared": float(getattr(self.result, "rsquared", np.nan)),
+            "Adjusted R-squared": float(getattr(self.result, "rsquared_adj", np.nan)),
+            "S.E. of regression": float(np.sqrt(scale)) if np.isfinite(scale) and scale >= 0 else float("nan"),
+            "Sum squared resid": float(getattr(self.result, "ssr", np.nan)),
+            "Log likelihood": llf,
+            "Akaike info criterion": aic,
+            "Schwarz criterion": bic,
+            "Hannan-Quinn criterion": hqic,
+            "Durbin-Watson": float(getattr(self.result, "dw", np.nan)),
+            "F-statistic": float(getattr(self.result, "fvalue", np.nan)),
+            "Prob(F-statistic)": float(getattr(self.result, "f_pvalue", np.nan)),
+        }
 
 
 @dataclass
