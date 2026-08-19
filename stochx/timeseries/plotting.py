@@ -31,7 +31,7 @@ def plot_series(y, *, ax=None, title: str | None = None, show: bool = True):
 
 
 def plot_correlogram(result, *, ax=None, title: str | None = None, show: bool = True):
-    """Plot ACF or PACF bars with confidence bands."""
+    """Plot an ACFResult or PACFResult with its supplied confidence bands."""
     if ax is None:
         _, ax = plt.subplots(figsize=(10, 4))
     ax.axhline(0.0, linewidth=0.8)
@@ -43,6 +43,74 @@ def plot_correlogram(result, *, ax=None, title: str | None = None, show: bool = 
     if show:
         plt.show()
     return ax
+
+
+def _plot_correlogram_component(ax, lags, values, lower, upper, *, title: str):
+    """Render one EViews-style AC/PAC component from precomputed result arrays."""
+    ax.axhline(0.0, linewidth=0.8)
+    ax.vlines(lags, 0.0, values, linewidth=1.2)
+    ax.plot(lags, upper, linestyle="--", linewidth=0.8)
+    ax.plot(lags, lower, linestyle="--", linewidth=0.8)
+    ax.set_title(title)
+    ax.set_xlabel("Lag")
+    ax.set_xlim(float(lags[0]) - 0.5, float(lags[-1]) + 0.5)
+
+
+def plot_eviews_correlogram(
+    result,
+    *,
+    axes=None,
+    title: str | None = None,
+    show: bool = True,
+):
+    """Plot the unified EViews-style AC/PAC correlogram.
+
+    ``result`` must be a ``CorrelogramResult``. The plotting layer consumes
+    only the already-computed AC/PAC values and confidence-band arrays, so no
+    numerical statistic is recomputed and the Stage 8 result contract remains
+    unchanged.
+
+    Returns ``(figure, (ac_axis, pac_axis))``.
+    """
+    required = (
+        "lags", "ac", "pac", "ac_lower", "ac_upper", "pac_lower", "pac_upper",
+    )
+    if any(not hasattr(result, name) for name in required):
+        raise TypeError("result must be a CorrelogramResult")
+    if any(getattr(result, name) is None for name in required[3:]):
+        raise ValueError("CorrelogramResult must contain AC/PAC confidence bands")
+
+    if axes is None:
+        fig, axes_array = plt.subplots(2, 1, figsize=(10, 7), sharex=True)
+        axes_tuple = (axes_array[0], axes_array[1])
+    else:
+        if len(axes) != 2:
+            raise ValueError("axes must contain exactly two matplotlib axes")
+        axes_tuple = (axes[0], axes[1])
+        fig = axes_tuple[0].figure
+
+    ac_axis, pac_axis = axes_tuple
+    _plot_correlogram_component(
+        ac_axis,
+        result.lags,
+        result.ac,
+        result.ac_lower,
+        result.ac_upper,
+        title="AC" if title is None else f"{title} — AC",
+    )
+    _plot_correlogram_component(
+        pac_axis,
+        result.lags,
+        result.pac,
+        result.pac_lower,
+        result.pac_upper,
+        title="PAC" if title is None else f"{title} — PAC",
+    )
+    fig.suptitle(title or f"Correlogram for {result.series_name}")
+    fig.tight_layout()
+    if show:
+        plt.show()
+    return fig, axes_tuple
 
 
 def plot_forecast(history, forecast, *, ax=None, title: str = "Forecast", show: bool = True):
