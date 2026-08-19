@@ -3,20 +3,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 import re
 
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 
+from .arma_errors import ErrorProcess, parse_error_terms
 from .expression import ExpressionError, evaluate
 from .results import UnifiedResult
 
-
-_RANGE_RE = re.compile(
-    r"^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\(\s*(?P<start>-?\d+)\s+to\s+(?P<end>-?\d+)\s*\)$",
-    re.IGNORECASE,
-)
+_RANGE_RE = re.compile(r"^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\(\s*(?P<start>-?\d+)\s+to\s+(?P<end>-?\d+)\s*\)$", re.IGNORECASE)
 
 
 def _expand_eviews_ranges(specification: str) -> list[str]:
@@ -54,19 +53,46 @@ def _expand_eviews_ranges(specification: str) -> list[str]:
 
 @dataclass
 class EquationResult(UnifiedResult):
-    """OLS equation result with EViews-style output and interpretation."""
+    """OLS or ARMA-error equation result with EViews-style output."""
 
     specification: str = ""
+    error_process: ErrorProcess = ErrorProcess()
+
+    def _parameter_series(self, attribute: str) -> pd.Series:
+        value = getattr(self.result, attribute, pd.Series(dtype=float))
+        if isinstance(value, pd.Series):
+            return value.astype(float)
+        array = np.asarray(value, dtype=float).reshape(-1)
+        names = getattr(self.result, "param_names", None)
+        if names is None:
+            names = getattr(getattr(self.result, "model", None), "param_names", None)
+        if names is None or len(names) != len(array):
+            names = list(range(len(array)))
+        return pd.Series(array, index=names, dtype=float)
+
+    @property
+    def params(self) -> pd.Series:
+        return self._parameter_series("params")
+
+    @property
+    def bse(self) -> pd.Series:
+        return self._parameter_series("bse").reindex(self.params.index)
+
+    @property
+    def tvalues(self) -> pd.Series:
+        return self._parameter_series("tvalues").reindex(self.params.index)
+
+    @property
+    def pvalues(self) -> pd.Series:
+        return self._parameter_series("pvalues").reindex(self.params.index)
 
     def fitted(self) -> pd.Series:
-        """Return fitted values preserving the model's index when available."""
         values = self.fittedvalues
         model_index = getattr(self.result.model, "data", None)
         index = getattr(model_index, "row_labels", None) if model_index is not None else None
         return pd.Series(values, index=index, name=f"FITTED({self.dependent})")
 
     def residual_series(self) -> pd.Series:
-        """Return residuals as a labelled pandas Series."""
         values = self.residuals
         model_data = getattr(self.result, "model", None)
         index = getattr(getattr(model_data, "data", None), "row_labels", None) if model_data is not None else None
@@ -77,7 +103,46 @@ class EquationResult(UnifiedResult):
         nobs = float(self.nobs)
         nparams = float(len(self.params))
         llf = float(getattr(self.result, "llf", np.nan))
-        scale = float(getattr(self.result, "scale", np.nan))
+        raw_scale = float(getattr(self.result, "scale", np.nan))
+        if self.error_process.max_p or self.error_process.max_q:
+            residuals = np.asarray(self.residuals, dtype=float)
+            valid = residuals[np.isfinite(residuals)]
+            ssr = float(np.dot(valid, valid)) if valid.size else np.nan
+            sigma2 = float(getattr(self.result, "scale", np.nan))
+            model_params = self.params
+            if "sigma2" in model_params.index:
+                sigma2 = float(model_params["sigma2"])
+            sse = float(np.sqrt(sigma2)) if np.isfinite(sigma2) and sigma2 >= 0 else np.nan
+            y = getattr(getattr(self.result, "model", None), "endog", None)
+            y = np.asarray(y, dtype=float).reshape(-1) if y is not None else np.array([])
+            fitted = np.asarray(self.fittedvalues, dtype=float)
+            if y.size and fitted.size == y.size:
+                r2 = 1.0 - float(np.sum((y - fitted) ** 2)) / float(np.sum((y - y.mean()) ** 2))
+                adj = 1.0 - (1.0 - r2) * (nobs - 1.0) / max(nobs - len(model_params), 1.0)
+            else:
+                r2 = adj = np.nan
+            dw_num = float(np.sum(np.diff(valid) ** 2)) if valid.size > 1 else np.nan
+            dw_den = float(np.sum(valid ** 2)) if valid.size else np.nan
+            dw = dw_num / dw_den if dw_den else np.nan
+            if np.isfinite(llf) and nobs > 0:
+                aic = -2.0 * llf / nobs + 2.0 * nparams / nobs
+                bic = -2.0 * llf / nobs + nparams * np.log(nobs) / nobs
+                hqic = -2.0 * llf / nobs + 2.0 * nparams * np.log(np.log(nobs)) / nobs
+            else:
+                aic = bic = hqic = np.nan
+            return {
+                "R-squared": r2,
+                "Adjusted R-squared": adj,
+                "S.E. of regression": sse,
+                "Sum squared resid": ssr,
+                "Log likelihood": llf,
+                "Akaike info criterion": aic,
+                "Schwarz criterion": bic,
+                "Hannan-Quinn criterion": hqic,
+                "Durbin-Watson": dw,
+                "F-statistic": np.nan,
+                "Prob(F-statistic)": np.nan,
+            }
         if np.isfinite(llf) and nobs > 0:
             aic = -2.0 * llf / nobs + 2.0 * nparams / nobs
             bic = -2.0 * llf / nobs + nparams * np.log(nobs) / nobs
@@ -87,7 +152,7 @@ class EquationResult(UnifiedResult):
         return {
             "R-squared": float(getattr(self.result, "rsquared", np.nan)),
             "Adjusted R-squared": float(getattr(self.result, "rsquared_adj", np.nan)),
-            "S.E. of regression": float(np.sqrt(scale)) if np.isfinite(scale) and scale >= 0 else float("nan"),
+            "S.E. of regression": float(np.sqrt(raw_scale)) if np.isfinite(raw_scale) and raw_scale >= 0 else float("nan"),
             "Sum squared resid": float(getattr(self.result, "ssr", np.nan)),
             "Log likelihood": llf,
             "Akaike info criterion": aic,
@@ -97,6 +162,11 @@ class EquationResult(UnifiedResult):
             "F-statistic": float(getattr(self.result, "fvalue", np.nan)),
             "Prob(F-statistic)": float(getattr(self.result, "f_pvalue", np.nan)),
         }
+
+    def serial_correlation(self, lags: int = 1):
+        """Run a Breusch-Godfrey LM test on the fitted equation."""
+        from .diagnostics import breusch_godfrey
+        return breusch_godfrey(self.result, lags=lags)
 
 
 @dataclass
@@ -108,22 +178,18 @@ class Equation:
     specification: str = ""
     result: EquationResult | None = None
 
-    def ls(self, specification: str | None = None) -> EquationResult:
-        """Estimate an OLS equation using EViews-like ``Y C X(-1) Z`` syntax."""
-        spec = (specification or self.specification).strip()
-        if not spec:
-            raise ValueError("an equation specification is required")
-        tokens = _expand_eviews_ranges(spec)
-        if len(tokens) < 2:
-            raise ValueError("OLS specification must contain a dependent variable and at least one regressor")
-        dependent_name = tokens[0]
-        dependent = self.workfile.sample_series(dependent_name)
-        regressors: list[pd.Series] = []
+    def _build_regressors(self, dependent: Any, tokens: list[str]) -> tuple[pd.DataFrame, ErrorProcess]:
+        regressors, error_process = parse_error_terms(tokens)
+        frame = pd.DataFrame(index=dependent.index)
         names: list[str] = []
-        for token in tokens[1:]:
+        for token in regressors:
             if token.upper() == "C":
-                regressors.append(pd.Series(np.ones(dependent.nobs), index=dependent.index, name="C"))
+                frame["C"] = 1.0
                 names.append("C")
+                continue
+            if token.upper() == "@TREND":
+                frame["@TREND"] = np.arange(1, dependent.nobs + 1, dtype=float)
+                names.append("@TREND")
                 continue
             try:
                 value = evaluate(token, self.workfile)
@@ -136,41 +202,64 @@ class Equation:
             series = value[self.workfile.sample]
             if series.nobs != dependent.nobs:
                 raise ValueError(f"regressor {token!r} has incompatible length")
-            regressors.append(pd.Series(series.values, index=series.index, name=token))
+            frame[token] = series.values
             names.append(token)
+        return frame[names], error_process
 
-        frame = pd.DataFrame({dependent_name: dependent.values}, index=dependent.index)
-        for name, regressor in zip(names, regressors):
-            frame[name] = regressor.to_numpy(dtype=float)
+    def ls(self, specification: str | None = None) -> EquationResult:
+        """Estimate an OLS or ARMA-error equation using EViews-like syntax."""
+        spec = (specification or self.specification).strip()
+        if not spec:
+            raise ValueError("an equation specification is required")
+        tokens = _expand_eviews_ranges(spec)
+        if len(tokens) < 2:
+            raise ValueError("equation specification must contain a dependent variable and regressors")
+        dependent_name = tokens[0]
+        dependent = self.workfile.sample_series(dependent_name)
+        X, error_process = self._build_regressors(dependent, tokens[1:])
+        frame = pd.concat([dependent.astype(float).rename(dependent_name), X], axis=1)
         frame = frame.replace([np.inf, -np.inf], np.nan).dropna()
         if frame.empty:
             raise ValueError("no observations remain after applying the equation sample")
         y = frame[dependent_name]
-        X = frame[names]
-        model = sm.OLS(y, X)
-        result = model.fit()
-        sample = f"{frame.index[0]} {frame.index[-1]}" if frame.index is not None and len(frame.index) else None
+        exog = frame[X.columns]
+        if error_process.max_p or error_process.max_q:
+            model = SARIMAX(
+                y,
+                exog=exog,
+                order=(error_process.max_p, 0, error_process.max_q),
+                trend="n",
+                enforce_stationarity=False,
+                enforce_invertibility=False,
+            )
+            result = model.fit(method="bfgs", disp=False, maxiter=1000)
+            method = "ARMA Maximum Likelihood (BFGS)"
+        else:
+            model = sm.OLS(y, exog)
+            result = model.fit()
+            method = "Least Squares"
+        sample = f"{frame.index[0]} {frame.index[-1]}" if len(frame.index) else None
         wrapped = EquationResult(
             result=result,
             title=f"Equation: {self.name}",
             dependent=dependent_name,
-            method="Least Squares",
+            method=method,
             sample=sample,
             specification=spec,
+            error_process=error_process,
         )
         self.specification = spec
         self.result = wrapped
         return wrapped
 
     def estimate(self, method: str = "LS", specification: str | None = None) -> EquationResult:
-        """Estimate the equation using the supported EViews-style method name."""
+        """Estimate using LS/OLS or ARMA maximum likelihood error terms."""
         method_upper = method.upper().replace(" ", "")
-        if method_upper in {"LS", "OLS", "MCO"}:
+        if method_upper in {"LS", "OLS", "MCO", "ML", "ARMA", "ARMAX"}:
             return self.ls(specification)
-        raise NotImplementedError("Equation currently supports LS/OLS; ARMA-family models are available through estimate()")
+        raise NotImplementedError("Equation supports LS/OLS and ARMA-error maximum likelihood")
 
     def show(self) -> str:
-        """Return the current estimation report."""
         if self.result is None:
             return f"Equation {self.name}: {self.specification or '(not estimated)'}"
         return self.result.summary()
