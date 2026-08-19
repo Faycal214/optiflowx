@@ -65,6 +65,98 @@ class LjungBoxResult:
         )
 
 
+@dataclass(frozen=True)
+class CorrelogramResult:
+    """Unified, auditable EViews-style correlogram result.
+
+    The object contains all numeric series needed to reproduce the displayed
+    correlogram: AC, PAC, Ljung-Box Q-statistics, adjusted degrees of freedom,
+    probabilities, and the shared run metadata.
+    """
+
+    lags: np.ndarray
+    ac: np.ndarray
+    pac: np.ndarray
+    q_stat: np.ndarray
+    pvalues: np.ndarray
+    df: np.ndarray
+    nobs: int
+    nlags: int
+    model_df: int
+    alpha: float
+    series_name: str = "series"
+    ac_lower: np.ndarray | None = None
+    ac_upper: np.ndarray | None = None
+    pac_lower: np.ndarray | None = None
+    pac_upper: np.ndarray | None = None
+
+    @property
+    def DF(self) -> np.ndarray:
+        """Adjusted Ljung-Box degrees of freedom, EViews-style table field."""
+        return self.df
+
+    @property
+    def Q_Stat(self) -> np.ndarray:
+        """Ljung-Box Q-statistics, EViews-style table field."""
+        return self.q_stat
+
+    @property
+    def Prob(self) -> np.ndarray:
+        """Ljung-Box chi-square probabilities, EViews-style table field."""
+        return self.pvalues
+
+    def table(self) -> pd.DataFrame:
+        """Return the unified EViews-style correlogram table."""
+        rows = {
+            "Lag": self.lags,
+            "AC": self.ac,
+            "PAC": self.pac,
+            "Q-Stat": self.q_stat,
+            "Prob.": self.pvalues,
+            "DF": self.df,
+        }
+        if self.ac_lower is not None:
+            rows["AC Lower"] = self.ac_lower
+        if self.ac_upper is not None:
+            rows["AC Upper"] = self.ac_upper
+        if self.pac_lower is not None:
+            rows["PAC Lower"] = self.pac_lower
+        if self.pac_upper is not None:
+            rows["PAC Upper"] = self.pac_upper
+        return pd.DataFrame(rows)
+
+    def summary(self) -> str:
+        """Return a compact EViews-style correlogram summary."""
+        lines = [
+            f"Correlogram for {self.series_name}",
+            f"Included observations: {self.nobs}",
+            f"Lags: 1 to {self.nlags}; model_df={self.model_df}; alpha={self.alpha:g}",
+            "Lag       AC        PAC       Q-Stat       Prob.     DF",
+            "------------------------------------------------------------",
+        ]
+        for row in self.table().itertuples(index=False):
+            prob = "NA" if pd.isna(row[4]) else f"{row[4]:.4f}"
+            lines.append(
+                f"{int(row[0]):>3d}   {row[1]:>9.4f}  {row[2]:>9.4f}  "
+                f"{row[3]:>11.4f}  {prob:>8}  {int(row[5]):>3d}"
+            )
+        return "\n".join(lines)
+
+    def interpret(self) -> str:
+        """Interpret the final valid Ljung-Box probability."""
+        valid = np.flatnonzero(np.isfinite(self.pvalues))
+        if valid.size == 0:
+            return "No Ljung-Box probability is defined because the adjusted degrees of freedom are non-positive."
+        idx = int(valid[-1])
+        lag = int(self.lags[idx])
+        pvalue = float(self.pvalues[idx])
+        decision = "rejects" if pvalue < self.alpha else "does not reject"
+        return (
+            f"At lag {lag}, the Ljung-Box test {decision} the no-autocorrelation null "
+            f"at the {self.alpha:.0%} level (p={pvalue:.4g})."
+        )
+
+
 def ljung_box(
     ac_values: np.ndarray,
     *,
@@ -111,8 +203,14 @@ def ljung_box(
     return LjungBoxResult(lags, q_stats, pvalues, df, nobs, model_df)
 
 
-def correlogram(series, *, nlags: int = 36, model_df: int = 0, alpha: float = 0.05) -> pd.DataFrame:
-    """Return AC, PAC, Ljung-Box Q-Stat and Prob columns matching Stage 8.1."""
+def correlogram(
+    series,
+    *,
+    nlags: int = 36,
+    model_df: int = 0,
+    alpha: float = 0.05,
+) -> CorrelogramResult:
+    """Return a unified EViews-style correlogram result."""
     if not isinstance(model_df, int) or model_df < 0:
         raise ValueError("model_df must be a non-negative integer")
     ac = acf(series, nlags=nlags, alpha=alpha)
@@ -120,18 +218,21 @@ def correlogram(series, *, nlags: int = 36, model_df: int = 0, alpha: float = 0.
     lb = ljung_box(ac.values, nobs=ac.nobs, model_df=model_df, nlags=nlags)
     ac_sig = ac.significant()
     pc_sig = pc.significant()
-    rows = []
-    for i, lag in enumerate(lb.lags):
-        rows.append(
-            {
-                "Lag": int(lag),
-                "AC": float(ac.values[lag]),
-                "PAC": float(pc.values[lag]),
-                "Q-Stat": float(lb.q_stat[i]),
-                "Prob.": float(lb.pvalues[i]) if np.isfinite(lb.pvalues[i]) else np.nan,
-                "DF": int(lb.df[i]),
-                "AC Significant": bool(ac_sig[lag]),
-                "PAC Significant": bool(pc_sig[lag]),
-            }
-        )
-    return pd.DataFrame(rows)
+    lags = lb.lags
+    return CorrelogramResult(
+        lags=lags,
+        ac=ac.values[lags],
+        pac=pc.values[lags],
+        q_stat=lb.q_stat,
+        pvalues=lb.pvalues,
+        df=lb.df,
+        nobs=ac.nobs,
+        nlags=nlags,
+        model_df=model_df,
+        alpha=alpha,
+        series_name=getattr(ac, "series_name", "series"),
+        ac_lower=ac.lower[lags],
+        ac_upper=ac.upper[lags],
+        pac_lower=pc.lower[lags],
+        pac_upper=pc.upper[lags],
+    )
