@@ -51,7 +51,11 @@ class LjungBoxResult:
 
 @dataclass(frozen=True)
 class CorrelogramResult:
-    """Unified, auditable EViews-style correlogram result."""
+    """Stable public result contract for an EViews-style correlogram.
+
+    Canonical fields are snake_case. EViews-facing aliases are provided as
+    properties (``AC``, ``PAC``, ``Q_Stat``, ``Prob``, ``DF``).
+    """
 
     lags: np.ndarray
     ac: np.ndarray
@@ -72,6 +76,92 @@ class CorrelogramResult:
     band_multiplier: float = EVIEWS_BAND_MULTIPLIER
     band_method: str = EVIEWS_BAND_METHOD
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.nobs, (int, np.integer)) or isinstance(self.nobs, bool) or self.nobs < 2:
+            raise ValueError("nobs must be an integer >= 2")
+        if not isinstance(self.nlags, (int, np.integer)) or isinstance(self.nlags, bool) or not 1 <= self.nlags < self.nobs:
+            raise ValueError("nlags must be an integer satisfying 1 <= nlags < nobs")
+        if not isinstance(self.model_df, (int, np.integer)) or isinstance(self.model_df, bool) or self.model_df < 0:
+            raise ValueError("model_df must be a non-negative integer")
+        if not 0 < float(self.alpha) < 1:
+            raise ValueError("alpha must lie strictly between 0 and 1")
+        if not isinstance(self.series_name, str) or not self.series_name.strip():
+            raise ValueError("series_name must be a non-empty string")
+        if not isinstance(self.missing_count, (int, np.integer)) or isinstance(self.missing_count, bool) or self.missing_count < 0:
+            raise ValueError("missing_count must be a non-negative integer")
+        if self.missing_count + self.nobs < 1:
+            raise ValueError("nobs and missing_count are inconsistent")
+        if not np.isfinite(float(self.band_multiplier)) or float(self.band_multiplier) <= 0:
+            raise ValueError("band_multiplier must be a positive finite number")
+        if not isinstance(self.band_method, str) or not self.band_method.strip():
+            raise ValueError("band_method must be a non-empty string")
+
+        arrays = {
+            "lags": self.lags,
+            "ac": self.ac,
+            "pac": self.pac,
+            "q_stat": self.q_stat,
+            "pvalues": self.pvalues,
+            "df": self.df,
+        }
+        normalized: dict[str, np.ndarray] = {}
+        for name, value in arrays.items():
+            array = np.asarray(value)
+            if array.ndim != 1 or array.size != self.nlags:
+                raise ValueError(f"{name} must be one-dimensional with length nlags")
+            normalized[name] = array.copy()
+
+        expected_lags = np.arange(1, self.nlags + 1, dtype=int)
+        if not np.array_equal(normalized["lags"], expected_lags):
+            raise ValueError("lags must be exactly 1..nlags")
+        if not np.isfinite(normalized["ac"]).all() or not np.isfinite(normalized["pac"]).all():
+            raise ValueError("AC and PAC values must be finite")
+        if not np.isfinite(normalized["q_stat"]).all() or not np.isfinite(normalized["df"]).all():
+            raise ValueError("Q-Stat and DF values must be finite")
+        if np.any(normalized["df"] != normalized["lags"] - self.model_df):
+            raise ValueError("DF must equal Lag - model_df")
+        probabilities = normalized["pvalues"]
+        invalid_prob = ~np.isfinite(probabilities) & ~np.isnan(probabilities)
+        if invalid_prob.any() or np.any((probabilities[np.isfinite(probabilities)] < 0) | (probabilities[np.isfinite(probabilities)] > 1)):
+            raise ValueError("Prob. values must be in [0, 1] or NaN")
+
+        bands = {
+            "ac_lower": self.ac_lower,
+            "ac_upper": self.ac_upper,
+            "pac_lower": self.pac_lower,
+            "pac_upper": self.pac_upper,
+        }
+        any_band = any(value is not None for value in bands.values())
+        if any_band:
+            if not all(value is not None for value in bands.values()):
+                raise ValueError("all AC/PAC lower and upper band arrays must be supplied together")
+            for name, value in bands.items():
+                array = np.asarray(value)
+                if array.ndim != 1 or array.size != self.nlags:
+                    raise ValueError(f"{name} must be one-dimensional with length nlags")
+                if not np.isfinite(array).all():
+                    raise ValueError(f"{name} must contain only finite values")
+                normalized[name] = array.copy()
+
+        for name, array in normalized.items():
+            array.setflags(write=False)
+            object.__setattr__(self, name, array)
+
+        object.__setattr__(self, "nobs", int(self.nobs))
+        object.__setattr__(self, "nlags", int(self.nlags))
+        object.__setattr__(self, "model_df", int(self.model_df))
+        object.__setattr__(self, "missing_count", int(self.missing_count))
+        object.__setattr__(self, "alpha", float(self.alpha))
+        object.__setattr__(self, "band_multiplier", float(self.band_multiplier))
+
+    @property
+    def AC(self) -> np.ndarray:
+        return self.ac
+
+    @property
+    def PAC(self) -> np.ndarray:
+        return self.pac
+
     @property
     def DF(self) -> np.ndarray:
         return self.df
@@ -81,7 +171,15 @@ class CorrelogramResult:
         return self.q_stat
 
     @property
+    def QStat(self) -> np.ndarray:
+        return self.q_stat
+
+    @property
     def Prob(self) -> np.ndarray:
+        return self.pvalues
+
+    @property
+    def PValues(self) -> np.ndarray:
         return self.pvalues
 
     @property
@@ -94,21 +192,32 @@ class CorrelogramResult:
 
     @property
     def band_confidence_level(self) -> float:
-        """Nominal two-sided confidence level implied by +/- 2 standard errors."""
         from scipy.stats import norm
         return float(2.0 * norm.cdf(self.band_multiplier) - 1.0)
 
     def table(self) -> pd.DataFrame:
-        rows = {"Lag": self.lags, "AC": self.ac, "PAC": self.pac, "Q-Stat": self.q_stat, "Prob.": self.pvalues, "DF": self.df}
+        columns = [
+            "Lag", "AC", "PAC", "Q-Stat", "Prob.", "DF",
+            "AC Lower", "AC Upper", "PAC Lower", "PAC Upper",
+        ]
+        data: dict[str, np.ndarray] = {
+            "Lag": self.lags,
+            "AC": self.ac,
+            "PAC": self.pac,
+            "Q-Stat": self.q_stat,
+            "Prob.": self.pvalues,
+            "DF": self.df,
+        }
         if self.ac_lower is not None:
-            rows["AC Lower"] = self.ac_lower
-        if self.ac_upper is not None:
-            rows["AC Upper"] = self.ac_upper
-        if self.pac_lower is not None:
-            rows["PAC Lower"] = self.pac_lower
-        if self.pac_upper is not None:
-            rows["PAC Upper"] = self.pac_upper
-        return pd.DataFrame(rows)
+            data.update({
+                "AC Lower": self.ac_lower,
+                "AC Upper": self.ac_upper,
+                "PAC Lower": self.pac_lower,
+                "PAC Upper": self.pac_upper,
+            })
+        else:
+            columns = columns[:6]
+        return pd.DataFrame(data, columns=columns).copy()
 
     def summary(self) -> str:
         lines = [
