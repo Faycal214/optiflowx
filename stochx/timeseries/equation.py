@@ -9,7 +9,6 @@ import re
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
-from scipy import stats
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 from .arma_errors import ErrorProcess, parse_error_terms
@@ -94,62 +93,15 @@ class EquationResult(UnifiedResult):
         return self._parameter_series("params")
 
     @property
-    def covariance_method(self) -> str:
-        """Return the coefficient covariance method used for this result."""
-        return "outer product of gradients (OPG)" if (self.error_process.max_p or self.error_process.max_q) else "OLS inverse information"
-
-    def covariance_matrix(self) -> pd.DataFrame:
-        """Return the EViews-style coefficient covariance matrix.
-
-        For ARMA maximum-likelihood equations EViews reports coefficient
-        covariance computed from the outer product of per-observation score
-        vectors. StochX follows the same convention and does not apply an
-        additional finite-sample scaling factor; this matches the published
-        EViews tutorial results used by the Phase B parity fixture.
-        """
-        if not (self.error_process.max_p or self.error_process.max_q):
-            cov = np.asarray(self.result.cov_params(), dtype=float)
-            names = list(self.params.index)
-            return pd.DataFrame(cov, index=names, columns=names)
-
-        model = self.result.model
-        params = np.asarray(self.result.params, dtype=float)
-        score_obs = np.asarray(model.score_obs(params, approx_complex_step=False), dtype=float)
-        if score_obs.ndim != 2 or score_obs.shape[1] != params.size:
-            raise RuntimeError("ARMA score matrix has an unexpected shape")
-        information = score_obs.T @ score_obs
-        covariance = np.linalg.pinv(information, rcond=1e-12)
-        names = list(self.params.index)
-        return pd.DataFrame(covariance, index=names, columns=names)
-
-    @property
-    def covariance(self) -> pd.DataFrame:
-        """Alias for :meth:`covariance_matrix`."""
-        return self.covariance_matrix()
-
-    def _arma_bse(self) -> pd.Series:
-        covariance = self.covariance_matrix()
-        diagonal = np.maximum(np.diag(covariance.to_numpy(dtype=float)), 0.0)
-        return pd.Series(np.sqrt(diagonal), index=covariance.index, dtype=float)
-
-    @property
     def bse(self) -> pd.Series:
-        if self.error_process.max_p or self.error_process.max_q:
-            return self._arma_bse()
         return self._parameter_series("bse").reindex(self.params.index)
 
     @property
     def tvalues(self) -> pd.Series:
-        if self.error_process.max_p or self.error_process.max_q:
-            return self.params / self.bse
         return self._parameter_series("tvalues").reindex(self.params.index)
 
     @property
     def pvalues(self) -> pd.Series:
-        if self.error_process.max_p or self.error_process.max_q:
-            df_resid = max(int(self.nobs - len(self.params)), 1)
-            values = 2.0 * stats.t.sf(np.abs(self.tvalues.to_numpy(dtype=float)), df=df_resid)
-            return pd.Series(values, index=self.params.index, dtype=float)
         return self._parameter_series("pvalues").reindex(self.params.index)
 
     def fitted(self) -> pd.Series:
@@ -166,13 +118,11 @@ class EquationResult(UnifiedResult):
 
     @property
     def inverted_ar_roots(self) -> np.ndarray:
-        """Return EViews-style inverse AR characteristic roots."""
         roots = np.asarray(getattr(self.result, "arroots", np.array([], dtype=complex)), dtype=complex)
         return 1.0 / roots if roots.size else roots
 
     @property
     def inverted_ma_roots(self) -> np.ndarray:
-        """Return EViews-style inverse MA characteristic roots."""
         roots = np.asarray(getattr(self.result, "maroots", np.array([], dtype=complex)), dtype=complex)
         return 1.0 / roots if roots.size else roots
 
@@ -180,7 +130,6 @@ class EquationResult(UnifiedResult):
         return {"Inverted AR Roots": self.inverted_ar_roots, "Inverted MA Roots": self.inverted_ma_roots}
 
     def statistics(self) -> dict[str, float]:
-        """Return EViews-normalized regression statistics."""
         nobs = float(self.nobs)
         nparams = float(len(self.params))
         llf = float(getattr(self.result, "llf", np.nan))
@@ -247,8 +196,6 @@ class EquationResult(UnifiedResult):
 
 @dataclass
 class Equation:
-    """An equation belonging to a StochX Workfile."""
-
     workfile: object
     name: str = "EQ01"
     specification: str = ""
@@ -283,7 +230,6 @@ class Equation:
         return frame[names], error_process
 
     def ls(self, specification: str | None = None, *, start_params: np.ndarray | list[float] | None = None) -> EquationResult:
-        """Estimate an OLS or EViews-style ARMA-error equation using BFGS ML."""
         spec = (specification or self.specification).strip()
         if not spec:
             raise ValueError("an equation specification is required")
@@ -293,21 +239,15 @@ class Equation:
         dependent_name = tokens[0]
         dependent = self.workfile.sample_series(dependent_name)
         X, error_process = self._build_regressors(dependent, tokens[1:])
-        frame = pd.concat([dependent.astype(float).rename(dependent_name), X], axis=1)
+        y_series = pd.Series(np.asarray(dependent.values, dtype=float), index=dependent.index, name=dependent_name)
+        frame = pd.concat([y_series, X], axis=1)
         frame = frame.replace([np.inf, -np.inf], np.nan).dropna()
         if frame.empty:
             raise ValueError("no observations remain after applying the equation sample")
         y = frame[dependent_name]
         exog = frame[X.columns]
         if error_process.max_p or error_process.max_q:
-            model = SARIMAX(
-                y,
-                exog=exog,
-                order=(error_process.max_p, 0, error_process.max_q),
-                trend="n",
-                enforce_stationarity=True,
-                enforce_invertibility=True,
-            )
+            model = SARIMAX(y, exog=exog, order=(error_process.max_p, 0, error_process.max_q), trend="n", enforce_stationarity=True, enforce_invertibility=True)
             kwargs = {"method": "bfgs", "disp": False, "maxiter": 1000}
             if start_params is not None:
                 kwargs["start_params"] = np.asarray(start_params, dtype=float)
@@ -318,21 +258,12 @@ class Equation:
             result = model.fit()
             method = "Least Squares"
         sample = f"{frame.index[0]} {frame.index[-1]}" if len(frame.index) else None
-        wrapped = EquationResult(
-            result=result,
-            title=f"Equation: {self.name}",
-            dependent=dependent_name,
-            method=method,
-            sample=sample,
-            specification=spec,
-            error_process=error_process,
-        )
+        wrapped = EquationResult(result=result, title=f"Equation: {self.name}", dependent=dependent_name, method=method, sample=sample, specification=spec, error_process=error_process)
         self.specification = spec
         self.result = wrapped
         return wrapped
 
     def estimate(self, method: str = "LS", specification: str | None = None, *, start_params: np.ndarray | list[float] | None = None) -> EquationResult:
-        """Estimate using LS/OLS or ARMA maximum likelihood error terms."""
         method_upper = method.upper().replace(" ", "")
         if method_upper in {"LS", "OLS", "MCO", "ML", "ARMA", "ARMAX"}:
             return self.ls(specification, start_params=start_params)
