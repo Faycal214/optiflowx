@@ -7,7 +7,8 @@
     "observations": 624,
     "method": "ARMA Maximum Likelihood (BFGS)",
     "trend": "@TREND starts at 0 within the estimation sample",
-    "root_convention": "EViews reports inverse characteristic roots"
+    "root_convention": "EViews reports inverse characteristic roots",
+    "covariance_method": "outer product of gradients (OPG)"
   },
   "equations": {
     "EQ18": {
@@ -66,7 +67,7 @@
       "nobs": 624,
       "orders": {"ar": [1, 2], "ma": [1]},
       "coefficients": {
-        "C": {"coefficient":"-56.92676","std_error":"17.37443","t_stat":"-3.281567","p_value":"0.0011"},
+        "C": {"coefficient":"-56.92676","std_error":"17.34743","t_stat":"-3.281567","p_value":"0.0011"},
         "LOG(M1)": {"coefficient":"-2.435588","std_error":"2.563601","t_stat":"-0.950065","p_value":"0.3425"},
         "LOG(CPI)": {"coefficient":"12.80266","std_error":"4.398146","t_stat":"2.910921","p_value":"0.0037"},
         "LOG(IP)": {"coefficient":"9.844700","std_error":"2.029720","t_stat":"4.850275","p_value":"0.0000"},
