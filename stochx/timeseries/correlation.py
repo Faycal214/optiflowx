@@ -8,6 +8,10 @@ Box-Jenkins identification workflow:
 
 Stage 8.4 freezes a common complete-observation policy: NaNs are removed
 once before AC/PAC calculation, while infinite observations are rejected.
+
+Stage 8.5 freezes the EViews plotting convention: AC/PAC confidence limits
+are approximate two-standard-error bands, +/- 2/sqrt(T), where T is the
+shared effective observation count after missing-value preprocessing.
 """
 
 from __future__ import annotations
@@ -21,9 +25,13 @@ if TYPE_CHECKING:
     from .series import TimeSeries
 
 
+EVIEWS_BAND_MULTIPLIER = 2.0
+EVIEWS_BAND_METHOD = "approx_two_standard_errors"
+
+
 @dataclass(frozen=True)
 class ACFResult:
-    """Autocorrelation function and large-sample confidence bands."""
+    """Autocorrelation function and EViews-style approximate 2-SE bands."""
 
     lags: np.ndarray
     values: np.ndarray
@@ -32,6 +40,16 @@ class ACFResult:
     nobs: int
     series_name: str
     missing_count: int = 0
+    band_multiplier: float = EVIEWS_BAND_MULTIPLIER
+    band_method: str = EVIEWS_BAND_METHOD
+
+    @property
+    def band_standard_error(self) -> float:
+        return 1.0 / np.sqrt(self.nobs)
+
+    @property
+    def band_half_width(self) -> float:
+        return self.band_multiplier * self.band_standard_error
 
     def significant(self) -> np.ndarray:
         return (self.values < self.lower) | (self.values > self.upper)
@@ -51,6 +69,7 @@ class ACFResult:
             f"Autocorrelation for {self.series_name}",
             f"Included observations: {self.nobs}",
             f"Excluded missing observations: {self.missing_count}",
+            f"Bands: +/- {self.band_multiplier:g} SE = +/- {self.band_half_width:.6f} ({self.band_method})",
             "Lag       AC        Lower      Upper",
             "---------------------------------------",
         ]
@@ -66,7 +85,7 @@ class ACFResult:
         significant = self.significant()
         sig_lags = [int(lag) for lag in self.lags[1:] if significant[lag]]
         if not sig_lags:
-            return "No non-zero autocorrelation is outside the 5% confidence bands."
+            return "No non-zero autocorrelation is outside the EViews-style approximate two-standard-error bands."
         return (
             "Significant autocorrelations occur at lags "
             + ", ".join(map(str, sig_lags))
@@ -76,7 +95,7 @@ class ACFResult:
 
 @dataclass(frozen=True)
 class PACFResult:
-    """Partial autocorrelation function and large-sample confidence bands."""
+    """Partial autocorrelation function and EViews-style approximate 2-SE bands."""
 
     lags: np.ndarray
     values: np.ndarray
@@ -85,6 +104,16 @@ class PACFResult:
     nobs: int
     series_name: str
     missing_count: int = 0
+    band_multiplier: float = EVIEWS_BAND_MULTIPLIER
+    band_method: str = EVIEWS_BAND_METHOD
+
+    @property
+    def band_standard_error(self) -> float:
+        return 1.0 / np.sqrt(self.nobs)
+
+    @property
+    def band_half_width(self) -> float:
+        return self.band_multiplier * self.band_standard_error
 
     def significant(self) -> np.ndarray:
         return (self.values < self.lower) | (self.values > self.upper)
@@ -104,6 +133,7 @@ class PACFResult:
             f"Partial Autocorrelation for {self.series_name}",
             f"Included observations: {self.nobs}",
             f"Excluded missing observations: {self.missing_count}",
+            f"Bands: +/- {self.band_multiplier:g} SE = +/- {self.band_half_width:.6f} ({self.band_method})",
             "Lag       PAC       Lower      Upper",
             "---------------------------------------",
         ]
@@ -119,7 +149,7 @@ class PACFResult:
         significant = self.significant()
         sig_lags = [int(lag) for lag in self.lags[1:] if significant[lag]]
         if not sig_lags:
-            return "No non-zero partial autocorrelation is outside the 5% confidence bands."
+            return "No non-zero partial autocorrelation is outside the EViews-style approximate two-standard-error bands."
         max_lag = max(sig_lags)
         return (
             "Significant partial autocorrelations occur at lags "
@@ -158,6 +188,15 @@ def _validate_inputs(nobs: int, nlags: int | None, alpha: float) -> int:
     return min(nlags, nobs - 1)
 
 
+def _eviews_bands(nobs: int, size: int) -> tuple[np.ndarray, np.ndarray]:
+    """Return EViews approximate two-standard-error bands +/- 2/sqrt(T)."""
+    half_width = EVIEWS_BAND_MULTIPLIER / np.sqrt(nobs)
+    return (
+        np.full(size, -half_width, dtype=float),
+        np.full(size, half_width, dtype=float),
+    )
+
+
 def acf(series: TimeSeries | np.ndarray | list[float], nlags: int | None = None, *, alpha: float = 0.05) -> ACFResult:
     """Estimate the EViews-style ACF after one common missing-value pass."""
     values, name, missing_count = _clean_values(series)
@@ -173,11 +212,8 @@ def acf(series: TimeSeries | np.ndarray | list[float], nlags: int | None = None,
     for lag in range(1, nlags + 1):
         result[lag] = float(np.dot(centered[lag:], centered[:-lag]) / denominator)
 
-    z = _normal_critical_value(alpha)
-    bound = z / np.sqrt(nobs)
+    lower, upper = _eviews_bands(nobs, nlags + 1)
     lags = np.arange(nlags + 1, dtype=int)
-    lower = np.full(nlags + 1, -bound, dtype=float)
-    upper = np.full(nlags + 1, bound, dtype=float)
     return ACFResult(lags, result, lower, upper, nobs, name, missing_count)
 
 
@@ -216,11 +252,8 @@ def pacf(series: TimeSeries | np.ndarray | list[float], nlags: int | None = None
     nlags = _validate_inputs(nobs, nlags, alpha)
     ac_values = acf(values, nlags=nlags, alpha=alpha).values
     pac_values = _recursive_pacf(ac_values)
-    z = _normal_critical_value(alpha)
-    bound = z / np.sqrt(nobs)
+    lower, upper = _eviews_bands(nobs, nlags + 1)
     lags = np.arange(nlags + 1, dtype=int)
-    lower = np.full(nlags + 1, -bound, dtype=float)
-    upper = np.full(nlags + 1, bound, dtype=float)
     return PACFResult(lags, pac_values, lower, upper, nobs, name, missing_count)
 
 
