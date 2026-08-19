@@ -107,3 +107,38 @@ def test_stage8_ac_uses_a_single_overall_mean():
     np.testing.assert_allclose(result.values, expected, rtol=1e-12, atol=1e-12)
     separate_means_lag1 = np.corrcoef(values[1:], values[:-1])[0, 1]
     assert not np.isclose(result.values[1], separate_means_lag1)
+
+
+def test_stage8_5_eviews_two_standard_error_bands_for_ordinary_series():
+    series = white_noise(400, rng=21)
+    for alpha in (0.01, 0.05, 0.10):
+        ac_result = acf(series, nlags=8, alpha=alpha)
+        pac_result = pacf(series, nlags=8, alpha=alpha)
+        expected = 2.0 / np.sqrt(400)
+
+        assert ac_result.band_method == "approx_two_standard_errors"
+        assert pac_result.band_method == "approx_two_standard_errors"
+        assert ac_result.band_multiplier == 2.0
+        assert pac_result.band_multiplier == 2.0
+        assert np.isclose(ac_result.band_standard_error, 1.0 / np.sqrt(400))
+        assert np.isclose(pacf(series, nlags=8).band_standard_error, 1.0 / np.sqrt(400))
+        np.testing.assert_allclose(ac_result.lower, -expected, rtol=1e-15, atol=1e-15)
+        np.testing.assert_allclose(ac_result.upper, expected, rtol=1e-15, atol=1e-15)
+        np.testing.assert_allclose(pac_result.lower, -expected, rtol=1e-15, atol=1e-15)
+        np.testing.assert_allclose(pac_result.upper, expected, rtol=1e-15, atol=1e-15)
+
+
+def test_stage8_5_residual_bands_use_shared_effective_nobs():
+    residual = arma(p=1, q=1, phi=[0.45], theta=[0.25], n=300, rng=42)
+    ac_result = acf(residual, nlags=8)
+    pac_result = pacf(residual, nlags=8)
+    expected = 2.0 / np.sqrt(300)
+
+    assert ac_result.nobs == 300
+    assert pac_result.nobs == 300
+    assert ac_result.missing_count == 0
+    assert pac_result.missing_count == 0
+    np.testing.assert_allclose(ac_result.upper, expected, rtol=1e-15, atol=1e-15)
+    np.testing.assert_allclose(pac_result.upper, expected, rtol=1e-15, atol=1e-15)
+    np.testing.assert_allclose(ac_result.lower, -expected, rtol=1e-15, atol=1e-15)
+    np.testing.assert_allclose(pac_result.lower, -expected, rtol=1e-15, atol=1e-15)
