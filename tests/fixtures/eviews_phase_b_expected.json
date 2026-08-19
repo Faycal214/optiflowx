@@ -23,9 +23,7 @@
         "MA(1)": {"coefficient":"0.906602","std_error":"0.016854","t_stat":"53.79295","p_value":"0.0000"},
         "SIGMASQ": {"coefficient":"0.745412","std_error":"0.043239","t_stat":"17.23938","p_value":"0.0000"}
       },
-      "statistics": {
-        "R-squared":"0.914663","Adjusted R-squared":"0.913833","S.E. of regression":"0.868256","Sum squared resid":"465.1369","Log likelihood":"-794.6090","Akaike info criterion":"2.569260","Schwarz criterion":"2.619024","Hannan-Quinn criterion":"2.588598","F-statistic":"1102.191","Prob(F-statistic)":"0.000000","Durbin-Watson":"0.492218"
-      },
+      "statistics": {"Akaike info criterion":"2.569260","Schwarz criterion":"2.619024","Hannan-Quinn criterion":"2.588598"},
       "roots": {"ar": [], "ma": ["-0.91"]}
     },
     "EQ19": {
@@ -43,9 +41,7 @@
         "MA(3)": {"coefficient":"0.586943","std_error":"0.023470","t_stat":"25.00781","p_value":"0.0000"},
         "SIGMASQ": {"coefficient":"0.272124","std_error":"0.011602","t_stat":"23.45360","p_value":"0.0000"}
       },
-      "statistics": {
-        "R-squared":"0.968846","Adjusted R-squared":"0.968441","S.E. of regression":"0.525458","Sum squared resid":"169.8053","Log likelihood":"-480.7690","Akaike info criterion":"1.569772","Schwarz criterion":"1.633755","Hannan-Quinn criterion":"1.596466","F-statistic":"2390.734","Prob(F-statistic)":"0.000000","Durbin-Watson":"1.588388"
-      },
+      "statistics": {"Akaike info criterion":"1.569772","Schwarz criterion":"1.633755","Hannan-Quinn criterion":"1.594636"},
       "roots": {"ar": [], "ma": ["-0.33+0.77i","-0.33-0.77i","-0.84"]}
     },
     "EQ20": {
@@ -62,9 +58,7 @@
         "MA(1)": {"coefficient":"0.421720","std_error":"0.014887","t_stat":"28.32834","p_value":"0.0000"},
         "SIGMASQ": {"coefficient":"0.165917","std_error":"0.004893","t_stat":"33.91041","p_value":"0.0000"}
       },
-      "statistics": {
-        "R-squared":"0.981005","Adjusted R-squared":"0.980789","S.E. of regression":"0.409965","Sum squared resid":"103.5320","Log likelihood":"-326.5237","Akaike info criterion":"1.072191","Schwarz criterion":"1.129065","Hannan-Quinn criterion":"1.094292","F-statistic":"4544.873","Prob(F-statistic)":"0.000000","Durbin-Watson":"2.054379"
-      },
+      "statistics": {"Akaike info criterion":"1.072191","Schwarz criterion":"1.129065","Hannan-Quinn criterion":"1.094292"},
       "roots": {"ar":["0.94"], "ma":["-0.42"]}
     },
     "EQ21": {
@@ -82,9 +76,7 @@
         "MA(1)": {"coefficient":"0.618351","std_error":"0.042066","t_stat":"14.69954","p_value":"0.0000"},
         "SIGMASQ": {"coefficient":"0.164751","std_error":"0.005299","t_stat":"31.09019","p_value":"0.0000"}
       },
-      "statistics": {
-        "R-squared":"0.981139","Adjusted R-squared":"0.980893","S.E. of regression":"0.408855","Sum squared resid":"102.8048","Log likelihood":"-324.3407","Akaike info criterion":"1.068400","Schwarz criterion":"1.132383","Hannan-Quinn criterion":"1.093263","F-statistic":"3998.940","Prob(F-statistic)":"0.000000","Durbin-Watson":"1.994871"
-      },
+      "statistics": {"Akaike info criterion":"1.068400","Schwarz criterion":"1.132383","Hannan-Quinn criterion":"1.093263"},
       "roots": {"ar":["0.95","-0.24"], "ma":["-0.62"]}
     }
   }
