@@ -25,8 +25,8 @@ def test_stage8_7_ordinary_formatting_is_deterministic_and_numeric_contract_is_u
     assert formatted.shape == (5, 10)
     assert formatted["Lag"].tolist() == ["1", "2", "3", "4", "5"]
     assert formatted["DF"].tolist() == ["1", "2", "3", "4", "5"]
-    assert all(len(value.split("." )[1]) == 4 for value in formatted["AC"])
-    assert all(len(value.split("." )[1]) == 4 for value in formatted["Q-Stat"])
+    assert all(len(value.split(".")[1]) == 4 for value in formatted["AC"])
+    assert all(len(value.split(".")[1]) == 4 for value in formatted["Q-Stat"])
 
     # Presentation must not mutate or round the numerical projection.
     pd.testing.assert_frame_equal(result.table(), numeric_before)
@@ -41,15 +41,15 @@ def test_stage8_7_residual_formatting_renders_undefined_probabilities_as_NA():
     assert formatted["DF"].tolist()[:4] == ["-1", "0", "1", "2"]
     assert formatted["Prob."][:2].tolist() == ["NA", "NA"]
     assert formatted["Prob."][2:].map(lambda value: value != "NA").all()
-    assert all(len(value.split("." )[1]) == 4 for value in formatted["PAC"])
+    assert all(len(value.split(".")[1]) == 4 for value in formatted["PAC"])
 
 
 def test_stage8_7_custom_precision_and_missing_token_are_exact():
     result = correlogram(arma(p=1, q=1, phi=[0.45], theta=[0.25], n=120, rng=12), nlags=4, model_df=1)
     formatted = format_correlogram_table(result, precision=2, missing=".")
 
-    assert all(len(value.split("." )[1]) == 2 for value in formatted["AC"])
-    assert all(len(value.split("." )[1]) == 2 for value in formatted["Q-Stat"])
+    assert all(len(value.split(".")[1]) == 2 for value in formatted["AC"])
+    assert all(len(value.split(".")[1]) == 2 for value in formatted["Q-Stat"])
     assert formatted["Prob."][0] == "."
 
 
@@ -58,7 +58,7 @@ def test_stage8_7_fixed_width_text_has_stable_header_and_missing_rendering():
     text = format_correlogram(result)
     lines = text.splitlines()
 
-    assert lines[0] == "Lag      AC       PAC      Q-Stat  Prob.  DF  AC Lower  AC Upper  PAC Lower  PAC Upper"
+    assert lines[0] == "Lag     AC    PAC  Q-Stat  Prob. DF AC Lower AC Upper PAC Lower PAC Upper"
     assert "NA" in text
     assert len(lines) == 4
     assert lines[1].startswith("  1 ")
