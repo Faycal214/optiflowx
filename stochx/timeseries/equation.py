@@ -9,6 +9,7 @@ import re
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+from scipy import stats as scipy_stats
 from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 from .arma_errors import ErrorProcess, parse_error_terms
@@ -73,8 +74,19 @@ class EquationResult(UnifiedResult):
 
     specification: str = ""
     error_process: ErrorProcess = ErrorProcess()
+    _opg_covariance: pd.DataFrame | None = None
 
     def _parameter_series(self, attribute: str) -> pd.Series:
+        if attribute == "bse" and self._opg_covariance is not None:
+            return pd.Series(np.sqrt(np.clip(np.diag(self._opg_covariance.to_numpy(dtype=float)), 0.0, None)), index=self._opg_covariance.index)
+        if attribute in {"tvalues", "pvalues"} and self._opg_covariance is not None:
+            params = self.params
+            bse = self.bse
+            tvalues = params / bse
+            if attribute == "tvalues":
+                return tvalues
+            df = max(int(self.nobs) - len(params), 1)
+            return pd.Series(2.0 * scipy_stats.t.sf(np.abs(tvalues.to_numpy(dtype=float)), df=df), index=tvalues.index)
         value = getattr(self.result, attribute, pd.Series(dtype=float))
         if isinstance(value, pd.Series):
             series = value.astype(float)
@@ -104,6 +116,23 @@ class EquationResult(UnifiedResult):
     def pvalues(self) -> pd.Series:
         return self._parameter_series("pvalues").reindex(self.params.index)
 
+    @property
+    def covariance_method(self) -> str:
+        return "outer product of gradients (OPG)" if self._opg_covariance is not None else "model default"
+
+    def covariance_matrix(self) -> pd.DataFrame:
+        if self._opg_covariance is not None:
+            return self._opg_covariance.copy()
+        covariance = getattr(self.result, "cov_params", None)
+        if callable(covariance):
+            values = np.asarray(covariance(), dtype=float)
+            return pd.DataFrame(values, index=self.params.index, columns=self.params.index)
+        return pd.DataFrame(np.asarray(covariance, dtype=float), index=self.params.index, columns=self.params.index)
+
+    @property
+    def covariance(self) -> pd.DataFrame:
+        return self.covariance_matrix()
+
     def fitted(self) -> pd.Series:
         values = self.fittedvalues
         model_index = getattr(self.result.model, "data", None)
@@ -130,6 +159,7 @@ class EquationResult(UnifiedResult):
         return {"Inverted AR Roots": self.inverted_ar_roots, "Inverted MA Roots": self.inverted_ma_roots}
 
     def statistics(self) -> dict[str, float]:
+        """Return EViews-normalized regression statistics."""
         nobs = float(self.nobs)
         nparams = float(len(self.params))
         llf = float(getattr(self.result, "llf", np.nan))
@@ -203,7 +233,8 @@ class Equation:
 
     def _build_regressors(self, dependent: Any, tokens: list[str]) -> tuple[pd.DataFrame, ErrorProcess]:
         regressors, error_process = parse_error_terms(tokens)
-        frame = pd.DataFrame(index=dependent.index)
+        frame_index = dependent.index if dependent.index is not None else tuple(range(dependent.nobs))
+        frame = pd.DataFrame(index=frame_index)
         names: list[str] = []
         for token in regressors:
             if token.upper() == "C":
@@ -230,6 +261,7 @@ class Equation:
         return frame[names], error_process
 
     def ls(self, specification: str | None = None, *, start_params: np.ndarray | list[float] | None = None) -> EquationResult:
+        """Estimate an OLS or EViews-style ARMA-error equation using BFGS ML."""
         spec = (specification or self.specification).strip()
         if not spec:
             raise ValueError("an equation specification is required")
@@ -239,7 +271,8 @@ class Equation:
         dependent_name = tokens[0]
         dependent = self.workfile.sample_series(dependent_name)
         X, error_process = self._build_regressors(dependent, tokens[1:])
-        y_series = pd.Series(np.asarray(dependent.values, dtype=float), index=dependent.index, name=dependent_name)
+        frame_index = dependent.index if dependent.index is not None else tuple(range(dependent.nobs))
+        y_series = pd.Series(np.asarray(dependent.values, dtype=float), index=frame_index, name=dependent_name)
         frame = pd.concat([y_series, X], axis=1)
         frame = frame.replace([np.inf, -np.inf], np.nan).dropna()
         if frame.empty:
@@ -257,13 +290,22 @@ class Equation:
             model = sm.OLS(y, exog)
             result = model.fit()
             method = "Least Squares"
+        opg = None
+        if error_process.max_p or error_process.max_q:
+            try:
+                score_obs = np.asarray(result.model.score_obs(result.params), dtype=float)
+                info = score_obs.T @ score_obs
+                opg = pd.DataFrame(np.linalg.pinv(info), index=_rename_arma_parameters(pd.Series(result.params, index=result.param_names), error_process).index, columns=_rename_arma_parameters(pd.Series(result.params, index=result.param_names), error_process).index)
+            except Exception:
+                opg = None
         sample = f"{frame.index[0]} {frame.index[-1]}" if len(frame.index) else None
-        wrapped = EquationResult(result=result, title=f"Equation: {self.name}", dependent=dependent_name, method=method, sample=sample, specification=spec, error_process=error_process)
+        wrapped = EquationResult(result=result, title=f"Equation: {self.name}", dependent=dependent_name, method=method, sample=sample, specification=spec, error_process=error_process, _opg_covariance=opg)
         self.specification = spec
         self.result = wrapped
         return wrapped
 
     def estimate(self, method: str = "LS", specification: str | None = None, *, start_params: np.ndarray | list[float] | None = None) -> EquationResult:
+        """Estimate using LS/OLS or ARMA maximum likelihood error terms."""
         method_upper = method.upper().replace(" ", "")
         if method_upper in {"LS", "OLS", "MCO", "ML", "ARMA", "ARMAX"}:
             return self.ls(specification, start_params=start_params)
