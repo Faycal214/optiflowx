@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import chi2
 
-from .correlation import acf, pacf
+from .correlation import EVIEWS_BAND_METHOD, EVIEWS_BAND_MULTIPLIER, acf, pacf
 
 
 @dataclass(frozen=True)
@@ -69,6 +69,8 @@ class CorrelogramResult:
     ac_upper: np.ndarray | None = None
     pac_lower: np.ndarray | None = None
     pac_upper: np.ndarray | None = None
+    band_multiplier: float = EVIEWS_BAND_MULTIPLIER
+    band_method: str = EVIEWS_BAND_METHOD
 
     @property
     def DF(self) -> np.ndarray:
@@ -81,6 +83,20 @@ class CorrelogramResult:
     @property
     def Prob(self) -> np.ndarray:
         return self.pvalues
+
+    @property
+    def band_standard_error(self) -> float:
+        return 1.0 / np.sqrt(self.nobs)
+
+    @property
+    def band_half_width(self) -> float:
+        return self.band_multiplier * self.band_standard_error
+
+    @property
+    def band_confidence_level(self) -> float:
+        """Nominal two-sided confidence level implied by +/- 2 standard errors."""
+        from scipy.stats import norm
+        return float(2.0 * norm.cdf(self.band_multiplier) - 1.0)
 
     def table(self) -> pd.DataFrame:
         rows = {"Lag": self.lags, "AC": self.ac, "PAC": self.pac, "Q-Stat": self.q_stat, "Prob.": self.pvalues, "DF": self.df}
@@ -100,6 +116,7 @@ class CorrelogramResult:
             f"Included observations: {self.nobs}",
             f"Excluded missing observations: {self.missing_count}",
             f"Lags: 1 to {self.nlags}; model_df={self.model_df}; alpha={self.alpha:g}",
+            f"Bands: +/- {self.band_multiplier:g} SE = +/- {self.band_half_width:.6f} ({self.band_method})",
             "Lag       AC        PAC       Q-Stat       Prob.     DF",
             "------------------------------------------------------------",
         ]
@@ -176,4 +193,6 @@ def correlogram(series, *, nlags: int = 36, model_df: int = 0, alpha: float = 0.
         ac_upper=ac.upper[lags],
         pac_lower=pc.lower[lags],
         pac_upper=pc.upper[lags],
+        band_multiplier=ac.band_multiplier,
+        band_method=ac.band_method,
     )
