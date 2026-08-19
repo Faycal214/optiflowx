@@ -103,9 +103,7 @@ def test_phase_b_eq18_eq19_eq20_eq21_numerical_parity():
         result = wf.ls(reference["specification"], name=name, start_params=_start_params(reference["coefficients"]))
         table = result.table()
 
-        # The matched quantities are those for which the EViews BFGS ML convention
-        # has been reproduced: coefficient estimates, SIGMASQ, inverse roots, AIC,
-        # Schwarz and Hannan-Quinn. EViews OPG covariance is tested separately.
+        # Coefficients remain a tight primary parity target.
         for term, fields in reference["coefficients"].items():
             assert term in table.index, f"missing EViews coefficient {term} in {name}"
             _assert_display(float(table.loc[term, "Coefficient"]), fields["coefficient"], rel=2e-8)
@@ -133,6 +131,40 @@ def test_phase_b_eq18_eq19_eq20_eq21_numerical_parity():
             real_text, imag_text = text.replace("i", "").split(sign)
             _assert_display(float(np.real(actual)), real_text, rel=2e-2)
             _assert_display(abs(float(np.imag(actual))), imag_text, rel=2e-2)
+
+
+@pytest.mark.skipif(not DATA or not Path(DATA).exists(), reason="Set STOCHX_EVIEWS_DATA to Data.xlsx")
+def test_phase_b_eviews_opg_covariance_and_inference():
+    expected = json.loads(EXPECTED.read_text(encoding="utf-8"))["equations"]
+    wf = _load_data(Path(DATA))
+
+    for name, reference in expected.items():
+        result = wf.ls(reference["specification"], name=name, start_params=_start_params(reference["coefficients"]))
+        assert result.covariance_method == "outer product of gradients (OPG)"
+        covariance = result.covariance_matrix()
+        bse = result.bse
+        tvalues = result.tvalues
+        pvalues = result.pvalues
+
+        # Published EViews screens expose standard errors, but not the full
+        # covariance matrix. Assert each diagonal variance against SE^2 and
+        # independently assert the resulting SE/t/p columns.
+        for term, fields in reference["coefficients"].items():
+            assert term in covariance.index, f"missing OPG covariance row {term} in {name}"
+            se_text = fields["std_error"]
+            expected_se = float(se_text)
+            expected_var = expected_se ** 2
+            variance_atol = max(2.0 * expected_se * _display_atol(se_text), 1e-10)
+            assert float(covariance.loc[term, term]) == pytest.approx(
+                expected_var,
+                abs=variance_atol,
+                rel=2e-6,
+            )
+            _assert_display(float(bse.loc[term]), se_text, rel=2e-6)
+            _assert_display(float(tvalues.loc[term]), fields["t_stat"], rel=2e-6)
+            _assert_display(float(pvalues.loc[term]), fields["p_value"], rel=2e-4)
+
+        assert np.allclose(covariance.to_numpy(), covariance.to_numpy().T, atol=1e-12, rtol=0.0)
 
 
 @pytest.mark.skipif(not DATA or not Path(DATA).exists(), reason="Set STOCHX_EVIEWS_DATA to Data.xlsx")
