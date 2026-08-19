@@ -164,14 +164,15 @@ def test_sequential_df_adf_runs_model_3_model_2_model_1_and_common_lag(monkeypat
 def test_sequential_branch_model3_rejects_then_beta_retained(monkeypatch):
     import stochx.timeseries.stationarity as stationarity
 
+    original_adf = stationarity.adf
+
     def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
         decision = "reject" if regression == "ct" else "fail_to_reject"
         from dataclasses import replace
-        base = stationarity.adf(np.arange(1.0, 80.0), regression=regression, lags=0, autolag=None, alpha=alpha)
+        base = original_adf(np.arange(1.0, 80.0), regression=regression, lags=0, autolag=None, alpha=alpha)
         return replace(base, decision=decision, conclusion=f"forced {regression}")
 
     def fake_fit(x, regression, lags):
-        from dataclasses import replace
         base = stationarity._fit_df_regression(np.arange(1.0, 80.0), regression, 0)
         if regression == "ct":
             base["tvalues"] = np.array([0.0, 3.0, -5.0])
@@ -190,8 +191,10 @@ def test_sequential_branch_model3_rejects_beta_insignificant_then_model2(monkeyp
     import stochx.timeseries.stationarity as stationarity
     from dataclasses import replace
 
+    original_adf = stationarity.adf
+
     def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
-        base = stationarity.adf(np.arange(1.0, 80.0), regression=regression, lags=0, autolag=None, alpha=alpha)
+        base = original_adf(np.arange(1.0, 80.0), regression=regression, lags=0, autolag=None, alpha=alpha)
         return replace(base, decision="reject" if regression in {"ct", "c"} else "fail_to_reject")
 
     def fake_fit(x, regression, lags):
@@ -215,8 +218,10 @@ def test_sequential_branch_model3_unit_root_then_f3(monkeypatch):
     import stochx.timeseries.stationarity as stationarity
     from dataclasses import replace
 
+    original_adf = stationarity.adf
+
     def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
-        base = stationarity.adf(np.arange(1.0, 80.0), regression=regression, lags=0, autolag=None, alpha=alpha)
+        base = original_adf(np.arange(1.0, 80.0), regression=regression, lags=0, autolag=None, alpha=alpha)
         return replace(base, decision="fail_to_reject")
 
     def fake_f(x, regression, lags, alpha):
@@ -240,8 +245,10 @@ def test_sequential_branch_model3_f3_accepts_then_model2_f2(monkeypatch):
     import stochx.timeseries.stationarity as stationarity
     from dataclasses import replace
 
+    original_adf = stationarity.adf
+
     def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
-        base = stationarity.adf(np.arange(1.0, 80.0), regression=regression, lags=0, autolag=None, alpha=alpha)
+        base = original_adf(np.arange(1.0, 80.0), regression=regression, lags=0, autolag=None, alpha=alpha)
         return replace(base, decision="fail_to_reject")
 
     def fake_f(x, regression, lags, alpha):
@@ -264,8 +271,10 @@ def test_sequential_interpretation_is_course_faithful(monkeypatch):
     import stochx.timeseries.stationarity as stationarity
     from dataclasses import replace
 
+    original_adf = stationarity.adf
+
     def fake_adf(y, *, regression, lags=None, autolag=None, alpha=0.05):
-        base = stationarity.adf(np.arange(1.0, 80.0), regression=regression, lags=0, autolag=None, alpha=alpha)
+        base = original_adf(np.arange(1.0, 80.0), regression=regression, lags=0, autolag=None, alpha=alpha)
         return replace(base, decision="fail_to_reject")
 
     monkeypatch.setattr(stationarity, "adf", fake_adf)
