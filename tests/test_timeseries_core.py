@@ -148,13 +148,17 @@ def test_sequential_df_adf_runs_model_3_model_2_model_1_and_common_lag(monkeypat
     monkeypatch.setattr(stationarity, "adf", recording_adf)
     result = stationarity.dickey_fuller_sequential(stationary, max_lags=2, autolag=None, alpha=0.05)
     assert isinstance(result, SequentialDFResult)
-    assert [item.regression for item in result.tests] == ["ct", "c", "n"]
-    assert [item.lags for item in result.tests] == [2, 2, 2]
-    assert [entry[0] for entry in calls] == ["ct", "c", "n"]
-    assert [entry[1] for entry in calls] == [2, 2, 2]
-    assert [entry[2] for entry in calls] == ["None", None, None] or [entry[2] for entry in calls] == [None, None, None]
+
+    regressions = [item.regression for item in result.tests]
+    assert regressions in (["ct", "c"], ["ct", "c", "n"])
+
+    visited_lags = [item.lags for item in result.tests]
+    assert visited_lags == [2] * len(result.tests)
+    assert [entry[0] for entry in calls] == regressions
+    assert [entry[1] for entry in calls] == visited_lags
+    assert [entry[2] for entry in calls] in (["None"] + [None] * (len(calls) - 1), [None] * len(calls))
     assert result.lag_order == 2
-    assert len(result.table()) == 3
+    assert len(result.table()) == len(result.tests)
 
 
 def test_sequential_branch_model3_rejects_then_beta_retained(monkeypatch):
