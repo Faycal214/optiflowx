@@ -1,9 +1,9 @@
 """Stationarity, unit-root, TS/DS and differencing diagnostics.
 
 The DF/ADF implementation follows the USTHB course workflow: select a common
-ADF lag order, test Model 3 -> Model 2 -> Model 1, validate deterministic
-terms conditionally, and use specification-specific non-standard
-Dickey-Fuller critical values for unit-root and joint F decisions.
+ADF lag order by residual whitening and parsimony, test Model 3 -> Model 2
+-> Model 1, validate deterministic terms conditionally, and use explicit
+Dickey-Fuller critical-value tables for the unit-root and joint F decisions.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ from typing import Iterable, Literal
 import numpy as np
 import pandas as pd
 from scipy import stats
+from statsmodels.stats.diagnostic import acorr_ljungbox
 from statsmodels.tsa.stattools import adfuller, kpss
 
 from .series import TimeSeries
@@ -40,8 +41,31 @@ DF_SPECIFICATIONS: dict[str, dict[str, str]] = {
     },
 }
 
-# Values reproduced from the USTHB DF critical-value tables cited in the course.
-# Rows are the tabulated sample sizes 50, 100, 250 and asymptotic infinity.
+# USTHB / Dickey-Fuller course-table critical values for the unit-root
+# statistic. The course uses tabulated rows n=50, 100, 250 and infinity.
+# The 91-observation example explicitly uses the n=100 row.
+DF_CRITICAL_VALUES: dict[str, dict[int | str, dict[str, float]]] = {
+    "n": {
+        50: {"1%": -2.62, "5%": -1.95, "10%": -1.61},
+        100: {"1%": -2.60, "5%": -1.95, "10%": -1.61},
+        250: {"1%": -2.58, "5%": -1.95, "10%": -1.62},
+        "inf": {"1%": -2.58, "5%": -1.95, "10%": -1.62},
+    },
+    "c": {
+        50: {"1%": -3.58, "5%": -2.93, "10%": -2.60},
+        100: {"1%": -3.51, "5%": -2.89, "10%": -2.58},
+        250: {"1%": -3.46, "5%": -2.88, "10%": -2.57},
+        "inf": {"1%": -3.43, "5%": -2.86, "10%": -2.57},
+    },
+    "ct": {
+        50: {"1%": -4.15, "5%": -3.50, "10%": -3.18},
+        100: {"1%": -4.04, "5%": -3.45, "10%": -3.15},
+        250: {"1%": -3.99, "5%": -3.43, "10%": -3.13},
+        "inf": {"1%": -3.96, "5%": -3.41, "10%": -3.12},
+    },
+}
+
+# Values reproduced from the USTHB DF critical-value tables for F2/F3.
 DF_F_CRITICAL_VALUES: dict[str, dict[int | str, dict[str, float]]] = {
     "F2": {
         50: {"10%": 3.94, "5%": 4.86, "1%": 7.06},
@@ -56,6 +80,8 @@ DF_F_CRITICAL_VALUES: dict[str, dict[int | str, dict[str, float]]] = {
         "inf": {"10%": 5.34, "5%": 6.25, "1%": 8.27},
     },
 }
+
+COURSE_TABLE_SIZES = (50, 100, 250)
 
 
 @dataclass(frozen=True)
@@ -99,7 +125,7 @@ class UnitRootResult:
     decision: Decision
     alpha: float
     conclusion: str
-    critical_value_source: str = "Regression-specific Dickey-Fuller critical values"
+    critical_value_source: str = "USTHB / Dickey-Fuller course critical-value table"
     specification_label: str = ""
     coefficient: float | None = None
     coefficient_name: str = "γ"
@@ -299,30 +325,44 @@ def _decision(statistic: float, critical_values: dict[str, float], alpha: float)
     return "reject" if statistic < float(critical_values[level]) else "fail_to_reject"
 
 
-def _selected_common_lag(x: np.ndarray, *, max_lags: int | None, autolag: str | None) -> tuple[int, str]:
-    """Choose one ADF lag order before running the three deterministic models."""
-    if max_lags is not None and (not isinstance(max_lags, int) or max_lags < 0):
-        raise ValueError("max_lags must be a non-negative integer or None")
-    if autolag is None:
-        return int(max_lags or 0), "fixed"
-    probe = adfuller(x, regression="ct", maxlag=max_lags, autolag=autolag)
-    usedlag = int(probe[2])
-    return usedlag, f"{autolag} selected on Model 3"
+def _course_table_key(nobs: int) -> tuple[int | str, str]:
+    """Use the course's tabulated-size convention: exact row, otherwise next row."""
+    if nobs <= 50:
+        return 50, "USTHB DF table, n=50"
+    if nobs <= 100:
+        return 100, "USTHB DF table, n=100"
+    if nobs <= 250:
+        return 250, "USTHB DF table, n=250"
+    return "inf", "USTHB DF table, n=∞"
+
+
+def _course_df_critical(regression: DFRegression, nobs: int) -> tuple[dict[str, float], str]:
+    key, source = _course_table_key(nobs)
+    return dict(DF_CRITICAL_VALUES[regression][key]), source
+
+
+def _course_f_critical(model_name: Literal["F2", "F3"], nobs: int, alpha: float) -> tuple[float, str]:
+    _validate_alpha(alpha)
+    level = {0.01: "1%", 0.05: "5%", 0.10: "10%"}[alpha]
+    key, source = _course_table_key(nobs)
+    return DF_F_CRITICAL_VALUES[model_name][key][level], source
 
 
 def _adf_regression_frame(x: np.ndarray, regression: DFRegression, lags: int) -> tuple[np.ndarray, np.ndarray, list[str]]:
     """Construct the OLS regression used by DF/ADF with a fixed lag order."""
+    if not isinstance(lags, int) or lags < 0:
+        raise ValueError("lags must be a non-negative integer")
+    if lags >= x.size - 2:
+        raise ValueError("lags leave too few observations for DF/ADF estimation")
     dy = np.diff(x)
     start = lags
     y = dy[start:]
     columns: list[str] = []
     parts: list[np.ndarray] = []
-
     if regression in {"c", "ct"}:
         parts.append(np.ones_like(y))
         columns.append("const")
     if regression == "ct":
-        # A linear trend spans the same column space regardless of whether it starts at 0 or 1.
         trend = np.arange(start + 1, len(x), dtype=float)
         parts.append(trend)
         columns.append("trend")
@@ -333,16 +373,6 @@ def _adf_regression_frame(x: np.ndarray, regression: DFRegression, lags: int) ->
         columns.append(f"diff_lag_{j}")
     X = np.column_stack(parts)
     return y, X, columns
-
-
-def _fit_df_regression(x: np.ndarray, regression: DFRegression, lags: int) -> dict[str, object]:
-    y, X, columns = _adf_regression_frame(x, regression, lags)
-    model = sm_ols(y, X)
-    params = model["params"]
-    stderr = model["stderr"]
-    tvalues = model["tvalues"]
-    pvalues = model["pvalues"]
-    return {"model": model, "params": params, "stderr": stderr, "tvalues": tvalues, "pvalues": pvalues, "columns": columns, "nobs": len(y)}
 
 
 def sm_ols(y: np.ndarray, X: np.ndarray) -> dict[str, object]:
@@ -368,40 +398,101 @@ def sm_ols(y: np.ndarray, X: np.ndarray) -> dict[str, object]:
     }
 
 
-def _course_f_critical(model_name: Literal["F2", "F3"], nobs: int, alpha: float) -> tuple[float, str]:
-    _validate_alpha(alpha)
-    level = {0.01: "1%", 0.05: "5%", 0.10: "10%"}[alpha]
-    table = DF_F_CRITICAL_VALUES[model_name]
-    if nobs >= 250:
-        row = table["inf"] if nobs > 2500 else table[250]
-        label = "USTHB DF table, n=∞" if nobs > 2500 else "USTHB DF table, n=250"
-        return row[level], label
-    knots = [50, 100, 250]
-    nearest = min(knots, key=lambda k: abs(nobs - k))
-    return table[nearest][level], f"USTHB DF table, nearest tabulated n={nearest}"
+def _fit_df_regression(x: np.ndarray, regression: DFRegression, lags: int) -> dict[str, object]:
+    y, X, columns = _adf_regression_frame(x, regression, lags)
+    model = sm_ols(y, X)
+    return {
+        "model": model,
+        "params": model["params"],
+        "stderr": model["stderr"],
+        "tvalues": model["tvalues"],
+        "pvalues": model["pvalues"],
+        "columns": columns,
+        "nobs": len(y),
+    }
+
+
+def _residual_whitening(x: np.ndarray, *, regression: DFRegression, lags: int, test_lags: int, alpha: float) -> tuple[bool, float, int]:
+    """Check that ADF residuals are jointly free of autocorrelation through test_lags."""
+    fitted = _fit_df_regression(x, regression, lags)
+    residuals = np.asarray(fitted["model"]["resid"], dtype=float)
+    max_lag = min(int(test_lags), max(1, residuals.size // 5))
+    lb = acorr_ljungbox(residuals, lags=list(range(1, max_lag + 1)), return_df=True)
+    min_pvalue = float(lb["lb_pvalue"].min())
+    return bool(min_pvalue > alpha), min_pvalue, max_lag
+
+
+def _select_whitened_lag(
+    x: np.ndarray,
+    *,
+    max_lags: int,
+    test_lags: int,
+    alpha: float,
+) -> tuple[int, str]:
+    """Select the smallest p that whitens Model 3 residuals, by parsimony."""
+    if not isinstance(max_lags, int) or max_lags < 0:
+        raise ValueError("max_lags must be a non-negative integer")
+    for p in range(max_lags + 1):
+        whitened, min_pvalue, checked_lag = _residual_whitening(
+            x, regression="ct", lags=p, test_lags=test_lags, alpha=alpha
+        )
+        if whitened:
+            return p, f"minimum p={p} with Ljung-Box whitening through lag {checked_lag} (min p-value={min_pvalue:.4f})"
+    whitened, min_pvalue, checked_lag = _residual_whitening(
+        x, regression="ct", lags=max_lags, test_lags=test_lags, alpha=alpha
+    )
+    return max_lags, f"fallback p={max_lags}; whitening not achieved through lag {checked_lag} (min p-value={min_pvalue:.4f})"
+
+
+def _selected_common_lag(
+    x: np.ndarray,
+    *,
+    max_lags: int | None,
+    autolag: str | None,
+    alpha: float = 0.05,
+    whitening_lags: int = 12,
+) -> tuple[int, str]:
+    """Choose one common ADF lag order before running the three deterministic models."""
+    if max_lags is None:
+        max_lags = min(12, max(0, x.size // 5))
+    if not isinstance(max_lags, int) or max_lags < 0:
+        raise ValueError("max_lags must be a non-negative integer or None")
+    if not isinstance(whitening_lags, int) or whitening_lags < 1:
+        raise ValueError("whitening_lags must be a positive integer")
+    # Keep the explicit fixed-p API used in TPs: autolag=None means use the
+    # supplied p exactly. Otherwise apply the course's minimum-whitening rule.
+    if autolag is None:
+        return max_lags, "fixed course lag order"
+    return _select_whitened_lag(
+        x,
+        max_lags=max_lags,
+        test_lags=whitening_lags,
+        alpha=alpha,
+    )
 
 
 def _joint_f_test(x: np.ndarray, regression: Literal["ct", "c"], lags: int, alpha: float) -> SpecificationTestResult:
     """Compute F3/F2 for the joint unit-root + deterministic-term null."""
     unrestricted = _fit_df_regression(x, regression, lags)
+    y_r, X_ur, cols = _adf_regression_frame(x, regression, lags)
     if regression == "ct":
-        # H3,0: gamma=0 and beta=0; keep the constant and lagged differences.
-        y_r, X_ur, cols = _adf_regression_frame(x, regression, lags)
         keep = [i for i, name in enumerate(cols) if name not in {"gamma", "trend"}]
-        X_r = X_ur[:, keep] if keep else np.empty((len(y_r), 0))
         name = "Model 3 joint F test"
         null = "H3,0: γ = 0 and β = 0"
         alt = "At least one of γ or β is non-zero"
         model_name = "F3"
     else:
-        y_r, X_ur, cols = _adf_regression_frame(x, regression, lags)
-        keep = [i for i, col in enumerate(cols) if col != "gamma" and col != "const"]
-        X_r = X_ur[:, keep] if keep else np.empty((len(y_r), 0))
+        keep = [i for i, col in enumerate(cols) if col not in {"gamma", "const"}]
         name = "Model 2 joint F test"
         null = "H2,0: γ = 0 and α = 0"
         alt = "At least one of γ or α is non-zero"
         model_name = "F2"
-    restricted_ssr = float(np.sum((y_r - (X_r @ np.linalg.lstsq(X_r, y_r, rcond=None)[0] if X_r.shape[1] else np.zeros_like(y_r))) ** 2))
+    X_r = X_ur[:, keep] if keep else np.empty((len(y_r), 0))
+    if X_r.shape[1]:
+        beta_r = np.linalg.lstsq(X_r, y_r, rcond=None)[0]
+        restricted_ssr = float(np.sum((y_r - X_r @ beta_r) ** 2))
+    else:
+        restricted_ssr = float(np.sum(y_r ** 2))
     unrestricted_ssr = float(unrestricted["model"]["ssr"])
     q = 2
     df2 = int(unrestricted["model"]["df_resid"])
@@ -417,14 +508,15 @@ def _joint_f_test(x: np.ndarray, regression: Literal["ct", "c"], lags: int, alph
         decision=decision,
         alpha=alpha,
         source=source,
-        detail=f"Compare F to the non-standard {model_name} critical value; ordinary F p-values are not used.",
+        detail=f"Compare F to the non-standard {model_name} critical value; ordinary Fisher p-values are not used.",
     )
 
 
 def _deterministic_term_test(df_result: dict[str, object], regression: Literal["ct", "c"], alpha: float) -> SpecificationTestResult:
     params = np.asarray(df_result["params"])
     tvalues = np.asarray(df_result["tvalues"])
-    critical = float(stats.norm.ppf(1 - alpha / 2))
+    df_resid = int(df_result["model"]["df_resid"])
+    critical = float(stats.t.ppf(1 - alpha / 2, df_resid))
     if regression == "ct":
         idx, label, null, alt = 1, "Model 3 trend test", "H0: β = 0", "H1: β ≠ 0"
     else:
@@ -439,7 +531,7 @@ def _deterministic_term_test(df_result: dict[str, object], regression: Literal["
         critical_value=critical,
         decision=decision,
         alpha=alpha,
-        source="Standard two-sided normal critical value, as used for deterministic-term checks in the course",
+        source=f"Standard two-sided Student-t critical value, df={df_resid}",
         detail=f"Estimated coefficient = {params[idx]:.6f}.",
     )
 
@@ -461,12 +553,12 @@ def adf(
     _validate_alpha(alpha)
     result = adfuller(x, regression=regression, maxlag=lags, autolag=autolag)
     if len(result) == 5:
-        statistic, pvalue, usedlag, nobs, critical = result
+        statistic, pvalue, usedlag, nobs, _statsmodels_critical = result
     elif len(result) == 6:
-        statistic, pvalue, usedlag, nobs, critical, _ = result
+        statistic, pvalue, usedlag, nobs, _statsmodels_critical, _ = result
     else:
         raise RuntimeError(f"unexpected statsmodels ADF result length: {len(result)}")
-    critical_values = {str(key): float(value) for key, value in critical.items()}
+    critical_values, source = _course_df_critical(regression, int(nobs))
     decision = _decision(float(statistic), critical_values, alpha)
     reg = _fit_df_regression(x, regression, int(usedlag))
     gamma_index = reg["columns"].index("gamma")
@@ -487,6 +579,7 @@ def adf(
         decision=decision,
         alpha=alpha,
         conclusion=conclusion,
+        critical_value_source=source,
         specification_label=DF_SPECIFICATIONS[regression]["label"],
         coefficient=float(reg["params"][gamma_index]),
         coefficient_tvalue=float(reg["tvalues"][gamma_index]),
@@ -505,11 +598,18 @@ def dickey_fuller_sequential(
     max_lags: int | None = None,
     autolag: str | None = "AIC",
     alpha: float = 0.05,
+    whitening_lags: int = 12,
 ) -> SequentialDFResult:
-    """Apply the course's complete sequential Model 3 -> Model 2 -> Model 1 workflow."""
+    """Apply the complete course-faithful Model 3 -> Model 2 -> Model 1 workflow."""
     _validate_alpha(alpha)
     x = _values(y)
-    common_lag, lag_method = _selected_common_lag(x, max_lags=max_lags, autolag=autolag)
+    common_lag, lag_method = _selected_common_lag(
+        x,
+        max_lags=max_lags,
+        autolag=autolag,
+        alpha=alpha,
+        whitening_lags=whitening_lags,
+    )
     models: list[UnitRootResult] = []
     spec_tests: list[SpecificationTestResult] = []
 
@@ -521,12 +621,11 @@ def dickey_fuller_sequential(
         spec_tests.append(trend_test)
         if trend_test.rejects_null:
             return SequentialDFResult(tuple(models), model3, "stationary around a deterministic trend (TS)", "Model 3 rejected the unit root and the deterministic trend was retained by the conditional β test.", common_lag, lag_method, tuple(spec_tests))
-        # Model 3 is rejected as an over-specified deterministic model: continue with Model 2.
     else:
         f3 = _joint_f_test(x, "ct", common_lag, alpha)
         spec_tests.append(f3)
         if f3.rejects_null:
-            return SequentialDFResult(tuple(models), model3, "I(1) with the Model 3 deterministic structure", "Model 3 did not reject the unit-root null and the joint H3,0 test rejected; the course classifies the series as integrated under Model 3.", common_lag, lag_method, tuple(spec_tests))
+            return SequentialDFResult(tuple(models), model3, "I(1) with the Model 3 deterministic structure", "Model 3 did not reject the unit-root null and the joint H3,0 test rejected; the series is integrated under the Model 3 specification.", common_lag, lag_method, tuple(spec_tests))
 
     model2 = adf(x, regression="c", lags=common_lag, autolag=None, alpha=alpha)
     models.append(model2)
@@ -536,12 +635,11 @@ def dickey_fuller_sequential(
         spec_tests.append(constant_test)
         if constant_test.rejects_null:
             return SequentialDFResult(tuple(models), model2, "stationary around a constant (TS)", "Model 2 rejected the unit root and the constant was retained by the conditional α test.", common_lag, lag_method, tuple(spec_tests))
-        # Model 2 over-specified: continue with Model 1.
     else:
         f2 = _joint_f_test(x, "c", common_lag, alpha)
         spec_tests.append(f2)
         if f2.rejects_null:
-            return SequentialDFResult(tuple(models), model2, "I(1) with a constant (DS candidate)", "Model 2 did not reject the unit-root null and the joint H2,0 test rejected; the course retains Model 2 as the relevant integrated specification.", common_lag, lag_method, tuple(spec_tests))
+            return SequentialDFResult(tuple(models), model2, "I(1) with a constant (DS candidate)", "Model 2 did not reject the unit-root null and the joint H2,0 test rejected; the series is integrated with a constant.", common_lag, lag_method, tuple(spec_tests))
 
     model1 = adf(x, regression="n", lags=common_lag, autolag=None, alpha=alpha)
     models.append(model1)
