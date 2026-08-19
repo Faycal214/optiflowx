@@ -240,7 +240,8 @@ def test_sequential_branch_model3_unit_root_then_f3(monkeypatch):
     assert result.selected.regression == "ct"
     assert result.specification_tests[0].name == "Model 3 joint F test"
     assert result.specification_tests[0].decision == "reject"
-    assert "integrated" in result.nature
+    assert result.nature.startswith("I(1)")
+    assert "Model 3" in result.nature
 
 
 def test_sequential_branch_model3_f3_accepts_then_model2_f2(monkeypatch):
