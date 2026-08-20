@@ -48,13 +48,8 @@ class EstimatedCandidate:
             raise ValueError("order must be a non-negative (p, d, q) triple")
         object.__setattr__(self, "order", order)
         for name in (
-            "params",
-            "standard_errors",
-            "tvalues",
-            "pvalues",
-            "ar_roots",
-            "ma_roots",
-            "residuals",
+            "params", "standard_errors", "tvalues", "pvalues",
+            "ar_roots", "ma_roots", "residuals",
         ):
             array = np.asarray(getattr(self, name)).copy()
             array.setflags(write=False)
@@ -68,7 +63,6 @@ class EstimatedCandidate:
 
     @property
     def coefficient_names(self) -> tuple[str, ...]:
-        """Return fitted parameter names when supplied by the estimator."""
         if self.ts_result is None:
             return tuple()
         names = getattr(self.ts_result.result, "param_names", None)
@@ -124,8 +118,6 @@ class EstimatedCandidate:
 
 @dataclass(frozen=True)
 class BoxJenkinsEstimationResult:
-    """Auditable collection of successfully/unsuccessfully estimated candidates."""
-
     candidates: tuple[EstimatedCandidate, ...]
 
     @property
@@ -141,33 +133,20 @@ class BoxJenkinsEstimationResult:
         return tuple(candidate.order for candidate in self.candidates)
 
     def table(self) -> pd.DataFrame:
-        """Return a deterministic candidate-estimation audit table."""
         rows = []
         for candidate in self.candidates:
-            rows.append(
-                {
-                    "p": candidate.order[0],
-                    "d": candidate.order[1],
-                    "q": candidate.order[2],
-                    "success": candidate.success,
-                    "model": candidate.model_name,
-                    "nobs": candidate.estimation_nobs,
-                    "LogLik": candidate.log_likelihood,
-                    "SIGMASQ": candidate.sigma_sq,
-                    "AIC": candidate.aic,
-                    "SC": candidate.bic,
-                    "HQ": candidate.hq,
-                    "converged": candidate.converged,
-                    "error": candidate.error,
-                }
-            )
-        return pd.DataFrame(
-            rows,
-            columns=[
-                "p", "d", "q", "success", "model", "nobs", "LogLik",
-                "SIGMASQ", "AIC", "SC", "HQ", "converged", "error",
-            ],
-        )
+            rows.append({
+                "p": candidate.order[0], "d": candidate.order[1], "q": candidate.order[2],
+                "success": candidate.success, "model": candidate.model_name,
+                "nobs": candidate.estimation_nobs, "LogLik": candidate.log_likelihood,
+                "SIGMASQ": candidate.sigma_sq, "AIC": candidate.aic,
+                "SC": candidate.bic, "HQ": candidate.hq,
+                "converged": candidate.converged, "error": candidate.error,
+            })
+        return pd.DataFrame(rows, columns=[
+            "p", "d", "q", "success", "model", "nobs", "LogLik", "SIGMASQ",
+            "AIC", "SC", "HQ", "converged", "error",
+        ])
 
 
 def _float_attr(result, name: str, default: float = np.nan) -> float:
@@ -213,23 +192,29 @@ def _residuals(result) -> np.ndarray:
 
 
 def _source_index(y) -> tuple[object, ...] | None:
-    """Snapshot the caller's labels before model fitting can normalize them."""
     if isinstance(y, pd.Series):
         return tuple(y.index)
     idx = getattr(y, "index", None)
-    if idx is not None:
-        return tuple(idx)
-    return None
+    return tuple(idx) if idx is not None else None
+
+
+def _estimation_input(y):
+    """Fit on positional numeric observations; preserve source labels separately."""
+    if isinstance(y, pd.Series):
+        values = y.to_numpy(dtype=float, copy=True)
+    elif hasattr(y, "values"):
+        values = np.asarray(y.values, dtype=float).copy()
+    else:
+        values = np.asarray(list(y), dtype=float)
+    return pd.Series(values, dtype=float)
 
 
 def _fit_candidate(y, order: tuple[int, int, int]) -> EstimatedCandidate:
     p, d, q = order
     source_index = _source_index(y)
+    fit_input = _estimation_input(y)
     try:
-        # The existing unified dispatcher intentionally rejects (0,0,0).
-        # Stage 9.2 may generate that legitimate white-noise candidate, so
-        # route only that case directly through the existing ARIMA estimator.
-        fitted = fit_arima(y, 0, 0, 0) if order == (0, 0, 0) else estimate(y, p=p, d=d, q=q)
+        fitted = fit_arima(fit_input, 0, 0, 0) if order == (0, 0, 0) else estimate(fit_input, p=p, d=d, q=q)
         result = fitted.result
         residuals = _residuals(result)
         params = _array_attr(result, "params")
@@ -239,13 +224,9 @@ def _fit_candidate(y, order: tuple[int, int, int]) -> EstimatedCandidate:
         roots = fitted.roots()
         stats = fitted.statistics()
         return EstimatedCandidate(
-            order=order,
-            success=True,
-            model_name=fitted.model_name,
+            order=order, success=True, model_name=fitted.model_name,
             estimation_nobs=int(getattr(result, "nobs", np.isfinite(residuals).sum())),
-            params=params,
-            standard_errors=standard_errors,
-            tvalues=tvalues,
+            params=params, standard_errors=standard_errors, tvalues=tvalues,
             pvalues=pvalues,
             log_likelihood=_float_attr(result, "llf", stats.get("Log likelihood", np.nan)),
             sigma_sq=_sigma_sq(result, residuals),
@@ -254,45 +235,23 @@ def _fit_candidate(y, order: tuple[int, int, int]) -> EstimatedCandidate:
             hq=_float_attr(result, "hqic", stats.get("Hannan-Quinn criterion", np.nan)),
             ar_roots=np.asarray(roots["AR roots"], dtype=complex),
             ma_roots=np.asarray(roots["MA roots"], dtype=complex),
-            converged=_converged(result),
-            residuals=residuals,
-            ts_result=fitted,
-            source_index=source_index,
+            converged=_converged(result), residuals=residuals,
+            ts_result=fitted, source_index=source_index,
         )
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         return EstimatedCandidate(
-            order=order,
-            success=False,
-            model_name="",
-            estimation_nobs=None,
-            params=np.asarray([], dtype=float),
-            standard_errors=np.asarray([], dtype=float),
-            tvalues=np.asarray([], dtype=float),
-            pvalues=np.asarray([], dtype=float),
-            log_likelihood=np.nan,
-            sigma_sq=np.nan,
-            aic=np.nan,
-            bic=np.nan,
-            hq=np.nan,
-            ar_roots=np.asarray([], dtype=complex),
-            ma_roots=np.asarray([], dtype=complex),
-            converged=False,
-            residuals=np.asarray([], dtype=float),
-            ts_result=None,
-            error=str(exc),
-            source_index=source_index,
+            order=order, success=False, model_name="", estimation_nobs=None,
+            params=np.asarray([], dtype=float), standard_errors=np.asarray([], dtype=float),
+            tvalues=np.asarray([], dtype=float), pvalues=np.asarray([], dtype=float),
+            log_likelihood=np.nan, sigma_sq=np.nan, aic=np.nan, bic=np.nan, hq=np.nan,
+            ar_roots=np.asarray([], dtype=complex), ma_roots=np.asarray([], dtype=complex),
+            converged=False, residuals=np.asarray([], dtype=float), ts_result=None,
+            error=str(exc), source_index=source_index,
         )
 
 
-def estimate_box_jenkins_candidates(
-    y,
-    candidate_orders: Iterable[tuple[int, int, int]],
-) -> BoxJenkinsEstimationResult:
-    """Estimate candidates in deterministic order using the existing estimators.
-
-    Each candidate is attempted independently. One failed candidate is stored
-    as a structured failure and does not prevent later candidates from running.
-    """
+def estimate_box_jenkins_candidates(y, candidate_orders: Iterable[tuple[int, int, int]]) -> BoxJenkinsEstimationResult:
+    """Estimate candidates in deterministic order using the existing estimators."""
     orders = tuple((int(p), int(d), int(q)) for p, d, q in candidate_orders)
     if len(set(orders)) != len(orders):
         raise ValueError("candidate_orders must not contain duplicates")
