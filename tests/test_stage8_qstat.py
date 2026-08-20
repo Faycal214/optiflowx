@@ -9,10 +9,19 @@ from stochx.timeseries.correlation import acf
 
 
 def _reference_q(ac_values, nobs, nlags):
+    """Independently reconstruct Ljung-Box Q from lag-1..lag-K AC values."""
+    ac_values = np.asarray(ac_values, dtype=float)
+    if ac_values.size == nlags + 1:
+        lag_values = ac_values[1 : nlags + 1]
+    elif ac_values.size == nlags:
+        lag_values = ac_values[:nlags]
+    else:
+        raise ValueError("ac_values must contain either lag 0..K or lag 1..K")
+
     q = []
     cumulative = 0.0
-    for lag in range(1, nlags + 1):
-        cumulative += ac_values[lag] ** 2 / (nobs - lag)
+    for lag, rho in enumerate(lag_values, start=1):
+        cumulative += rho**2 / (nobs - lag)
         q.append(nobs * (nobs + 2) * cumulative)
     return np.asarray(q)
 
