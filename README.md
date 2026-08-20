@@ -4,30 +4,122 @@
 [![Python](https://img.shields.io/pypi/pyversions/stochx)](https://pypi.org/project/stochx/)
 [![CI](https://github.com/Faycal214/stochx/actions/workflows/test.yml/badge.svg)](https://github.com/Faycal214/stochx/actions/workflows/test.yml)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-1081C2?style=flat)](https://faycal214.github.io/stochx/)
-[![License](https://img.shields.io/github/license/Faycal214/stochx)](LICENSE)
+[![License](https://img.shields.io/github/license/stochx/stochx)](LICENSE)
 
-StochX is a lightweight Python library for turning stochastic-process mathematics, time-series methods, and state-space models into executable, validated, and testable objects.
+**StochX is a lightweight Python time-series and stochastic-process library built for analysts who want an EViews-like workflow in Python.**
 
-It is designed around a simple idea: each mathematical object should have a clear Python representation, a predictable API, numerical validation, and runnable examples.
+The main applied focus is **time-series analysis, econometrics and forecasting**. The package keeps familiar EViews ideas—workfiles, samples, series expressions, lags, differences, `C`, `@TREND`, equations, ADF, ARMA errors, correlograms, model reports and forecasts—while making every step executable, inspectable and reproducible in Python.
 
-## What makes StochX different
+A separate stochastic-process layer covers the mathematical foundations of Markov chains, Poisson processes, CTMCs, birth-death processes, probability spaces and martingales.
 
-StochX connects course-faithful stochastic-process mathematics with practical time-series analysis and forecasting.
+## Why StochX?
 
-| Area | Main objects |
+| Need | StochX approach |
 |---|---|
-| Discrete-time Markov chains | `MarkovChain` |
-| Poisson processes | `PoissonProcess`, `NonHomogeneousPoissonProcess` |
-| Continuous-time Markov chains | `ContinuousTimeMarkovChain`, `CTMCPath` |
-| Birth-death processes | `BirthDeathProcess` |
-| Finite probability spaces | `FiniteProbabilitySpace`, `RandomVariable`, `Partition` |
-| Conditional expectation | `FiniteProbabilitySpace`, `RandomVariable` |
-| Filtrations and martingales | `Filtration`, `Martingale`, `StoppingTime`, `StoppedProcess` |
-| Time-series analysis | AR, MA, ARMA, ARIMA, SARIMA, correlograms, stationarity tests |
-| Box–Jenkins workflow | identification, candidate estimation, validation, deterministic selection, forecasting |
-| State-space / Kalman | filtering, smoothing, forecasting, likelihood estimation, innovation diagnostics, adequacy |
+| Move an EViews workflow into Python | EViews-inspired workfiles, expressions and equation syntax |
+| Follow a standard time-series methodology | data → transformation → stationarity → ACF/PACF → estimation → diagnostics → selection → forecasting |
+| Keep analysis reproducible | scripts instead of GUI state, explicit parameters and deterministic tests |
+| Get report-ready results | `summary()`, `table()`, `interpret()`, roots, diagnostics and forecast objects |
+| Work from course material | mathematical explanations remain separate from the software/API reference |
+| Go beyond ARIMA | linear-Gaussian state-space models, Kalman filtering/smoothing and innovation diagnostics |
+| Learn stochastic processes | explicit mathematical objects with validated state spaces and trajectories |
 
-The repository preserves explicit numerical contracts and deterministic regression fixtures across the major workflows.
+StochX is **EViews-inspired rather than a binary-compatible EViews clone**. Numerical parity is treated as an explicit benchmark wherever a reference fixture exists, so users can see which conventions are verified.
+
+## The time-series workflow
+
+```text
+Workfile / data
+      ↓
+Inspect and describe
+      ↓
+Generate lags, differences, logs, trend terms
+      ↓
+Decompose / smooth when useful
+      ↓
+ADF / KPSS / PP stationarity decisions
+      ↓
+ACF / PACF / correlogram
+      ↓
+AR / MA / ARMA / ARIMA / SARIMA
+      ↓
+Residual diagnostics
+      ↓
+Box–Jenkins validation + deterministic selection
+      ↓
+Forecast + prediction intervals
+```
+
+The state-space workflow extends the same idea:
+
+```text
+Linear state-space model
+      ↓
+Kalman filter
+      ↓
+RTS smoother
+      ↓
+Innovation diagnostics
+      ↓
+Adequacy tests
+      ↓
+Forecasting
+```
+
+## Quick EViews-style example
+
+```python
+from stochx.timeseries import Workfile, adf, estimate
+
+wf = Workfile.from_csv("macro.csv", date_column="DATE", frequency="M")
+wf.set_sample("2010-01-01 2024-12-01")
+
+print(wf.info())
+print(wf.eval("GDP(-1)"))
+print(wf.generate("DGDP", "D(GDP)").summary())
+
+eq = wf.ls("GDP C CONS CONS(-1)", name="EQ01")
+print(eq.summary())
+print(eq.interpret())
+
+unit_root = adf(wf["GDP"], regression="c", lags=1, autolag=None)
+print(unit_root.summary())
+```
+
+## Box–Jenkins in Python
+
+```python
+from stochx.timeseries import (
+    identify_box_jenkins,
+    estimate_box_jenkins_candidates,
+    validate_box_jenkins_candidates,
+    select_box_jenkins_model,
+    forecast_box_jenkins,
+)
+
+ident = identify_box_jenkins(y, d=1, nlags=24, max_p=3, max_q=3)
+estimation = estimate_box_jenkins_candidates(y, ident.candidate_orders)
+validation = validate_box_jenkins_candidates(estimation, lags=12, alpha=0.05)
+selection = select_box_jenkins_model(validation, criterion="aic")
+forecast = forecast_box_jenkins(selection, steps=12, alpha=0.05)
+```
+
+## State-space example
+
+```python
+import numpy as np
+from stochx.timeseries import run_local_level_workflow
+
+workflow = run_local_level_workflow(
+    np.array([1.0, 1.2, np.nan, 1.3, 1.4, 1.25, 1.5]),
+    diagnostic_lags=4,
+    alpha=0.05,
+    forecast_steps=3,
+)
+
+print(workflow.smoother.smoothed_state)
+print(workflow.forecast.forecast)
+```
 
 ## Installation
 
@@ -35,141 +127,80 @@ The repository preserves explicit numerical contracts and deterministic regressi
 python -m pip install stochx
 ```
 
-For development:
+Development and documentation environments:
 
 ```bash
 python -m pip install -e ".[dev]"
-```
-
-For documentation development:
-
-```bash
 python -m pip install -e ".[docs]"
-mkdocs serve
 ```
-
-## Quick start
-
-### Discrete-time Markov chain
-
-```python
-import numpy as np
-from stochx.stochastic import MarkovChain, empirical_state_frequencies
-
-P = [
-    [0.7, 0.3],
-    [0.4, 0.6],
-]
-
-chain = MarkovChain(P, states=["A", "B"])
-
-print(chain.n_step_transition(5))
-print(chain.stationary_distribution())
-
-path = chain.simulate(
-    10_000,
-    initial_state="A",
-    rng=np.random.default_rng(0),
-)
-print(empirical_state_frequencies(path, chain.states))
-```
-
-### State-space filtering
-
-```python
-from stochx.timeseries import local_level_filter
-
-result = local_level_filter(
-    [1.0, 2.0, 3.0],
-    process_variance=0.0,
-    observation_variance=1.0,
-    initial_level=0.0,
-    initial_variance=1.0,
-)
-
-print(result.states)
-print(result.log_likelihood)
-```
-
-### Full state-space workflow
-
-```python
-import numpy as np
-from stochx.timeseries import run_local_level_workflow
-
-result = run_local_level_workflow(
-    np.array([1.0, 1.2, np.nan, 1.3, 1.4, 1.25, 1.5, 1.55]),
-    diagnostic_lags=2,
-    alpha=0.10,
-    forecast_steps=3,
-)
-
-print(result.smoother.smoothed_state)
-print(result.forecast.forecast)
-```
-
-## Public API
-
-The public stochastic namespace is available from `stochx.stochastic`, while time-series and state-space functionality is exposed from `stochx.timeseries`.
-
-The detailed reference is maintained in the [API documentation](https://faycal214.github.io/stochx/).
-
-## Examples
-
-Every major mathematical area has runnable examples. The examples directory includes focused stochastic-process examples as well as the time-series and state-space workflows.
-
-```text
-examples/
-├── 01_discrete_markov_chain.py
-├── 02_poisson_process.py
-├── 03_continuous_markov_chain.py
-├── 04_birth_death_process.py
-├── 05_conditional_expectation.py
-├── 06_martingale.py
-├── 07_api_operations.py
-├── 08_eviews_time_series_workflow.py
-├── 09_state_space_kalman.py
-├── 10_state_space_workflow.py
-└── api_quickstart.py
-```
-
-CI executes every `examples/*.py` script and builds the documentation strictly.
 
 ## Documentation
 
-The documentation site separates:
+The documentation is organized by **what you are trying to do** rather than by release stage:
 
-- **Course material** for mathematical development.
-- **Package / API** for public Python objects and validation rules.
-- **Time Series** for the USTHB-style analysis workflow and state-space extensions.
-- **Worked Examples** for executable end-to-end usage.
-- **Release readiness** for distribution, migration, and release-surface requirements.
+- **Time Series** — the main applied guide, written as a workflow and optimized for EViews users moving to Python.
+- **Stochastic Processes** — a separate mathematical guide for Markov chains, Poisson processes, CTMCs, probability objects and martingales.
+- **Course Material** — mathematical foundations, notation, hypotheses and worked derivations.
+- **Package / API** — exact public objects, parameters, properties, methods and numerical conventions.
+- **Examples** — runnable scripts corresponding to the guide pages.
 
-Start at the [documentation site](https://faycal214.github.io/stochx/).
+Start with the [Time Series User Guide](https://faycal214.github.io/stochx/time-series/).
 
-For users upgrading from the `0.2.x` line, see the [0.2.x migration guide](https://faycal214.github.io/stochx/stage12/migration_0_2_x/).
+## Supported time-series areas
 
-## Development and quality gates
+```text
+Data / Workfile
+Series expressions and transformations
+Descriptive statistics
+Smoothing and decomposition
+ADF / DF / KPSS / Phillips–Perron
+ACF / PACF / correlograms
+OLS and EViews-style equations
+AR / MA / ARMA / ARIMA / SARIMA
+ARMA-error regression
+Breusch–Godfrey / Ljung–Box / Jarque–Bera / ARCH / variance tests
+Box–Jenkins identification → estimation → validation → selection → forecast
+Prediction intervals and forecast metrics
+Linear-Gaussian state-space models
+Kalman filtering / smoothing / forecasting
+Local-level likelihood estimation
+Innovation diagnostics and state-space adequacy
+```
 
-The repository uses GitHub Actions to run the full test suite on Python 3.10, 3.11, and 3.12. The CI pipeline also checks:
+## Supported stochastic-process areas
 
-- public API docstring coverage;
-- API-reference page coverage;
-- documentation structure;
-- runnable example coverage;
-- package identity;
-- strict MkDocs builds;
-- source and wheel distribution builds;
-- Twine metadata validation;
-- clean-wheel installation/import verification.
+```text
+Discrete-time Markov chains
+Poisson and non-homogeneous Poisson processes
+Continuous-time Markov chains
+Birth-death processes
+Finite probability spaces
+Random variables and partitions
+Conditional expectation
+Filtrations and martingales
+Stopping times and stopped processes
+Simulation and trajectory analysis
+```
 
-Run the main suite locally with:
+## Examples
+
+Runnable examples live in `examples/` and are executed in CI. The most relevant applied examples are:
+
+```text
+08_eviews_time_series_workflow.py
+09_state_space_kalman.py
+10_state_space_workflow.py
+```
+
+## Quality and reproducibility
+
+StochX treats numerical conventions as part of the public contract. The repository includes deterministic regression fixtures, missing-observation tests, model-selection contracts and CI checks across Python 3.10, 3.11 and 3.12.
 
 ```bash
 pytest -q tests --disable-warnings
 ```
 
-Run all examples locally with:
+All example scripts can be executed with:
 
 ```bash
 for example in examples/*.py; do
@@ -178,28 +209,18 @@ for example in examples/*.py; do
 done
 ```
 
-Build and validate distributions locally before a release:
+Build and validate distributions with:
 
 ```bash
 python -m build
 python -m twine check dist/*
 ```
 
-## Versioning
+## Version
 
-StochX follows semantic versioning for public API changes:
+StochX follows semantic versioning. The current release is **0.3.0**.
 
-- `MAJOR` for incompatible public API changes;
-- `MINOR` for backwards-compatible features;
-- `PATCH` for backwards-compatible fixes.
-
-The package version is defined once in `stochx/__init__.py` and is used by the build configuration, avoiding separate version values that can drift.
-
-## Release status
-
-StochX is currently in the release-hardening phase following the frozen Stage 8–11 numerical contracts. The current package version remains `0.2.0` until a release-candidate decision explicitly selects the next published version.
-
-PyPI publishing is prepared through a tag-based release workflow; publication requires the repository's PyPI trusted publisher configuration.
+The numerical and public API contracts introduced during Stages 8–11 are frozen. Future breaking changes should follow a deliberate major-version review.
 
 ## License
 
