@@ -40,6 +40,7 @@ class EstimatedCandidate:
     residuals: np.ndarray
     ts_result: TSResult | None = None
     error: str | None = None
+    source_index: tuple[object, ...] | None = None
 
     def __post_init__(self) -> None:
         order = tuple(int(v) for v in self.order)
@@ -62,6 +63,8 @@ class EstimatedCandidate:
             object.__setattr__(self, "estimation_nobs", int(self.estimation_nobs))
         if self.error is not None:
             object.__setattr__(self, "error", str(self.error))
+        if self.source_index is not None:
+            object.__setattr__(self, "source_index", tuple(self.source_index))
 
     @property
     def coefficient_names(self) -> tuple[str, ...]:
@@ -209,8 +212,19 @@ def _residuals(result) -> np.ndarray:
     return np.asarray(value, dtype=float).copy()
 
 
+def _source_index(y) -> tuple[object, ...] | None:
+    """Snapshot the caller's labels before model fitting can normalize them."""
+    if isinstance(y, pd.Series):
+        return tuple(y.index)
+    idx = getattr(y, "index", None)
+    if idx is not None:
+        return tuple(idx)
+    return None
+
+
 def _fit_candidate(y, order: tuple[int, int, int]) -> EstimatedCandidate:
     p, d, q = order
+    source_index = _source_index(y)
     try:
         # The existing unified dispatcher intentionally rejects (0,0,0).
         # Stage 9.2 may generate that legitimate white-noise candidate, so
@@ -243,6 +257,7 @@ def _fit_candidate(y, order: tuple[int, int, int]) -> EstimatedCandidate:
             converged=_converged(result),
             residuals=residuals,
             ts_result=fitted,
+            source_index=source_index,
         )
     except Exception as exc:  # noqa: BLE001
         return EstimatedCandidate(
@@ -265,6 +280,7 @@ def _fit_candidate(y, order: tuple[int, int, int]) -> EstimatedCandidate:
             residuals=np.asarray([], dtype=float),
             ts_result=None,
             error=str(exc),
+            source_index=source_index,
         )
 
 
