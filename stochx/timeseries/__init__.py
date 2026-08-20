@@ -46,6 +46,7 @@ from .box_jenkins_validation import CandidateValidation, BoxJenkinsValidationRes
 from .box_jenkins_selection import BoxJenkinsSelectionResult, select_box_jenkins_model
 from .box_jenkins_forecasting import BoxJenkinsForecastResult, forecast_box_jenkins
 from .statespace import KalmanFilterResult, LinearStateSpace, kalman_filter, local_level_filter
+from .statespace_smoothing import KalmanSmootherResult, kalman_smoother
 
 __all__ = [
     "TimeSeries", "Workfile", "Expression", "ExpressionError", "evaluate", "Equation", "EquationResult", "UnifiedResult", "ResultTable",
@@ -60,7 +61,7 @@ __all__ = [
     "CandidateValidation", "BoxJenkinsValidationResult", "validate_box_jenkins_candidates",
     "BoxJenkinsSelectionResult", "select_box_jenkins_model",
     "BoxJenkinsForecastResult", "forecast_box_jenkins",
-    "LinearStateSpace", "KalmanFilterResult", "kalman_filter", "local_level_filter",
+    "LinearStateSpace", "KalmanFilterResult", "kalman_filter", "local_level_filter", "KalmanSmootherResult", "kalman_smoother",
     "TestResult", "durbin_watson_test", "breusch_godfrey", "breusch_godfrey_raw", "box_pierce", "ljung_box", "jarque_bera", "mean_zero_test", "normality_ks", "variance_ratio_test", "breusch_pagan", "arch_test", "residual_correlogram", "residual_diagnostics_correlogram", "residual_diagnostics", "roots_report", "redundancy_check",
     "ForecastMetrics", "metrics", "prediction_interval", "restore_differences", "naive_forecast", "drift_forecast",
     "RegressionResult", "ols", "trend_terms",
