@@ -35,6 +35,26 @@ print(eq.summary())
 print(eq.table())
 ```
 
+## Box–Jenkins workflow
+
+The public Box–Jenkins surface follows a deterministic identification → estimation → residual validation → model selection → forecasting workflow. The Stage 9 contracts freeze candidate-order generation, auditable estimation metadata, adequacy decisions, deterministic tie-breaking, transformation restoration, and forecast metadata.
+
+```python
+from stochx.timeseries import (
+    identify_box_jenkins,
+    estimate_box_jenkins_candidates,
+    validate_box_jenkins_candidates,
+    select_box_jenkins_model,
+    forecast_box_jenkins,
+)
+
+ident = identify_box_jenkins(y, d=1, nlags=12, max_p=2, max_q=2)
+estimation = estimate_box_jenkins_candidates(y, ident.candidate_orders)
+validation = validate_box_jenkins_candidates(estimation, lags=12, alpha=0.05)
+selection = select_box_jenkins_model(validation)
+forecast = forecast_box_jenkins(selection, steps=12, alpha=0.05)
+```
+
 ## State-space and Kalman filtering
 
 Stage 10 adds a public linear-Gaussian state-space core without changing the Stage 8 correlogram or Stage 9 Box-Jenkins contracts.
@@ -86,7 +106,70 @@ Missing values are handled per observed scalar dimension. A partially missing ro
 
 `KalmanFilterResult` exposes filtered/predicted states and covariances, innovations, innovation covariances, Gaussian log likelihood, observation accounting, and the observed-dimension mask. Its numerical arrays are immutable.
 
-The canonical runnable example is `examples/09_state_space_kalman.py`.
+## Stage 11 state-space extension
+
+Stage 11 extends the filtering core into a complete auditable workflow without changing the Stage 10 filtering contract.
+
+### Smoothing
+
+```python
+from stochx.timeseries import kalman_smoother
+
+smoothed = kalman_smoother(y, model, filter_result=result)
+print(smoothed.smoothed_state)
+```
+
+`kalman_smoother` applies a deterministic Rauch–Tung–Striebel backward recursion and retains all time rows, including fully missing observations.
+
+### Forecasting
+
+```python
+from stochx.timeseries import kalman_forecast
+
+future = kalman_forecast(y, model, steps=5, alpha=0.10, filter_result=result)
+print(future.forecast)
+print(future.lower)
+print(future.upper)
+```
+
+Forecast intervals are returned with immutable forecast, standard-error, lower-bound, and upper-bound arrays.
+
+### Likelihood estimation
+
+```python
+from stochx.timeseries import estimate_local_level
+
+estimate = estimate_local_level(y, initial_level=0.0, initial_variance=1.0)
+print(estimate.process_variance)
+print(estimate.observation_variance)
+print(estimate.aic, estimate.bic)
+```
+
+### Innovation diagnostics and adequacy
+
+```python
+from stochx.timeseries import kalman_innovation_diagnostics, state_space_adequacy
+
+diag = kalman_innovation_diagnostics(result)
+adequacy = state_space_adequacy(diag, lags=4, alpha=0.05)
+print(diag.standardized_innovations)
+print(adequacy.adequate)
+```
+
+### End-to-end workflow
+
+```python
+from stochx.timeseries import run_local_level_workflow
+
+workflow = run_local_level_workflow(
+    y,
+    diagnostic_lags=4,
+    alpha=0.05,
+    forecast_steps=8,
+)
+```
+
+The workflow composes estimation, filtering, smoothing, innovation diagnostics, adequacy checks, and forecasting around one canonical filtering result. The runnable reference is `examples/10_state_space_workflow.py`.
 
 ## Phase B — serial correlation and ARMA error correction
 
@@ -112,28 +195,17 @@ result = wf.ls(specification, name="EQ20", start_params=eviews_reference_vector)
 The result exposes:
 
 ```python
-result.params             # C, structural coefficients, AR(...), MA(...), SIGMASQ
-result.statistics()       # AIC, Schwarz, Hannan-Quinn, etc.
-result.roots_report()     # inverse AR/MA roots
-result.covariance_method  # "outer product of gradients (OPG)"
-result.covariance_matrix()# coefficient covariance matrix
-result.bse                # OPG standard errors
-result.tvalues            # coefficient / OPG standard error
-result.pvalues            # two-sided Student-t probabilities
+result.params
+result.statistics()
+result.roots_report()
+result.covariance_method
+result.covariance_matrix()
+result.bse
+result.tvalues
+result.pvalues
 ```
 
-For ARMA maximum-likelihood equations, the covariance matrix is formed from the inverse of the sum of per-observation score outer products. The Phase B benchmark uses this OPG information matrix directly, matching the published EViews equation output. EViews identifies its displayed covariance method as the outer product of gradients. citeturn753676search0
-
-The official benchmark covers:
-
-```text
-EQ18: MA(1)
-EQ19: MA(1 to 3)
-EQ20: AR(1) + MA(1)
-EQ21: AR(1 to 2) + MA(1)
-```
-
-The Phase B numerical regression tests assert coefficient-by-coefficient parity, `SIGMASQ`, inverse AR/MA roots, AIC, Schwarz, Hannan-Quinn, OPG variance diagonals, standard errors, t-statistics and p-values at the precision supported by the published EViews output. The published screenshots do not expose the off-diagonal covariance elements, so those cannot be asserted independently from the supplied benchmark.
+For ARMA maximum-likelihood equations, the covariance matrix is formed from the inverse of the sum of per-observation score outer products. The Phase B benchmark uses this OPG information matrix directly, matching the published EViews equation output.
 
 ## Serial-correlation diagnostics
 
