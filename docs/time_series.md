@@ -35,6 +35,59 @@ print(eq.summary())
 print(eq.table())
 ```
 
+## State-space and Kalman filtering
+
+Stage 10 adds a public linear-Gaussian state-space core without changing the Stage 8 correlogram or Stage 9 Box-Jenkins contracts.
+
+For the scalar local-level model:
+
+```python
+from stochx.timeseries import local_level_filter
+
+result = local_level_filter(
+    [1.0, 2.0, 3.0],
+    process_variance=0.0,
+    observation_variance=1.0,
+    initial_level=0.0,
+    initial_variance=1.0,
+)
+
+print(result.states)
+print(result.log_likelihood)
+```
+
+For a general linear-Gaussian model:
+
+```python
+import numpy as np
+from stochx.timeseries import LinearStateSpace, kalman_filter
+
+model = LinearStateSpace(
+    transition=np.eye(2),
+    design=np.eye(2),
+    state_cov=np.eye(2) * 0.1,
+    observation_cov=np.eye(2),
+    initial_state=np.zeros(2),
+    initial_cov=np.eye(2),
+)
+
+result = kalman_filter(
+    np.array([
+        [1.0, 2.0],
+        [np.nan, 3.0],
+        [np.nan, np.nan],
+        [4.0, 5.0],
+    ]),
+    model,
+)
+```
+
+Missing values are handled per observed scalar dimension. A partially missing row updates only with finite dimensions; an all-missing row performs prediction only and contributes no likelihood increment. `nobs` counts time rows, while `effective_nobs` counts observed scalar measurements and `missing_observations` counts missing scalar measurements.
+
+`KalmanFilterResult` exposes filtered/predicted states and covariances, innovations, innovation covariances, Gaussian log likelihood, observation accounting, and the observed-dimension mask. Its numerical arrays are immutable.
+
+The canonical runnable example is `examples/09_state_space_kalman.py`.
+
 ## Phase B — serial correlation and ARMA error correction
 
 `AR(n)` and `MA(n)` terms describe the **regression disturbance**, not observed regressors. Ranges such as `AR(1 to 2)` and `MA(1 to 3)` expand into the corresponding contiguous error orders.
