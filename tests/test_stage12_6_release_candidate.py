@@ -19,6 +19,7 @@ def test_release_candidate_contract_is_present() -> None:
     path = ROOT / "docs" / "stage12" / "12.6_release_candidate.md"
     assert path.exists()
     text = path.read_text(encoding="utf-8")
+    # The acceptance document remains part of the historical release record.
     assert "0.3.0rc1" in text
     assert "SHA-256" in text
     assert "Python 3.10" in text
