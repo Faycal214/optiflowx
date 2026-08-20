@@ -31,7 +31,7 @@ def test_stage10_6_public_cross_stage_integration_preserves_frozen_contracts():
     assert ident.d == 0
     assert ident.candidate_orders
     estimation = estimate_box_jenkins_candidates(y, ident.candidate_orders)
-    validation = validate_box_jenkins_candidates(estimation, lags=(1, 2), alpha=0.05)
+    validation = validate_box_jenkins_candidates(estimation, lags=2, alpha=0.05)
     selection = select_box_jenkins_model(validation)
     assert isinstance(selection, BoxJenkinsSelectionResult)
     assert selection.status in {"selected", "no_eligible_model"}
