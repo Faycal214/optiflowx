@@ -102,6 +102,8 @@ def _future_index_from_source(source: object, steps: int) -> pd.Index | None:
         idx = source.index
     elif isinstance(source, (pd.Index, pd.RangeIndex)):
         idx = source
+    elif isinstance(source, (tuple, list)):
+        idx = pd.Index(source)
     elif hasattr(source, "index"):
         idx = pd.Index(getattr(source, "index"))
     else:
@@ -124,11 +126,16 @@ def _future_index_from_source(source: object, steps: int) -> pd.Index | None:
 
 
 def _next_index(selected, steps: int) -> pd.Index:
-    """Create a deterministic future index, preferring fitted-model labels."""
+    """Create a deterministic future index using preserved source provenance."""
+    source_index = getattr(selected, "source_index", None)
+    if source_index is not None:
+        future = _future_index_from_source(source_index, steps)
+        if future is not None:
+            return future
+
     ts_result = getattr(selected, "ts_result", None)
     stats_result = getattr(ts_result, "result", None)
     fitted_model = getattr(ts_result, "fitted_model", None)
-
     for obj in (
         getattr(getattr(stats_result, "model", None), "data", None),
         getattr(getattr(fitted_model, "data", None), "data", None),
