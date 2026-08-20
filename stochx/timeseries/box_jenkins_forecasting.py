@@ -123,8 +123,6 @@ def _forecast_frame(selected, steps: int, alpha: float) -> pd.DataFrame:
     frame = selected.ts_result.forecast(steps=steps, alpha=alpha)
     if not {"Forecast", "Lower", "Upper"}.issubset(frame.columns):
         raise ValueError("fitted-model forecast must provide Forecast, Lower, and Upper")
-    # Statsmodels summary_frame exposes standard errors as ``mean_se``;
-    # StochX's public forecast table uses the stable ``Std. Error`` name.
     if "Std. Error" not in frame.columns:
         if "mean_se" in frame.columns:
             frame = frame.rename(columns={"mean_se": "Std. Error"})
@@ -158,14 +156,15 @@ def forecast_box_jenkins(
 
     selected = selection.selected
     frame = _forecast_frame(selected, steps, float(alpha))
-    index = pd.Index(frame.index)
     original = getattr(selected.ts_result, "original", None)
     if forecast_index is not None:
         index = pd.Index(forecast_index)
         if len(index) != steps:
             raise ValueError("forecast_index length must equal steps")
-    elif len(index) != steps:
+    else:
         index = _next_index(original, steps)
+        if len(index) != steps:
+            index = pd.Index(frame.index)
 
     point = frame["Forecast"].to_numpy(dtype=float)
     se = frame["Std. Error"].to_numpy(dtype=float)
