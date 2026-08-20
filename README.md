@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/pypi/pyversions/stochx)](https://pypi.org/project/stochx/)
 [![CI](https://github.com/Faycal214/stochx/actions/workflows/test.yml/badge.svg)](https://github.com/Faycal214/stochx/actions/workflows/test.yml)
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-1081C2?style=flat)](https://faycal214.github.io/stochx/)
-[![License](https://img.shields.io/github/license/Faycal214/stochx?style=flat)](LICENSE)
+[![License](https://img.shields.io/github/license/Faycal214/stochx)](LICENSE)
 
 StochX is a lightweight Python library for turning stochastic-process mathematics, time-series methods, and state-space models into executable, validated, and testable objects.
 
@@ -143,9 +143,11 @@ The documentation site separates:
 - **Package / API** for public Python objects and validation rules.
 - **Time Series** for the USTHB-style analysis workflow and state-space extensions.
 - **Worked Examples** for executable end-to-end usage.
-- **Release readiness** for distribution and release-surface requirements.
+- **Release readiness** for distribution, migration, and release-surface requirements.
 
 Start at the [documentation site](https://faycal214.github.io/stochx/).
+
+For users upgrading from the `0.2.x` line, see the [0.2.x migration guide](https://faycal214.github.io/stochx/stage12/migration_0_2_x/).
 
 ## Development and quality gates
 
