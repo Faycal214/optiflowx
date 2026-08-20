@@ -18,6 +18,7 @@ nav:
       - Forecasting: time-series/forecasting.md
       - State-space and Kalman: time-series/state-space.md
       - Reports and interpretation: time-series/reports.md
+      - Supporting modules: time-series/utility-modules.md
   - Stochastic Processes:
       - User Guide: stochastic/index.md
       - Markov chains: stochastic/markov-chains.md
@@ -28,7 +29,7 @@ nav:
       - Simulation: stochastic/simulation.md
   - Course Material:
       - Overview: course_material.md
-      - Time-series workflow: time_series.md
+      - Time-series methodology: time_series.md
       - Chapter 1 — Discrete-Time Markov Chains: course_chapitre1.md
       - Chapter 2 — Poisson Processes: course_chapitre2.md
       - Chapter 3 — Continuous-Time Markov Chains: course_chapitre3.md
