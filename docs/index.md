@@ -1,72 +1,72 @@
 # StochX
 
-**A Python library for stochastic processes and applied probability.**
+## A practical time-series library for Python
 
-The library currently covers:
+StochX is a lightweight scientific Python library with two clear layers:
 
-- discrete-time Markov chains (DTMC);
-- continuous-time Markov chains (CTMC);
-- Poisson processes;
-- birth-death processes;
-- finite probability spaces, partitions, random variables, and conditional expectation;
-- filtrations, martingales, stopping times, and stopped processes.
+- **Time Series** — the main applied layer for econometrics, forecasting and EViews-style analysis.
+- **Stochastic Processes** — a separate mathematical layer for probability and stochastic-process coursework.
+
+The time-series documentation is the best place to start for analysts who are moving an existing EViews workflow into Python.
+
+## What makes the time-series layer different?
+
+StochX keeps the workflow familiar:
+
+```text
+workfile → sample → series expressions → stationarity
+        → ACF/PACF → model estimation → diagnostics
+        → model selection → forecast → report
+```
+
+The implementation uses Python-native objects, but the vocabulary is intentionally recognizable: `Workfile`, `C`, `@TREND`, `D(Y)`, `DLOG(Y)`, `Y(-1)`, `wf.ls(...)`, ADF, AR/MA terms, correlograms, result tables and interpretation helpers.
+
+The project does not claim to be a universal EViews clone. Instead, it makes the **same statistical workflow easy to reproduce in Python**, and it records exact numerical conventions in regression tests where parity has been benchmarked.
+
+## Start with the guides
+
+### Time Series
+
+Read the [Time Series User Guide](time-series/index.md) first. It covers the complete applied workflow from data preparation to forecasting, plus the state-space/Kalman extension.
+
+### Stochastic Processes
+
+Use the [Stochastic Processes User Guide](stochastic/index.md) for discrete-time Markov chains, Poisson processes, CTMCs, birth-death processes, probability objects, martingales and simulation.
+
+### Course Material
+
+The [Course Material](course_material.md) section separates mathematical explanations, notation and assumptions from the software API.
+
+### Package / API
+
+The [Time-series API map](api/time-series.md) and [Stochastic-process API map](api/stochastic-processes.md) explain the public Python surface. The individual API pages contain the exact object-level reference.
 
 ## Installation
 
 ```bash
-pip install stochx
+python -m pip install stochx
 ```
 
-## Quick example
-
-Create a discrete-time Markov chain from its transition matrix:
+## Minimal time-series example
 
 ```python
-import numpy as np
-from stochx.stochastic import MarkovChain
+from stochx.timeseries import Workfile, adf
 
-P = np.array([
-    [0.8, 0.2],
-    [0.3, 0.7],
-])
+wf = Workfile.from_csv("macro.csv", date_column="DATE", frequency="M")
+wf.set_sample("2010-01-01 2024-12-01")
 
-chain = MarkovChain(P, states=["A", "B"])
+print(wf.info())
+print(wf.eval("GDP(-1)"))
+print(wf.generate("DGDP", "D(GDP)").summary())
 
-print(chain.states)
-print(chain.transition_matrix)
-print(chain.stationary_distribution())
+eq = wf.ls("GDP C CONS CONS(-1)", name="EQ01")
+print(eq.summary())
+
+print(adf(wf["GDP"], regression="c", lags=1, autolag=None).summary())
 ```
 
-## Documentation
+## Quality
 
-The documentation is divided into three parts.
+The package is tested across Python 3.10, 3.11 and 3.12. The repository also runs all examples and validates documentation builds and distribution artifacts.
 
-### Course material
-
-The course chapters present the mathematical definitions, notation, results, and hypotheses used throughout the stochastic-process material. The mathematics is kept separate from the software reference.
-
-### Package / API
-
-The API Reference documents the public StochX classes, functions, properties, methods, validation rules, and numerical behavior.
-
-### Examples
-
-Worked examples show how the mathematical objects are represented and used in Python.
-
-## Supported stochastic models
-
-| Model | Main class |
-|---|---|
-| Discrete-time Markov chain | `MarkovChain` |
-| Continuous-time Markov chain | `ContinuousTimeMarkovChain` |
-| Poisson process | `PoissonProcess` |
-| Birth-death process | `BirthDeathProcess` |
-| Finite probability space | `FiniteProbabilitySpace` |
-| Random variable | `RandomVariable` |
-| Partition | `Partition` |
-| Filtration | `Filtration` |
-| Martingale | `Martingale` |
-| Stopping time | `StoppingTime` |
-| Stopped process | `StoppedProcess` |
-
-**StochX** — stochastic-process mathematics implemented as a Python library.
+The current stable package version is **0.3.0**.
