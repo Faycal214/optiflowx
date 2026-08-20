@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from .box_jenkins_estimation import EstimatedCandidate
-from .box_jenkins_validation import BoxJenkinsValidationResult
+from .box_jenkins_validation import BoxJenkinsValidationResult, CandidateValidation
 
 SelectionCriterion = Literal["aic", "sc", "bic", "hq"]
 
@@ -75,17 +75,7 @@ def _criterion_value(candidate: EstimatedCandidate, criterion: str) -> float:
     return float(value)
 
 
-def _sort_key(candidate: EstimatedCandidate, criterion: str, tie_tolerance: float) -> tuple[float, int, tuple[int, int, int]]:
-    # The rounded bucket makes candidates within the configured tolerance
-    # share a deterministic comparison bucket; parsimony resolves the tie.
-    value = _criterion_value(candidate, criterion)
-    bucket = int(np.floor(value / tie_tolerance + 0.5)) if tie_tolerance > 0 else 0
-    return float(bucket), int(candidate.params.size), candidate.order
-
-
 def _rank_candidates(candidates: tuple[EstimatedCandidate, ...], criterion: str, tie_tolerance: float) -> tuple[EstimatedCandidate, ...]:
-    # Primary order is the criterion itself.  For values within tolerance,
-    # parsimony and then lexicographic order provide the deterministic tie-break.
     ordered = sorted(candidates, key=lambda c: (_criterion_value(c, criterion), int(c.params.size), c.order))
     if len(ordered) < 2 or tie_tolerance == 0:
         return tuple(ordered)
@@ -102,6 +92,11 @@ def _rank_candidates(candidates: tuple[EstimatedCandidate, ...], criterion: str,
     return tuple(ranked)
 
 
+def _coerce_estimated(candidate: CandidateValidation) -> EstimatedCandidate | None:
+    """Return the immutable estimation snapshot attached by Stage 9.4."""
+    return candidate.estimated_candidate
+
+
 def select_box_jenkins_model(
     validation: BoxJenkinsValidationResult,
     *,
@@ -110,17 +105,26 @@ def select_box_jenkins_model(
 ) -> BoxJenkinsSelectionResult:
     """Select one model from the Stage 9.4 eligible candidates.
 
-    Selection never re-estimates or re-validates candidates.  Adequacy is a
+    Selection never re-estimates or re-validates candidates. Adequacy is a
     hard eligibility gate; information criteria are applied only afterward.
-    Ties within ``tie_tolerance`` are resolved first by parameter-count
-    parsimony and then lexicographically by ``(p,d,q)``.
     """
     normalized = _normalize_criterion(criterion)
     if not np.isfinite(float(tie_tolerance)) or float(tie_tolerance) < 0:
         raise ValueError("tie_tolerance must be a finite non-negative number")
 
-    eligible = tuple(c for c in validation.candidates if c.eligible)
-    eligible_orders = tuple(c.order for c in eligible)
+    eligible_validations = tuple(c for c in validation.candidates if c.eligible)
+    eligible = tuple(c.model for c in eligible_validations if c.model is not None)
+    eligible_orders = tuple(c.order for c in eligible_validations)
+    if len(eligible) != len(eligible_validations):
+        return BoxJenkinsSelectionResult(
+            criterion=normalized,
+            tie_tolerance=float(tie_tolerance),
+            eligible_orders=eligible_orders,
+            ranked_candidates=tuple(),
+            selected=None,
+            status="missing_estimation_snapshot",
+            rationale="One or more eligible validation records has no underlying estimation snapshot; selection is not performed.",
+        )
     if not eligible:
         return BoxJenkinsSelectionResult(
             criterion=normalized,
