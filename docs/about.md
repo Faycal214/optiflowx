@@ -1,12 +1,30 @@
-# About the Author
+# About StochX
 
-StochX is developed **single-handedly by a student** studying **Stochastic Modeling and Forecasting in Operations Research** at the **University of Science and Technology Houari Boumediene (USTHB)** in Algiers, Algeria.
+StochX is an independent academic and software project developed around two connected goals:
 
-The package grew out of the **stochastic-process course in the master's degree program**. Its goal is to turn the mathematical objects studied in that course into executable, testable Python objects while keeping the mathematics and the software interface clearly connected.
+1. make stochastic-process mathematics executable and testable;
+2. provide a lightweight, reproducible Python workflow for practical time-series analysis and forecasting.
 
-## Author
+## Main applied focus
 
-The project is developed and maintained independently as an individual academic and software project.
+The time-series layer is designed for students, researchers and analysts who are comfortable with the EViews methodology and want to move the same style of analysis into Python.
+
+The project therefore keeps familiar concepts such as workfiles, samples, lags, differences, equations, ADF, correlograms, ARMA errors, model diagnostics and forecasting while exposing them as scriptable Python objects.
+
+## Academic foundation
+
+The stochastic-process layer grew out of graduate-level coursework in stochastic modeling and forecasting and covers Markov chains, Poisson processes, continuous-time Markov chains, birth-death processes, conditional expectation and martingale concepts.
+
+## Design philosophy
+
+StochX prefers:
+
+- explicit mathematical assumptions;
+- small composable objects;
+- deterministic numerical conventions;
+- reproducible examples;
+- report-oriented results;
+- clear separation between theory, user workflow and API reference.
 
 ## Reference
 
