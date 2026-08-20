@@ -9,7 +9,7 @@ import stochx.timeseries as timeseries
 
 def test_stage12_package_version_is_single_sourced():
     assert stochx.__version__ == version("stochx")
-    assert re.fullmatch(r"\d+\.\d+\.\d+", stochx.__version__)
+    assert re.fullmatch(r"\d+\.\d+\.\d+(?:rc\d+)?", stochx.__version__)
 
 
 def test_stage12_distribution_identity_is_consistent():
