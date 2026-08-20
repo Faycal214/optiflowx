@@ -50,6 +50,7 @@ from .statespace_smoothing import KalmanSmootherResult, kalman_smoother
 from .statespace_forecasting import KalmanForecastResult, kalman_forecast
 from .statespace_estimation import LocalLevelEstimateResult, estimate_local_level
 from .statespace_diagnostics import KalmanInnovationDiagnosticsResult, kalman_innovation_diagnostics
+from .statespace_adequacy import StateSpaceAdequacyResult, state_space_adequacy
 
 __all__ = [
     "TimeSeries", "Workfile", "Expression", "ExpressionError", "evaluate", "Equation", "EquationResult", "UnifiedResult", "ResultTable",
@@ -65,7 +66,7 @@ __all__ = [
     "BoxJenkinsSelectionResult", "select_box_jenkins_model",
     "BoxJenkinsForecastResult", "forecast_box_jenkins",
     "LinearStateSpace", "KalmanFilterResult", "kalman_filter", "local_level_filter", "KalmanSmootherResult", "kalman_smoother", "KalmanForecastResult", "kalman_forecast", "LocalLevelEstimateResult", "estimate_local_level",
-    "KalmanInnovationDiagnosticsResult", "kalman_innovation_diagnostics",
+    "KalmanInnovationDiagnosticsResult", "kalman_innovation_diagnostics", "StateSpaceAdequacyResult", "state_space_adequacy",
     "TestResult", "durbin_watson_test", "breusch_godfrey", "breusch_godfrey_raw", "box_pierce", "ljung_box", "jarque_bera", "mean_zero_test", "normality_ks", "variance_ratio_test", "breusch_pagan", "arch_test", "residual_correlogram", "residual_diagnostics_correlogram", "residual_diagnostics", "roots_report", "redundancy_check",
     "ForecastMetrics", "metrics", "prediction_interval", "restore_differences", "naive_forecast", "drift_forecast",
     "RegressionResult", "ols", "trend_terms",
