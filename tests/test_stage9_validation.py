@@ -1,4 +1,3 @@
-import numpy as np
 import pytest
 
 from stochx.timeseries import (
@@ -57,7 +56,7 @@ def test_stage9_4_optional_checks_only_make_eligibility_stricter():
     assert strict.candidates[0].arch_test is not None
 
 
-def test_stage9_4_failed_estimation_is_not_revalidated():
+def test_stage9_4_failed_estimation_is_not_revalidated(monkeypatch):
     from stochx.timeseries import box_jenkins_estimation as estimation_module
 
     real_estimate = estimation_module.estimate
@@ -67,7 +66,7 @@ def test_stage9_4_failed_estimation_is_not_revalidated():
             raise RuntimeError("synthetic estimation failure")
         return real_estimate(y, p=p, d=d, q=q)
 
-    pytest.MonkeyPatch().setattr(estimation_module, "estimate", fake_estimate)
+    monkeypatch.setattr(estimation_module, "estimate", fake_estimate)
     y = ar(1, [0.35], 150, rng=4)
     estimation = estimation_module.estimate_box_jenkins_candidates(y, ((9, 0, 9),))
     result = validate_box_jenkins_candidates(estimation, lags=6)
