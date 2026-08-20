@@ -6,13 +6,13 @@
 [![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-1081C2?style=flat)](https://faycal214.github.io/stochx/)
 [![License](https://img.shields.io/github/license/Faycal214/stochx?style=flat)](LICENSE)
 
-StochX is a lightweight Python library for turning stochastic-process mathematics into executable, validated, and testable objects.
+StochX is a lightweight Python library for turning stochastic-process mathematics, time-series methods, and state-space models into executable, validated, and testable objects.
 
 It is designed around a simple idea: each mathematical object should have a clear Python representation, a predictable API, numerical validation, and runnable examples.
 
 ## What makes StochX different
 
-StochX is not limited to discrete-time Markov chains. Its public stochastic API is organized around several connected mathematical objects:
+StochX connects course-faithful stochastic-process mathematics with practical time-series analysis and forecasting.
 
 | Area | Main objects |
 |---|---|
@@ -23,11 +23,11 @@ StochX is not limited to discrete-time Markov chains. Its public stochastic API 
 | Finite probability spaces | `FiniteProbabilitySpace`, `RandomVariable`, `Partition` |
 | Conditional expectation | `FiniteProbabilitySpace`, `RandomVariable` |
 | Filtrations and martingales | `Filtration`, `Martingale`, `StoppingTime`, `StoppedProcess` |
+| Time-series analysis | AR, MA, ARMA, ARIMA, SARIMA, correlograms, stationarity tests |
+| Box–Jenkins workflow | identification, candidate estimation, validation, deterministic selection, forecasting |
+| State-space / Kalman | filtering, smoothing, forecasting, likelihood estimation, innovation diagnostics, adequacy |
 
-Two features are particularly central to the library:
-
-- **CTMC numerical flexibility:** transition probabilities can be evaluated using the matrix-exponential route or a uniformization implementation.
-- **Mathematical continuity:** finite conditional expectation, filtrations, martingales, and stopping times are first-class public objects rather than separate utilities.
+The repository preserves explicit numerical contracts and deterministic regression fixtures across the major workflows.
 
 ## Installation
 
@@ -74,50 +74,49 @@ path = chain.simulate(
 print(empirical_state_frequencies(path, chain.states))
 ```
 
-### Continuous-time Markov chain
+### State-space filtering
 
 ```python
-from stochx.stochastic import ContinuousTimeMarkovChain
+from stochx.timeseries import local_level_filter
 
-Q = [
-    [-2.0, 2.0],
-    [1.0, -1.0],
-]
+result = local_level_filter(
+    [1.0, 2.0, 3.0],
+    process_variance=0.0,
+    observation_variance=1.0,
+    initial_level=0.0,
+    initial_variance=1.0,
+)
 
-chain = ContinuousTimeMarkovChain(Q, states=["A", "B"])
+print(result.states)
+print(result.log_likelihood)
+```
 
-print(chain.transition_matrix(2.0))
-print(chain.transition_matrix_at(2.0, method="uniformization"))
+### Full state-space workflow
+
+```python
+import numpy as np
+from stochx.timeseries import run_local_level_workflow
+
+result = run_local_level_workflow(
+    np.array([1.0, 1.2, np.nan, 1.3, 1.4, 1.25, 1.5, 1.55]),
+    diagnostic_lags=2,
+    alpha=0.10,
+    forecast_steps=3,
+)
+
+print(result.smoother.smoothed_state)
+print(result.forecast.forecast)
 ```
 
 ## Public API
 
-The public stochastic namespace is available from `stochx.stochastic`:
+The public stochastic namespace is available from `stochx.stochastic`, while time-series and state-space functionality is exposed from `stochx.timeseries`.
 
-```python
-from stochx.stochastic import (
-    BirthDeathProcess,
-    CTMCPath,
-    ContinuousTimeMarkovChain,
-    FiniteProbabilitySpace,
-    Filtration,
-    MarkovChain,
-    Martingale,
-    NonHomogeneousPoissonProcess,
-    Partition,
-    PoissonProcess,
-    RandomVariable,
-    StoppedProcess,
-    StoppingTime,
-    empirical_state_frequencies,
-)
-```
-
-The complete reference is maintained in the [API documentation](https://faycal214.github.io/stochx/).
+The detailed reference is maintained in the [API documentation](https://faycal214.github.io/stochx/).
 
 ## Examples
 
-Every major mathematical area has a runnable example, and `examples/07_api_operations.py` provides a broader public-API gallery.
+Every major mathematical area has runnable examples. The examples directory includes focused stochastic-process examples as well as the time-series and state-space workflows.
 
 ```text
 examples/
@@ -127,48 +126,57 @@ examples/
 ├── 04_birth_death_process.py
 ├── 05_conditional_expectation.py
 ├── 06_martingale.py
-└── 07_api_operations.py
+├── 07_api_operations.py
+├── 08_eviews_time_series_workflow.py
+├── 09_state_space_kalman.py
+├── 10_state_space_workflow.py
+└── api_quickstart.py
 ```
 
-The CI suite executes every `examples/*.py` file.
+CI executes every `examples/*.py` script and builds the documentation strictly.
 
 ## Documentation
 
-The documentation site separates three concerns:
+The documentation site separates:
 
-- **Course material** for the mathematical development.
-- **API Reference** for Python classes, properties, methods, validation rules, and examples.
-- **Worked Examples** for end-to-end executable usage.
+- **Course material** for mathematical development.
+- **Package / API** for public Python objects and validation rules.
+- **Time Series** for the USTHB-style analysis workflow and state-space extensions.
+- **Worked Examples** for executable end-to-end usage.
+- **Release readiness** for distribution and release-surface requirements.
 
 Start at the [documentation site](https://faycal214.github.io/stochx/).
 
 ## Development and quality gates
 
-The repository uses GitHub Actions to run the stochastic test suite on Python 3.10, 3.11, and 3.12. The CI pipeline also checks:
+The repository uses GitHub Actions to run the full test suite on Python 3.10, 3.11, and 3.12. The CI pipeline also checks:
 
 - public API docstring coverage;
 - API-reference page coverage;
 - documentation structure;
 - runnable example coverage;
-- strict MkDocs builds.
+- package identity;
+- strict MkDocs builds;
+- source and wheel distribution builds;
+- Twine metadata validation;
+- clean-wheel installation/import verification.
 
-Run the main stochastic suite locally with:
-
-```bash
-pytest -q tests/test_stochastic_*.py --disable-warnings
-```
-
-Run the release-surface checks with:
+Run the main suite locally with:
 
 ```bash
-pytest -q \
-  tests/test_docstring_coverage.py \
-  tests/test_stochastic_example_coverage.py \
-  tests/test_api_documentation_coverage.py \
-  tests/test_documentation_coverage.py
+pytest -q tests --disable-warnings
 ```
 
-Build the package locally before a release:
+Run all examples locally with:
+
+```bash
+for example in examples/*.py; do
+    echo "=== $example ==="
+    python "$example" >/dev/null
+done
+```
+
+Build and validate distributions locally before a release:
 
 ```bash
 python -m build
@@ -187,7 +195,9 @@ The package version is defined once in `stochx/__init__.py` and is used by the b
 
 ## Release status
 
-StochX is currently in the early development stage. PyPI publishing is prepared through a tag-based release workflow, but releases are not automatically published until the repository's PyPI trusted publisher is configured.
+StochX is currently in the release-hardening phase following the frozen Stage 8–11 numerical contracts. The current package version remains `0.2.0` until a release-candidate decision explicitly selects the next published version.
+
+PyPI publishing is prepared through a tag-based release workflow; publication requires the repository's PyPI trusted publisher configuration.
 
 ## License
 
