@@ -1,43 +1,106 @@
-# Time Series
+# Time Series — USTHB and EViews-style methodology
 
-StochX Time Series is organized around the USTHB workflow used for time-series coursework: data preparation, stationarisation, identification, estimation, validation, and forecasting.
+This page is the course-oriented reference for the applied time-series layer. It describes the **methodology and reasoning** behind the Python workflow; the [Time Series User Guide](time-series/index.md) provides the practical module-by-module instructions.
 
-## Workfile
+## 1. From raw data to a model
+
+The workflow is deliberately sequential:
+
+```text
+raw series
+→ workfile / sample
+→ descriptive analysis
+→ transformations
+→ stationarity
+→ ACF/PACF
+→ model specification
+→ estimation
+→ residual diagnostics
+→ selection
+→ forecast
+```
+
+This is close to the workflow EViews users already know, but the full analysis is now a Python script that can be versioned and rerun.
+
+## 2. Workfile thinking
 
 ```python
 from stochx.timeseries import Workfile
 
-wf = Workfile()
-wf.add("GDP", gdp_values)
-wf.add("CONS", consumption_values)
-wf.set_sample(10, 100)
+wf = Workfile.from_csv(
+    "macro.csv",
+    date_column="DATE",
+    frequency="M",
+)
+wf.set_sample("2010-01-01 2024-12-01")
 ```
 
-A workfile keeps named series and a current estimation sample.
+A workfile contains named series and a current estimation sample. This is the central object for multi-series empirical analysis.
 
-## EViews-style expressions
+## 3. Expressions and transformations
+
+The expression layer keeps common EViews conventions familiar:
 
 ```python
-wf.eval("GDP")
 wf.eval("GDP(-1)")
-wf.eval("GDP(1)")
 wf.eval("D(GDP)")
-wf.eval("DLOG(GDP)")
-wf.eval("LOG(GDP)")
-wf.eval("GDP(-1) + 0.5*CONS")
+wf.eval("DLOG(CPI)")
+wf.eval("LOG(IP)")
+wf.generate("GDP_GROWTH", "DLOG(GDP)")
 ```
 
-## Equations
+Use transformations to express a modeling assumption explicitly: remove trend/level behavior, stabilize variance, construct growth rates or create lagged regressors.
+
+## 4. Stationarity
+
+A unit-root decision must identify the deterministic specification first. StochX exposes DF/ADF, KPSS and Phillips–Perron procedures.
 
 ```python
-eq = wf.ls("GDP C CONS CONS(-1)", name="EQ01")
-print(eq.summary())
-print(eq.table())
+from stochx.timeseries import adf
+
+result = adf(wf["GDP"], regression="c", lags=1, autolag=None)
+print(result.summary())
+print(result.interpret())
 ```
 
-## Box–Jenkins workflow
+The test output should be read together with the series plot and economic context.
 
-The public Box–Jenkins surface follows a deterministic identification → estimation → residual validation → model selection → forecasting workflow. The Stage 9 contracts freeze candidate-order generation, auditable estimation metadata, adequacy decisions, deterministic tie-breaking, transformation restoration, and forecast metadata.
+## 5. Identification with ACF/PACF
+
+Once a working stationary series has been selected, inspect the autocorrelation and partial autocorrelation functions.
+
+```python
+from stochx.timeseries import correlogram
+
+corr = correlogram(wf["GDP_GROWTH"].values, nlags=24)
+print(corr.table())
+```
+
+Use ACF/PACF as model-identification evidence, not as a mechanical order generator.
+
+## 6. Model families
+
+StochX covers:
+
+- AR(p);
+- MA(q);
+- ARMA(p,q);
+- ARIMA(p,d,q);
+- SARIMA(p,d,q) × (P,D,Q,s);
+- regression equations with ARMA error terms.
+
+For example:
+
+```python
+from stochx.timeseries import fit_arima
+
+result = fit_arima(wf["GDP"], order=(1, 1, 1))
+print(result.summary())
+```
+
+## 7. Box–Jenkins
+
+For systematic candidate comparison, use the explicit workflow:
 
 ```python
 from stochx.timeseries import (
@@ -48,132 +111,18 @@ from stochx.timeseries import (
     forecast_box_jenkins,
 )
 
-ident = identify_box_jenkins(y, d=1, nlags=12, max_p=2, max_q=2)
-estimation = estimate_box_jenkins_candidates(y, ident.candidate_orders)
+ident = identify_box_jenkins(wf["GDP"], d=1, nlags=24, max_p=3, max_q=3)
+estimation = estimate_box_jenkins_candidates(wf["GDP"], ident.candidate_orders)
 validation = validate_box_jenkins_candidates(estimation, lags=12, alpha=0.05)
-selection = select_box_jenkins_model(validation)
+selection = select_box_jenkins_model(validation, criterion="aic")
 forecast = forecast_box_jenkins(selection, steps=12, alpha=0.05)
 ```
 
-## State-space and Kalman filtering
+The important distinction is that **estimation success is not model adequacy**. Residual validation is a separate decision.
 
-Stage 10 adds a public linear-Gaussian state-space core without changing the Stage 8 correlogram or Stage 9 Box-Jenkins contracts.
+## 8. Regression equations and ARMA errors
 
-For the scalar local-level model:
-
-```python
-from stochx.timeseries import local_level_filter
-
-result = local_level_filter(
-    [1.0, 2.0, 3.0],
-    process_variance=0.0,
-    observation_variance=1.0,
-    initial_level=0.0,
-    initial_variance=1.0,
-)
-
-print(result.states)
-print(result.log_likelihood)
-```
-
-For a general linear-Gaussian model:
-
-```python
-import numpy as np
-from stochx.timeseries import LinearStateSpace, kalman_filter
-
-model = LinearStateSpace(
-    transition=np.eye(2),
-    design=np.eye(2),
-    state_cov=np.eye(2) * 0.1,
-    observation_cov=np.eye(2),
-    initial_state=np.zeros(2),
-    initial_cov=np.eye(2),
-)
-
-result = kalman_filter(
-    np.array([
-        [1.0, 2.0],
-        [np.nan, 3.0],
-        [np.nan, np.nan],
-        [4.0, 5.0],
-    ]),
-    model,
-)
-```
-
-Missing values are handled per observed scalar dimension. A partially missing row updates only with finite dimensions; an all-missing row performs prediction only and contributes no likelihood increment. `nobs` counts time rows, while `effective_nobs` counts observed scalar measurements and `missing_observations` counts missing scalar measurements.
-
-`KalmanFilterResult` exposes filtered/predicted states and covariances, innovations, innovation covariances, Gaussian log likelihood, observation accounting, and the observed-dimension mask. Its numerical arrays are immutable.
-
-## Stage 11 state-space extension
-
-Stage 11 extends the filtering core into a complete auditable workflow without changing the Stage 10 filtering contract.
-
-### Smoothing
-
-```python
-from stochx.timeseries import kalman_smoother
-
-smoothed = kalman_smoother(y, model, filter_result=result)
-print(smoothed.smoothed_state)
-```
-
-`kalman_smoother` applies a deterministic Rauch–Tung–Striebel backward recursion and retains all time rows, including fully missing observations.
-
-### Forecasting
-
-```python
-from stochx.timeseries import kalman_forecast
-
-future = kalman_forecast(y, model, steps=5, alpha=0.10, filter_result=result)
-print(future.forecast)
-print(future.lower)
-print(future.upper)
-```
-
-Forecast intervals are returned with immutable forecast, standard-error, lower-bound, and upper-bound arrays.
-
-### Likelihood estimation
-
-```python
-from stochx.timeseries import estimate_local_level
-
-estimate = estimate_local_level(y, initial_level=0.0, initial_variance=1.0)
-print(estimate.process_variance)
-print(estimate.observation_variance)
-print(estimate.aic, estimate.bic)
-```
-
-### Innovation diagnostics and adequacy
-
-```python
-from stochx.timeseries import kalman_innovation_diagnostics, state_space_adequacy
-
-diag = kalman_innovation_diagnostics(result)
-adequacy = state_space_adequacy(diag, lags=4, alpha=0.05)
-print(diag.standardized_innovations)
-print(adequacy.adequate)
-```
-
-### End-to-end workflow
-
-```python
-from stochx.timeseries import run_local_level_workflow
-
-workflow = run_local_level_workflow(
-    y,
-    diagnostic_lags=4,
-    alpha=0.05,
-    forecast_steps=8,
-)
-```
-
-The workflow composes estimation, filtering, smoothing, innovation diagnostics, adequacy checks, and forecasting around one canonical filtering result. The runnable reference is `examples/10_state_space_workflow.py`.
-
-## Phase B — serial correlation and ARMA error correction
-
-`AR(n)` and `MA(n)` terms describe the **regression disturbance**, not observed regressors. Ranges such as `AR(1 to 2)` and `MA(1 to 3)` expand into the corresponding contiguous error orders.
+EViews-style equation specifications remain textual:
 
 ```python
 eq = wf.ls(
@@ -182,57 +131,39 @@ eq = wf.ls(
 )
 ```
 
-### EViews-compatible ML/BFGS mode
+`C` is the intercept, `@TREND` is the deterministic trend term where supported, and `AR(n)` / `MA(n)` refer to the disturbance process.
 
-For ARMA-error equations StochX uses Gaussian maximum likelihood with BFGS, stationary/invertible ARMA constraints, the EViews coefficient ordering, and the EViews inverse-root convention. `@TREND` is zero-based within the estimation sample, matching the official tutorial benchmark.
+## 9. Diagnostics
 
-A benchmark may supply the published EViews estimates as `start_params` to isolate the likelihood/parameterization parity from the separate automatic-start-value problem:
+Residual validation includes serial-correlation, normality and variance diagnostics where the selected model supports them. Typical tools include Ljung–Box, Breusch–Godfrey, Jarque–Bera, Kolmogorov–Smirnov, Breusch–Pagan and ARCH tests.
 
-```python
-result = wf.ls(specification, name="EQ20", start_params=eviews_reference_vector)
+A report should state the null hypothesis, statistic, p-value and modeling consequence.
+
+## 10. Forecasting
+
+Forecast reports should include point forecasts and uncertainty. StochX keeps standard errors, lower/upper bounds, horizon and future index together when supported.
+
+## 11. State-space extension
+
+The linear-Gaussian state-space layer provides an alternative representation when latent states, missing observations or recursive dynamics matter.
+
+The workflow is:
+
+```text
+model → Kalman filter → RTS smoother → innovation diagnostics → adequacy → forecast
 ```
 
-The result exposes:
+See the [state-space guide](time-series/state-space.md).
 
-```python
-result.params
-result.statistics()
-result.roots_report()
-result.covariance_method
-result.covariance_matrix()
-result.bse
-result.tvalues
-result.pvalues
-```
+## 12. EViews migration principle
 
-For ARMA maximum-likelihood equations, the covariance matrix is formed from the inverse of the sum of per-observation score outer products. The Phase B benchmark uses this OPG information matrix directly, matching the published EViews equation output.
+The migration target is not a GUI imitation. The target is **methodological familiarity**:
 
-## Serial-correlation diagnostics
+- the same sequence of statistical decisions;
+- recognizable names and expressions;
+- table-oriented results;
+- explicit estimation samples;
+- reproducible scripts;
+- documented numerical conventions.
 
-The equation result exposes a Breusch-Godfrey test:
-
-```python
-bg = eq.serial_correlation(lags=1)
-```
-
-and the raw LM/F forms are available through `breusch_godfrey_raw`.
-
-## Model results
-
-AR, MA, ARMA, ARIMA and SARIMA results expose a common interface for fitted parameters, residuals, forecasts, information criteria, and diagnostics where supported.
-
-## Stationarity and Stage 7 — DF / ADF
-
-The Dickey-Fuller/ADF implementation follows the course convention of treating deterministic specifications separately.
-
-## Course critical values
-
-Stage 7 carries explicit Dickey-Fuller tables for Models 1, 2 and 3 and does not use ordinary `statsmodels` p-value/critical-value decisions.
-
-## Common ADF lag order and residual whitening
-
-Stage 7 chooses the smallest common `p` whose Model 3 residuals pass the requested Ljung-Box whiteness check, then holds `p` fixed across Models 3, 2 and 1.
-
-## Course-faithful sequential decision tree
-
-The workflow follows the conditional Model 3 → Model 2 → Model 1 strategy, including β/α significance checks and non-standard F3/F2 tests.
+Where exact EViews benchmark outputs are available in the repository, they are treated as frozen numerical fixtures rather than informal claims of universal parity.
