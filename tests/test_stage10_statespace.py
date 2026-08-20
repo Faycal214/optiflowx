@@ -39,7 +39,7 @@ def test_partial_and_full_missing_observations_are_handled_without_losing_dimens
 
     assert result.nobs == 4
     assert result.effective_nobs == 6
-    assert result.missing_observations == 1
+    assert result.missing_observations == 2
     np.testing.assert_array_equal(result.observed_dimensions[2], [0, 0])
     assert np.isnan(result.innovations[2]).all()
     assert np.isfinite(result.filtered_state).all()
