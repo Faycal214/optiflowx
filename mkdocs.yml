@@ -51,6 +51,7 @@ nav:
       - Stage 12.3 — Release Surface Closure: stage12/12.3_release_surface_closure.md
       - Stage 12.4 — CI / Release Workflow Hardening: stage12/12.4_ci_release_workflow_hardening.md
       - Stage 12.5 — Changelog / Migration: stage12/12.5_changelog_migration_guide.md
+      - Stage 12.6 — Release Candidate: stage12/12.6_release_candidate.md
   - About: about.md
 
 theme:
