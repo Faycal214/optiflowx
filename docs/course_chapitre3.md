@@ -1,241 +1,71 @@
-# Chapter 3 — Continuous-Time Markov Chains (CTMC)
+# Chapter 3 — Continuous-Time Markov Chains and Birth-Death Processes
 
-This page develops the mathematics of continuous-time Markov chains and birth-death processes. The mathematical discussion remains separate from the Python API and worked examples.
+## 1. CTMC definition
 
-## 1. Definition of a CTMC
+A finite-state continuous-time Markov chain is described through its transition function
 
-On a probability space, a process \(X=(X_t)_{t\ge0}\) with finite or countable state space is a continuous-time Markov chain when, for times
+$$p_{ij}(t)=\mathbb P(X_{t+s}=j\mid X_s=i),$$
 
-\[
-0=t_0<t_1<\cdots<t_n<t_{n+1},
-\]
+which satisfies the continuous-time Chapman–Kolmogorov equations.
 
-\[
-P(X_{t_{n+1}}=j_{n+1}\mid X_{t_n}=j_n,\ldots,X_{t_0}=j_0)
-=P(X_{t_{n+1}}=j_{n+1}\mid X_{t_n}=j_n).
-\]
+## 2. Generator matrix
 
-In the homogeneous case,
+The infinitesimal generator $Q$ contains transition rates:
 
-\[
-P(X_{s+t}=j\mid X_s=i)=p_{ij}(t),
-\]
+$$q_{ij}\ge0\quad(i\ne j),$$
 
-so the transition depends only on the elapsed time \(t\). We write
+$$q_{ii}=-\sum_{j\ne i}q_{ij}.$$
 
-\[
-P(t)=(p_{ij}(t)),
-\qquad p_{ij}(0)=\delta_{ij}.
-\]
+Rows of $Q$ sum to zero. The diagonal entry determines the total holding rate in the state.
 
-Each row of \(P(t)\) is a probability distribution.
+## 3. Holding times and jumps
 
-## 2. Infinitesimal generator
+When the chain is in state $i$, the holding time is exponential with rate
 
-The generator \(Q=(q_{ij})\) describes behavior over an infinitesimal interval \(h\). For \(i\ne j\),
+$$-q_{ii}.$$
 
-\[
-q_{ij}=\lim_{h\to0}\frac{p_{ij}(h)}{h},
-\]
+Conditional on a jump occurring, the probability of jumping from $i$ to $j\ne i$ is
 
-and
+$$\frac{q_{ij}}{-q_{ii}}.$$
 
-\[
-p_{ij}(h)=q_{ij}h+o(h),
-\qquad
-p_{ii}(h)=1+q_{ii}h+o(h).
-\]
+This gives a direct simulation construction.
 
-The rows of \(Q\) sum to zero:
+## 4. Transition semigroup
 
-\[
-\sum_jq_{ij}=0,
-\qquad
-q_{ii}=-\sum_{j\ne i}q_{ij}.
-\]
+For a homogeneous finite CTMC,
 
-The probability of making two or more transitions over an infinitesimal interval is of order \(o(h)\).
+$$P(t)=e^{Qt}.$$
 
-## 3. Poisson process as a CTMC
+It satisfies
 
-For a Poisson process with rate \(\lambda\), transitions are possible from \(i\) to \(i+1\) with rate \(\lambda\), while the diagonal of \(Q\) compensates for the total exit rate. Thus the Poisson process is an elementary example of a CTMC.
+$$P(t+s)=P(t)P(s),$$
 
-## 4. Kolmogorov equations
+and $P(0)=I$.
 
-The generator governs the evolution of the transition matrix. In the finite matrix case, the backward equation is
+StochX exposes transition probabilities and trajectory objects around this generator representation.
 
-\[
-P'(t)=QP(t),
-\qquad P(0)=I,
-\]
+## 5. Birth-death processes
 
-which gives
+A birth-death process is a CTMC whose state changes only between neighbouring states:
 
-\[
-\boxed{P(t)=e^{tQ}}.
-\]
+$$n\to n+1\quad\text{at rate }\lambda_n,$$
 
-The matrix exponential is defined by
+$$n\to n-1\quad\text{at rate }\mu_n.$$
 
-\[
-e^{tQ}=I+tQ+\frac{t^2Q^2}{2!}+\cdots
-=\sum_{k=0}^{\infty}\frac{t^kQ^k}{k!}.
-\]
+The model is useful for populations, queues, inventories and simple growth/decay mechanisms.
 
-In the general case, especially for an infinite state space, an explicit expression for \(P(t)\) may not be available.
+## 6. Boundary conditions
 
-## 5. State distribution
+At a lower or upper boundary, the corresponding rate must be treated explicitly. A death rate at state zero, for example, cannot create a transition to a negative state in a standard birth-death model.
 
-If \(\mu_0\) is the initial law written as a row vector,
+## 7. Paths and occupation times
 
-\[
-\boxed{\mu_t=\mu_0P(t)}.
-\]
+`CTMCPath` represents the simulated trajectory and supports state lookup and occupation statistics. This keeps path-based questions separate from matrix-level transition calculations.
 
-This is the continuous-time analogue of \(\mu_n=\mu_0P^n\) for discrete-time chains.
+## 8. StochX objects
 
-## 6. Stationary distribution
+- `ContinuousTimeMarkovChain` — generator-based finite CTMC.
+- `CTMCPath` — simulated trajectory and occupation information.
+- `BirthDeathProcess` — nearest-neighbour CTMC specialization.
 
-A distribution \(\pi\) is stationary if
-
-\[
-\pi P(t)=\pi,
-\qquad \forall t\ge0.
-\]
-
-The generator characterization is
-
-\[
-\boxed{\pi Q=0},
-\qquad
-\pi_i\ge0,
-\qquad
-\sum_i\pi_i=1.
-\]
-
-This equation can be used to find a stationary distribution without explicitly computing the complete matrix \(P(t)\).
-
-## 7. Holding times
-
-The process remains in its current state for a random amount of time before jumping to a new state. The successive holding times describe the path between jump times.
-
-The total exit rate from state \(i\) is
-
-\[
--q_{ii}=\sum_{j\ne i}q_{ij}.
-\]
-
-## 8. Embedded jump chain
-
-The states observed at jump times form a discrete-time Markov chain, called the embedded jump chain. When \(-q_{ii}>0\), the probability that the next jump from \(i\) goes to \(j\ne i\) is
-
-\[
-r_{ij}=\frac{q_{ij}}{-q_{ii}}.
-\]
-
-This construction connects CTMC properties with DTMC properties.
-
-## 9. Return, occupation, and asymptotic behavior
-
-The chapter studies return times and the proportions of time spent in states. If each unit of time spent in state \(i\) generates a cost \(h(i)\), then under a stationary distribution \(\pi\), the mean cost is
-
-\[
-\sum_i\pi_i h(i).
-\]
-
-For an irreducible, non-explosive, positive-recurrent CTMC, there is a unique stationary distribution \(\pi\) satisfying
-
-\[
-\pi Q=0,
-\]
-
-and
-
-\[
-\lim_{t\to\infty}p_{ij}(t)=\pi_j.
-\]
-
-The mean return time is also related to the stationary distribution through a formula involving the exit rate \(-q_{ii}\) and \(\pi_i\).
-
-Non-explosion means that infinitely many jumps do not occur in finite time.
-
-# 10. Birth-death processes
-
-A birth-death process is a special CTMC in which the only possible jumps are
-
-\[
-i\to i+1 \quad\text{(birth)},
-\]
-
-and, for \(i>0\),
-
-\[
-i\to i-1 \quad\text{(death)}.
-\]
-
-Introduce birth rates \(\lambda_i\) and death rates \(\mu_i\). The generator is tridiagonal and its transition diagram is labeled by these rates.
-
-## 10.1. Kolmogorov equations
-
-Let
-
-\[
-p_k(t)=P(X_t=k).
-\]
-
-The Kolmogorov equations describe the balance between incoming and outgoing probability flux for each state \(k\).
-
-## 10.2. Stationary distribution
-
-When a stationary distribution exists, the stationary probabilities are related to successive rates by a recursive relation of the form
-
-\[
-\pi_n\propto\prod_{k=0}^{n-1}\frac{\lambda_k}{\mu_{k+1}},
-\]
-
-followed by normalization when the sum of the masses is finite.
-
-## 10.3. Linear rates
-
-A common model is
-
-\[
-\lambda_n=n\lambda+\alpha,
-\]
-
-where \(\alpha\ge0\) represents immigration and \(\lambda\ge0\) is the birth rate per individual. The death rate is proportional to the population size: with \(n\) individuals, a death during \([t,t+h[\) has probability of order \(n\mu h\).
-
-## 10.4. Non-explosion
-
-Let \(\zeta\) be the explosion time. For a pure-birth process, one criterion is
-
-\[
-\sum_k\frac1{\lambda_k}=\infty
-\quad\Longrightarrow\quad
-P(\zeta=\infty)=1.
-\]
-
-## 11. Summary
-
-\[
-\text{CTMC}
-\rightarrow P(t)
-\rightarrow Q
-\rightarrow\text{Kolmogorov}
-\rightarrow\mu_t
-\rightarrow\text{stationarity}
-\rightarrow\text{holding times}
-\rightarrow\text{embedded jump chain}
-\rightarrow\text{long-term behavior}
-\]
-
-then
-
-\[
-\text{birth-death}
-\rightarrow\text{generator}
-\rightarrow\text{Kolmogorov}
-\rightarrow\text{stationarity}
-\rightarrow\text{special rates}
-\rightarrow\text{non-explosion}.
-\]
+See the [CTMC/birth-death guide](stochastic/ctmc-birth-death.md) and API reference.
