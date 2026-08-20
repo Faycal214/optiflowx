@@ -1,6 +1,6 @@
 name: Stochastic Test Suite
 
-# CI trigger: run the full matrix against the current main tree.
+# CI trigger: validate the current Stage 8 tree after the regression-test fixes.
 on:
   push:
     branches: [ main ]
