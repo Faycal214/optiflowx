@@ -45,9 +45,12 @@ nav:
   - Examples:
       - Worked Examples: examples.md
   - Release:
+      - 0.2.x Migration Guide: stage12/migration_0_2_x.md
       - Stage 12.1 — Release Readiness: stage12/12.1_release_readiness.md
       - Stage 12.2 — Distribution Hardening: stage12/12.2_distribution_hardening.md
       - Stage 12.3 — Release Surface Closure: stage12/12.3_release_surface_closure.md
+      - Stage 12.4 — CI / Release Workflow Hardening: stage12/12.4_ci_release_workflow_hardening.md
+      - Stage 12.5 — Changelog / Migration: stage12/12.5_changelog_migration_guide.md
   - About: about.md
 
 theme:
