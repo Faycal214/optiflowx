@@ -29,9 +29,8 @@ class TSResult(UnifiedResult):
     def forecast(self, steps: int = 1, alpha: float = 0.05) -> pd.DataFrame:
         """Forecast future values with prediction intervals.
 
-        Statsmodels exposes ``get_forecast`` for ARIMA/SARIMAX-style results,
-        while AutoReg exposes ``get_prediction``. Normalize both paths to the
-        same summary-frame contract without changing either estimator.
+        ARIMA/SARIMAX results expose ``get_forecast`` while AutoReg exposes
+        ``get_prediction``. Both paths are normalized to the same result frame.
         """
         if steps < 1:
             raise ValueError("steps must be positive")
@@ -39,10 +38,18 @@ class TSResult(UnifiedResult):
         if hasattr(self.result, "get_forecast"):
             prediction = self.result.get_forecast(steps=steps)
         elif hasattr(self.result, "get_prediction"):
-            # AutoRegResults does not implement get_forecast; its prediction
-            # API accepts explicit start/end positions for future observations.
-            nobs = int(getattr(self.result, "nobs", len(self.original) if self.original is not None else 0))
-            prediction = self.result.get_prediction(start=nobs, end=nobs + steps - 1, dynamic=False)
+            nobs = int(
+                getattr(
+                    self.result,
+                    "nobs",
+                    len(self.original) if self.original is not None else 0,
+                )
+            )
+            prediction = self.result.get_prediction(
+                start=nobs,
+                end=nobs + steps - 1,
+                dynamic=False,
+            )
         else:
             raise AttributeError("fitted model does not provide a forecast API")
 
@@ -138,3 +145,107 @@ def fit_ma(y: TimeSeries | Iterable[float], q: int, *, trend: str = "c") -> TSRe
         raise ValueError("q must be positive")
     series = _as_series(y)
     from statsmodels.tsa.arima.model import ARIMA
+
+    model = ARIMA(series, order=(0, 0, q), trend=trend)
+    result = model.fit()
+    return _result("MA", model, result, y, (0, 0, q))
+
+
+def fit_arma(y: TimeSeries | Iterable[float], p: int, q: int, *, trend: str = "c") -> TSResult:
+    """Estimate ARMA(p,q) by maximum likelihood."""
+    if p < 0 or q < 0 or (p == 0 and q == 0):
+        raise ValueError("at least one of p or q must be positive")
+    series = _as_series(y)
+    from statsmodels.tsa.arima.model import ARIMA
+
+    model = ARIMA(series, order=(p, 0, q), trend=trend)
+    result = model.fit()
+    return _result("ARMA", model, result, y, (p, 0, q))
+
+
+def fit_arima(y: TimeSeries | Iterable[float], p: int, d: int, q: int, *, trend: str | None = None) -> TSResult:
+    """Estimate ARIMA(p,d,q) with automatic handling of differencing."""
+    if min(p, d, q) < 0:
+        raise ValueError("p, d, and q must be non-negative")
+    series = _as_series(y)
+    from statsmodels.tsa.arima.model import ARIMA
+
+    model = ARIMA(series, order=(p, d, q), trend=trend)
+    result = model.fit()
+    return _result("ARIMA", model, result, y, (p, d, q))
+
+
+def fit_sarima(
+    y: TimeSeries | Iterable[float],
+    order: tuple[int, int, int],
+    seasonal_order: tuple[int, int, int, int],
+    *,
+    trend: str | None = None,
+) -> TSResult:
+    """Estimate SARIMA(p,d,q)(P,D,Q,s) with state-space likelihood."""
+    series = _as_series(y)
+    from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+    model = SARIMAX(
+        series,
+        order=order,
+        seasonal_order=seasonal_order,
+        trend=trend,
+        enforce_stationarity=False,
+        enforce_invertibility=False,
+    )
+    result = model.fit(disp=False)
+    return _result("SARIMA", model, result, y, order, seasonal_order)
+
+
+def estimate(
+    y: TimeSeries | Iterable[float],
+    *,
+    p: int = 0,
+    d: int = 0,
+    q: int = 0,
+    seasonal_order: tuple[int, int, int, int] | None = None,
+) -> TSResult:
+    """Unified estimator dispatcher for AR/MA/ARMA/ARIMA/SARIMA."""
+    if seasonal_order is not None:
+        return fit_sarima(y, (p, d, q), seasonal_order)
+    if d > 0:
+        return fit_arima(y, p, d, q)
+    if p and not q:
+        return fit_ar(y, p)
+    if q and not p:
+        return fit_ma(y, q)
+    return fit_arma(y, p, q)
+
+
+def compare_orders(
+    y: TimeSeries | Iterable[float],
+    orders: Iterable[tuple[int, int, int]],
+) -> pd.DataFrame:
+    """Estimate competing ARIMA orders and return AIC/BIC/HQ ranking."""
+    rows = []
+    for order in orders:
+        try:
+            result = fit_arima(y, *order)
+            stats = result.statistics()
+            rows.append({
+                "p": order[0],
+                "d": order[1],
+                "q": order[2],
+                "AIC": stats["Akaike info criterion"],
+                "BIC": stats["Schwarz criterion"],
+                "HQ": stats["Hannan-Quinn criterion"],
+                "LogLik": stats["Log likelihood"],
+            })
+        except Exception as exc:  # noqa: BLE001
+            rows.append({
+                "p": order[0], "d": order[1], "q": order[2],
+                "AIC": np.nan, "BIC": np.nan, "HQ": np.nan,
+                "LogLik": np.nan, "Error": str(exc),
+            })
+    frame = pd.DataFrame(rows)
+    if not frame.empty:
+        frame["Rank by AIC"] = frame["AIC"].rank(method="min")
+        frame["Rank by BIC"] = frame["BIC"].rank(method="min")
+        frame["Rank by HQ"] = frame["HQ"].rank(method="min")
+    return frame.sort_values("AIC", na_position="last") if not frame.empty else frame
