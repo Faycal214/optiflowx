@@ -43,6 +43,7 @@ from .theory import inverse_ar_coefficients, impulse_response, is_invertible_ma,
 from .workfile import Workfile
 from .box_jenkins_estimation import BoxJenkinsEstimationResult, EstimatedCandidate, estimate_box_jenkins_candidates
 from .box_jenkins_validation import CandidateValidation, BoxJenkinsValidationResult, validate_box_jenkins_candidates
+from .box_jenkins_selection import BoxJenkinsSelectionResult, select_box_jenkins_model
 
 __all__ = [
     "TimeSeries", "Workfile", "Expression", "ExpressionError", "evaluate", "Equation", "EquationResult", "UnifiedResult", "ResultTable",
@@ -55,6 +56,7 @@ __all__ = [
     "BoxJenkinsIdentificationResult", "identify_box_jenkins", "identify", "grid_search",
     "EstimatedCandidate", "BoxJenkinsEstimationResult", "estimate_box_jenkins_candidates",
     "CandidateValidation", "BoxJenkinsValidationResult", "validate_box_jenkins_candidates",
+    "BoxJenkinsSelectionResult", "select_box_jenkins_model",
     "TestResult", "durbin_watson_test", "breusch_godfrey", "breusch_godfrey_raw", "box_pierce", "ljung_box", "jarque_bera", "mean_zero_test", "normality_ks", "variance_ratio_test", "breusch_pagan", "arch_test", "residual_correlogram", "residual_diagnostics_correlogram", "residual_diagnostics", "roots_report", "redundancy_check",
     "ForecastMetrics", "metrics", "prediction_interval", "restore_differences", "naive_forecast", "drift_forecast",
     "RegressionResult", "ols", "trend_terms",
