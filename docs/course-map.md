@@ -1,91 +1,90 @@
 # Course → API Map
 
-This page connects the mathematical concepts in the five chapters with the corresponding StochX API components.
+Use this page when moving from a mathematical course concept to the concrete StochX object that implements it.
 
-## Chapter 1 — Discrete-Time Markov Chains
+## Time Series and Econometrics
 
-| Concept | StochX | Documentation |
+| Concept | StochX | Guide |
 |---|---|---|
-| one-step transition matrix `P` | `MarkovChain` | `cmt_d.md` |
-| transition in `n` steps `P^(n)` | `n_step_transition` | `cmt_d.md` |
-| law `mu_n = mu_0 P^n` | `state_distribution` | `cmt_d.md` |
-| Chapman–Kolmogorov | `chapman_kolmogorov` | `cmt_d.md` |
-| accessibility | `accessible` | `cmt_d.md` |
-| communication | `communicate` | `cmt_d.md` |
-| communication classes | `communicating_classes` | `cmt_d.md` |
-| closed classes | `closed_classes` | `cmt_d.md` |
-| recurrent/transient classification | `classify_states` | `cmt_d.md` |
-| period | `period` | `cmt_d.md` |
-| stationary distribution | `stationary_distribution` | `cmt_d.md` |
-| limiting distribution | `limiting_distribution` | `cmt_d.md` |
-| absorption probability | `absorption_probability` | `cmt_d.md` |
+| workfile / sample | `Workfile` | [EViews workflow](time-series/eviews-workflow.md) |
+| named indexed series | `TimeSeries` | [Data and series](time-series/data-series.md) |
+| lag / lead | `Y(-1)`, `Y(1)`, `Workfile.lag` | [Transformations](time-series/transforms.md) |
+| difference / log difference | `D(Y)`, `DLOG(Y)` | [Transformations](time-series/transforms.md) |
+| decomposition / smoothing | `decompose`, `moving_average`, `holt`, `holt_winters` | [Decomposition](time-series/transforms.md) |
+| ADF / DF | `adf`, `dickey_fuller`, `dickey_fuller_sequential` | [Stationarity](time-series/stationarity.md) |
+| KPSS / Phillips–Perron | `kpss_test`, `phillips_perron` | [Stationarity](time-series/stationarity.md) |
+| ACF / PACF | `acf`, `pacf` | [Correlation](time-series/correlation.md) |
+| correlogram | `correlogram` | [Correlation](time-series/correlation.md) |
+| OLS equation | `Workfile.ls`, `ols` | [EViews workflow](time-series/eviews-workflow.md) |
+| AR / MA / ARMA | `fit_ar`, `fit_ma`, `fit_arma` | [Models](time-series/models.md) |
+| ARIMA / SARIMA | `fit_arima`, `fit_sarima` | [Models](time-series/models.md) |
+| ARMA-error equation | `AR(...)`, `MA(...)`, `parse_error_terms` | [EViews workflow](time-series/eviews-workflow.md) |
+| residual whiteness | `ljung_box`, `box_pierce`, `residual_correlogram` | [Diagnostics](time-series/diagnostics.md) |
+| serial correlation | `breusch_godfrey`, `durbin_watson_test` | [Diagnostics](time-series/diagnostics.md) |
+| normality | `jarque_bera`, `normality_ks` | [Diagnostics](time-series/diagnostics.md) |
+| heteroskedasticity / ARCH | `breusch_pagan`, `arch_test` | [Diagnostics](time-series/diagnostics.md) |
+| Box–Jenkins identification | `identify_box_jenkins` | [Box–Jenkins](time-series/box-jenkins.md) |
+| candidate estimation | `estimate_box_jenkins_candidates` | [Box–Jenkins](time-series/box-jenkins.md) |
+| residual validation | `validate_box_jenkins_candidates` | [Box–Jenkins](time-series/box-jenkins.md) |
+| deterministic selection | `select_box_jenkins_model` | [Box–Jenkins](time-series/box-jenkins.md) |
+| forecast | `forecast_box_jenkins`, `naive_forecast`, `drift_forecast` | [Forecasting](time-series/forecasting.md) |
+| prediction interval | `prediction_interval` | [Forecasting](time-series/forecasting.md) |
+| linear-Gaussian state-space | `LinearStateSpace` | [State-space](time-series/state-space.md) |
+| Kalman filtering | `kalman_filter`, `local_level_filter` | [State-space](time-series/state-space.md) |
+| RTS smoothing | `kalman_smoother` | [State-space](time-series/state-space.md) |
+| state-space forecasting | `kalman_forecast` | [State-space](time-series/state-space.md) |
+| local-level likelihood | `estimate_local_level` | [State-space](time-series/state-space.md) |
+| innovation diagnostics | `kalman_innovation_diagnostics` | [State-space](time-series/state-space.md) |
+| state-space adequacy | `state_space_adequacy` | [State-space](time-series/state-space.md) |
 
-## Chapter 2 — Poisson Processes
+## Stochastic Processes
 
-| Concept | StochX | Documentation |
+### Markov chains
+
+| Concept | StochX | Guide |
 |---|---|---|
-| homogeneous Poisson process | `PoissonProcess` | `poisson.md` |
-| Poisson counting law | `count_probability` | `poisson.md` |
-| independent increments | increment utilities | `poisson.md` |
-| inter-arrival times | `interarrival_samples` | `poisson.md` |
-| arrival times | `arrival_times` | `poisson.md` |
-| simulation | `simulate` | `poisson.md` |
-| conditioning on counts | `conditional_first_arrival_cdf`, `conditional_arrival_times` | `poisson.md` |
-| superposition | `superpose` | `poisson.md` |
-| thinning | `split` | `poisson.md` |
-| non-homogeneous process | `NonHomogeneousPoissonProcess` | `poisson.md` |
+| transition matrix `P` | `MarkovChain` | [Markov chains](stochastic/markov-chains.md) |
+| `P^n` | `transition_matrix_at` | [Markov chains](stochastic/markov-chains.md) |
+| distribution `mu_0 P^n` | `state_distribution` | [Markov chains](stochastic/markov-chains.md) |
+| accessibility | `accessible` | [Markov chains](stochastic/markov-chains.md) |
+| communication | `communicate` | [Markov chains](stochastic/markov-chains.md) |
+| recurrence / transience | `classify_states` | [Markov chains](stochastic/markov-chains.md) |
+| stationarity | `stationary_distribution` | [Markov chains](stochastic/markov-chains.md) |
+| hitting / return | corresponding first-passage methods | [Markov chains](stochastic/markov-chains.md) |
 
-## Chapter 3 — Continuous-Time Markov Chains
+### Poisson processes
 
-| Concept | StochX | Documentation |
+| Concept | StochX | Guide |
 |---|---|---|
-| infinitesimal generator `Q` | `ContinuousTimeMarkovChain` | `cmtc.md` |
-| transition matrix `P(t)` | `transition_matrix_at` | `cmtc.md` |
-| infinitesimal transition approximation | `infinitesimal_transition_matrix` | `cmtc.md` |
-| Chapman–Kolmogorov | `chapman_kolmogorov` | `cmtc.md` |
-| Kolmogorov equations | `forward_derivative`, `backward_derivative` | `cmtc.md` |
-| matrix exponential | `transition_matrix_at` | `cmtc.md` |
-| stationary law | `stationary_distribution` | `cmtc.md` |
-| holding rate / waiting time | `holding_rate`, `holding_time` | `cmtc.md` |
-| embedded jump chain | `jump_chain_matrix`, `jump_chain` | `cmtc.md` |
-| simulated trajectory | `CTMCPath`, `simulate` | `cmtc.md` |
+| homogeneous process | `PoissonProcess` | [Poisson](stochastic/poisson-processes.md) |
+| non-homogeneous intensity | `NonHomogeneousPoissonProcess` | [Poisson](stochastic/poisson-processes.md) |
+| counting probabilities | process probability methods | [Poisson](stochastic/poisson-processes.md) |
+| arrival simulation | process simulation methods | [Poisson](stochastic/poisson-processes.md) |
 
-## Birth-death processes
+### CTMC and birth-death
 
-| Concept | StochX | Documentation |
+| Concept | StochX | Guide |
 |---|---|---|
-| birth/death rates | `BirthDeathProcess` | `birth_death.md` |
-| finite generator | `generator_matrix` | `birth_death.md` |
-| embedded jump chain | `jump_chain_matrix` | `birth_death.md` |
-| Kolmogorov evolution | `kolmogorov_derivative` | `birth_death.md` |
-| stationary product weights | `stationary_weights` | `birth_death.md` |
-| pure birth/death/immigration models | class constructors and formulas | `birth_death.md` |
-| explosion criterion | `pure_birth_reciprocal_rate_sum` | `birth_death.md` |
+| generator `Q` | `ContinuousTimeMarkovChain` | [CTMC](stochastic/ctmc-birth-death.md) |
+| transition semigroup | `transition_matrix_at` | [CTMC](stochastic/ctmc-birth-death.md) |
+| holding time | CTMC holding-time methods | [CTMC](stochastic/ctmc-birth-death.md) |
+| trajectory | `CTMCPath` | [CTMC](stochastic/ctmc-birth-death.md) |
+| birth/death rates | `BirthDeathProcess` | [CTMC](stochastic/ctmc-birth-death.md) |
 
-## Chapter 4 — Conditional Expectation
+### Probability and conditional expectation
 
-| Concept | StochX | Documentation |
+| Concept | StochX | Guide |
 |---|---|---|
-| finite probability space | `FiniteProbabilitySpace` | `conditional_expectation.md` |
-| random variable | `RandomVariable` | `conditional_expectation.md` |
-| conditioning partition | `Partition` | `conditional_expectation.md` |
-| `E(X | G)` | `conditional_expectation` | `conditional_expectation.md` |
-| `E(X | Y)` | `conditional_expectation_given` | `conditional_expectation.md` |
-| conditional probability | `conditional_probability` | `conditional_expectation.md` |
-| total expectation | `total_expectation` | `conditional_expectation.md` |
-| tower property | `tower` | `conditional_expectation.md` |
-| conditional variance/covariance | `conditional_variance`, `conditional_covariance` | `conditional_expectation.md` |
-| `L^2` projection | `l2_projection` | `conditional_expectation.md` |
+| finite probability space | `FiniteProbabilitySpace` | [Probability objects](stochastic/probability-objects.md) |
+| random variable | `RandomVariable` | [Probability objects](stochastic/probability-objects.md) |
+| partition | `Partition` | [Probability objects](stochastic/probability-objects.md) |
+| conditional expectation | finite-space conditional operations | [Probability objects](stochastic/probability-objects.md) |
 
-## Chapter 5 — Discrete-Time Martingales
+### Martingales
 
-| Concept | StochX | Documentation |
+| Concept | StochX | Guide |
 |---|---|---|
-| filtration | `Filtration` | `martingales.md` |
-| adapted process | `is_adapted` | `martingales.md` |
-| martingale | `Martingale.is_martingale` | `martingales.md` |
-| submartingale | `Martingale.is_submartingale` | `martingales.md` |
-| supermartingale | `Martingale.is_supermartingale` | `martingales.md` |
-| Doob martingale | `Martingale.doob` | `martingales.md` |
-| stopping time | `StoppingTime` | `martingales.md` |
-| stopped process | `StoppedProcess` | `martingales.md` |
+| filtration | `Filtration` | [Martingales](stochastic/martingales.md) |
+| martingale | `Martingale` | [Martingales](stochastic/martingales.md) |
+| stopping time | `StoppingTime` | [Martingales](stochastic/martingales.md) |
+| stopped process | `StoppedProcess` | [Martingales](stochastic/martingales.md) |
