@@ -16,6 +16,14 @@ nav:
       - Course → API Map: course-map.md
       - Architecture: architecture.md
       - Time Series: time_series.md
+      - Stage 10 — State-Space Core: stage10/10.2_state_space_kalman.md
+      - Stage 11 — State-Space Extension:
+          - Contract: stage11/11.1_contract.md
+          - Forecasting: stage11/11.2_state_space_forecasting.md
+          - Likelihood Estimation: stage11/11.3_likelihood_estimation.md
+          - Full Workflow: stage11/11.7_full_state_space_workflow.md
+          - Final Regression Gate: stage11/11.9_final_regression_gate.md
+          - Freeze: stage11/11.10_stage_freeze.md
       - API Reference:
           - Overview: api/index.md
           - MarkovChain: api/markov_chain.md
@@ -36,6 +44,8 @@ nav:
       - API Map: api.md
   - Examples:
       - Worked Examples: examples.md
+  - Release:
+      - Stage 12.3 — Release Surface Closure: stage12/12.3_release_surface_closure.md
   - About: about.md
 
 theme:
