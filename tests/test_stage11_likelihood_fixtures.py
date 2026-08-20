@@ -16,7 +16,7 @@ def test_local_level_estimation_is_deterministic_on_frozen_fixture():
     np.testing.assert_allclose(first.aic, -2.0 * first.log_likelihood + 4.0, rtol=0, atol=1e-12)
     np.testing.assert_allclose(
         first.bic,
-        -2.0 * first.log_likelihood + 4.0 * np.log(10.0),
+        -2.0 * first.log_likelihood + 2.0 * np.log(10.0),
         rtol=0,
         atol=1e-12,
     )
