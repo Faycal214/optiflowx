@@ -73,7 +73,7 @@ Each method page follows the same structure:
 - **Failure modes** — common mistakes and what StochX reports.
 - **API reference** — exact public objects and related functions.
 
-This is intentionally close to the style of the scikit-learn User Guide: concept first, then implementation details, examples, and references rather than a list of signatures without context. citeturn866057view0turn866057search0
+This organization intentionally follows the teaching style of mature scientific-Python user guides: concept first, then implementation details, examples, output interpretation and references rather than a list of signatures without context.
 
 ## Time-series map
 
