@@ -75,3 +75,44 @@ jobs:
           pip install build twine
           python -m build
           python -m twine check dist/*
+
+  distribution:
+    name: distribution-hardening
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install build tooling
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+      - name: Build source and wheel distributions
+        run: python -m build
+      - name: Validate distribution metadata
+        run: python -m twine check dist/*
+      - name: Install wheel into a clean virtual environment
+        run: |
+          python -m venv /tmp/stochx-release-venv
+          /tmp/stochx-release-venv/bin/python -m pip install --upgrade pip
+          /tmp/stochx-release-venv/bin/pip install dist/*.whl
+      - name: Verify clean installation and public namespaces
+        run: |
+          cd /tmp
+          /tmp/stochx-release-venv/bin/python - <<'PY'
+          from importlib.metadata import version
+          import stochx
+          import stochx.stochastic
+          import stochx.timeseries
+
+          installed = version("stochx")
+          assert installed == stochx.__version__
+          assert installed
+          print(f"stochx {installed} clean-wheel-install: OK")
+          PY
+      - name: Verify source distribution is present
+        run: test -n "$(find dist -maxdepth 1 -name '*.tar.gz' -print -quit)"
