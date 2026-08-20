@@ -114,7 +114,12 @@ def test_fixture_inputs_are_not_mutated():
 
     kalman_filter(observations, model)
 
-    np.testing.assert_array_equal(observations, original_observations, equal_nan=True)
+    # Use an explicit NaN-aware comparison for NumPy versions whose
+    # assert_array_equal() does not expose the equal_nan keyword.
+    same_values = (observations == original_observations) | (
+        np.isnan(observations) & np.isnan(original_observations)
+    )
+    assert bool(np.all(same_values))
     for current, original in zip(
         [
             model.transition,
