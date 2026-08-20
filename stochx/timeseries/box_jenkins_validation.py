@@ -42,6 +42,7 @@ class CandidateValidation:
     failed_checks: tuple[str, ...]
     rationale: str
     error: str | None = None
+    estimated_candidate: EstimatedCandidate | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "order", tuple(int(v) for v in self.order))
@@ -57,6 +58,11 @@ class CandidateValidation:
     def eligible(self) -> bool:
         """Whether the candidate may enter model selection."""
         return bool(self.estimation_success and self.adequate)
+
+    @property
+    def model(self) -> EstimatedCandidate | None:
+        """Return the underlying estimated candidate for downstream selection."""
+        return self.estimated_candidate
 
 
 @dataclass(frozen=True)
@@ -104,11 +110,6 @@ class BoxJenkinsValidationResult:
         )
 
 
-def _required_pvalues(correlogram_result) -> tuple[float, ...]:
-    """Return finite Ljung-Box probabilities only for lags with positive DF."""
-    return tuple(float(p) for p, df in zip(correlogram_result.Prob, correlogram_result.DF) if int(df) > 0 and np.isfinite(p))
-
-
 def _validate_candidate(
     candidate: EstimatedCandidate,
     *,
@@ -136,13 +137,14 @@ def _validate_candidate(
             failed_checks=("estimation",),
             rationale="Candidate is ineligible because estimation failed.",
             error=candidate.error or "estimation failed",
+            estimated_candidate=candidate,
         )
 
     try:
         corr = residual_correlogram(candidate.residuals, lags=lags, model_df=candidate.order[0] + candidate.order[2], alpha=alpha)
-        finite_required = [float(p) for p, df in zip(corr.Prob, corr.DF) if int(df) > 0]
-        finite_required_values = [p for p in finite_required if np.isfinite(p)]
-        missing_required = any(not np.isfinite(p) for p in finite_required)
+        required_pvalues = [float(p) for p, df in zip(corr.Prob, corr.DF) if int(df) > 0]
+        finite_required_values = [p for p in required_pvalues if np.isfinite(p)]
+        missing_required = any(not np.isfinite(p) for p in required_pvalues)
         serially_adequate = bool(finite_required_values) and all(p >= alpha for p in finite_required_values) and not missing_required
         failed: list[str] = []
         if not serially_adequate:
@@ -181,9 +183,10 @@ def _validate_candidate(
             normality_test=normality_result,
             ks_test=ks_result,
             arch_test=arch_result,
-            required_lag_pvalues=tuple(float(p) for p in finite_required),
+            required_lag_pvalues=tuple(required_pvalues),
             failed_checks=tuple(failed),
             rationale=rationale,
+            estimated_candidate=candidate,
         )
     except Exception as exc:  # noqa: BLE001
         return CandidateValidation(
@@ -203,6 +206,7 @@ def _validate_candidate(
             failed_checks=("validation",),
             rationale="Candidate is ineligible because residual validation could not be completed.",
             error=str(exc),
+            estimated_candidate=candidate,
         )
 
 
