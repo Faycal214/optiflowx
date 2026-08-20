@@ -1,5 +1,6 @@
 name: Stochastic Test Suite
 
+# CI trigger: run the full matrix against the current main tree.
 on:
   push:
     branches: [ main ]
