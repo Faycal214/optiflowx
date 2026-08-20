@@ -1,0 +1,23 @@
+{
+  "name": "scalar_local_level_hand_calculated",
+  "source": "analytical scalar Kalman recursion",
+  "transition": [[1.0]],
+  "design": [[1.0]],
+  "state_cov": [[0.0]],
+  "observation_cov": [[1.0]],
+  "initial_state": [0.0],
+  "initial_cov": [[1.0]],
+  "observations": [1.0, 2.0, 3.0],
+  "expected": {
+    "nobs": 3,
+    "effective_nobs": 3,
+    "missing_observations": 0,
+    "predicted_state": [[0.0], [0.5], [1.0]],
+    "filtered_state": [[0.5], [1.0], [1.5]],
+    "predicted_cov": [[[1.0]], [[0.5]], [[0.3333333333333333]]],
+    "filtered_cov": [[[0.5]], [[0.3333333333333333]], [[0.25]]],
+    "innovations": [[1.0], [1.5], [2.0]],
+    "loglik": -4.545820368913743
+  },
+  "tolerances": {"rtol": 0.0, "atol": 1e-12, "loglik_atol": 1e-12}
+}
