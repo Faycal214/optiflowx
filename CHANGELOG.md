@@ -2,6 +2,27 @@
 
 All notable changes to StochX are documented here.
 
+## Unreleased — Stage 12 release hardening
+
+### Added
+
+- Completed Stage 8 correlogram and deterministic time-series contract work.
+- Completed Stage 9 Box–Jenkins identification, candidate estimation, residual validation, deterministic selection, and forecasting workflows.
+- Completed Stage 10 linear-Gaussian state-space filtering and Kalman-filter regression coverage.
+- Completed Stage 11 state-space smoothing, forecasting, likelihood estimation, innovation diagnostics, adequacy testing, and end-to-end workflow integration.
+- Added deterministic numerical fixtures, edge-case regression tests, and cross-stage compatibility gates across the frozen workflows.
+- Expanded runnable examples and public time-series documentation to include the state-space workflows.
+
+### Release hardening
+
+- Added distribution-build and clean-wheel installation validation to CI.
+- Added Stage 12 release-surface documentation and regression coverage.
+- Kept the package version at `0.2.0` pending an explicit release-candidate decision.
+
+### Compatibility
+
+- Stage 8, Stage 9, Stage 10, and Stage 11 numerical and public API contracts remain frozen.
+
 ## [0.2.0] - 2026-08-15
 
 ### Added
