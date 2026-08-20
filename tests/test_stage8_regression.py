@@ -60,7 +60,8 @@ def test_stage8_11_missing_values_do_not_change_frozen_table_schema():
         "Lag", "AC", "PAC", "Q-Stat", "Prob.", "DF",
         "AC Lower", "AC Upper", "PAC Lower", "PAC Upper",
     ]
-    assert result.table().shape == (4, 10)
+    # Four usable observations imply at most three displayed lags.
+    assert result.table().shape == (3, 10)
 
 
 def test_stage8_11_nonpositive_residual_degrees_of_freedom_are_undefined():
