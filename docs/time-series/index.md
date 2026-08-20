@@ -82,7 +82,7 @@ This is intentionally close to the style of the scikit-learn User Guide: concept
 | Workfiles and EViews syntax | [EViews-style workflow](eviews-workflow.md) |
 | Data and `TimeSeries` objects | [Data and series](data-series.md) |
 | Lags, differences, logs and deterministic terms | [Transformations](transforms.md) |
-| Smoothing and seasonal structure | [Decomposition](decomposition.md) |
+| Smoothing and seasonal structure | [Decomposition](transforms.md) |
 | DF / ADF, KPSS and PP | [Stationarity](stationarity.md) |
 | ACF, PACF and correlograms | [Correlation](correlation.md) |
 | AR, MA, ARMA, ARIMA, SARIMA | [Models](models.md) |
@@ -91,6 +91,7 @@ This is intentionally close to the style of the scikit-learn User Guide: concept
 | Forecasts and prediction intervals | [Forecasting](forecasting.md) |
 | Linear-Gaussian state-space and Kalman | [State-space](state-space.md) |
 | EViews-style result tables and interpretation | [Reports and interpretation](reports.md) |
+| Supporting modules: regression, theory, simulation, plotting, result tables | [Supporting modules](utility-modules.md) |
 
 ## Design principles
 
