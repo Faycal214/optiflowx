@@ -59,7 +59,7 @@ def test_stage9_6_forecast_has_horizon_intervals_and_metadata():
 
 def test_stage9_6_uses_datetime_index_when_model_has_datetime_index():
     dates = pd.date_range("2020-01-01", periods=80, freq="D")
-    series = pd.Series(ar(1, [0.4], 80, rng=2), index=dates)
+    series = pd.Series(ar(1, [0.4], 80, rng=2).values, index=dates)
     selection = _selected(series)
     result = forecast_box_jenkins(selection, steps=3)
 
