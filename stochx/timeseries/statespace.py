@@ -147,10 +147,13 @@ class KalmanFilterResult:
         object.__setattr__(self, "missing_observations", int(self.missing_observations))
         if self.nobs != self.filtered_state.shape[0]:
             raise ValueError("nobs must match filtered_state length")
-        if self.effective_nobs < 0 or self.effective_nobs > self.nobs:
+        total_measurements = self.nobs * self.innovation_cov.shape[1]
+        if self.effective_nobs < 0 or self.effective_nobs > total_measurements:
             raise ValueError("effective_nobs is out of bounds")
-        if self.missing_observations < 0 or self.missing_observations > self.nobs:
+        if self.missing_observations < 0 or self.missing_observations > total_measurements:
             raise ValueError("missing_observations is out of bounds")
+        if self.effective_nobs + self.missing_observations != total_measurements:
+            raise ValueError("effective_nobs plus missing_observations must equal total scalar measurements")
 
     @property
     def states(self) -> np.ndarray:
@@ -201,9 +204,7 @@ def kalman_filter(
     if n < 1:
         raise ValueError("observations must contain at least one row")
 
-    if controls is None:
-        u = None
-    else:
+    if controls is not None:
         u = np.asarray(controls, dtype=float)
         if u.ndim == 1:
             u = u.reshape(n, -1)
@@ -226,7 +227,6 @@ def kalman_filter(
     covariance = model.initial_cov.copy()
     loglik = 0.0
     effective_nobs = 0
-    missing_rows = 0
 
     for t in range(n):
         state = model.transition @ state + model.state_intercept
@@ -237,7 +237,6 @@ def kalman_filter(
         observed = np.isfinite(y[t])
         observed_dimensions[t] = observed.astype(int)
         if not observed.any():
-            missing_rows += 1
             filtered_state[t] = state
             filtered_cov[t] = covariance
             continue
@@ -265,7 +264,8 @@ def kalman_filter(
         filtered_state[t] = state
         filtered_cov[t] = covariance
 
-    missing_observations = n - effective_nobs
+    total_measurements = n * model.n_obs
+    missing_observations = total_measurements - effective_nobs
     return KalmanFilterResult(
         filtered_state=filtered_state,
         predicted_state=predicted_state,
