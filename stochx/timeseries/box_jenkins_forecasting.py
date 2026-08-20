@@ -123,8 +123,13 @@ def _forecast_frame(selected, steps: int, alpha: float) -> pd.DataFrame:
     frame = selected.ts_result.forecast(steps=steps, alpha=alpha)
     if not {"Forecast", "Lower", "Upper"}.issubset(frame.columns):
         raise ValueError("fitted-model forecast must provide Forecast, Lower, and Upper")
+    # Statsmodels summary_frame exposes standard errors as ``mean_se``;
+    # StochX's public forecast table uses the stable ``Std. Error`` name.
     if "Std. Error" not in frame.columns:
-        frame["Std. Error"] = np.nan
+        if "mean_se" in frame.columns:
+            frame = frame.rename(columns={"mean_se": "Std. Error"})
+        else:
+            frame["Std. Error"] = np.nan
     return frame[["Forecast", "Std. Error", "Lower", "Upper"]]
 
 
