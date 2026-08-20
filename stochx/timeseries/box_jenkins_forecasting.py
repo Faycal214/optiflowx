@@ -96,24 +96,54 @@ class BoxJenkinsForecastResult:
         }
 
 
-def _next_index(original: object, steps: int) -> pd.Index:
-    if isinstance(original, pd.Series):
-        idx = original.index
-    elif hasattr(original, "index"):
-        idx = pd.Index(original.index)
+def _future_index_from_source(source: object, steps: int) -> pd.Index | None:
+    """Build future labels from a Series/Index-like source when possible."""
+    if isinstance(source, pd.Series):
+        idx = source.index
+    elif isinstance(source, (pd.Index, pd.RangeIndex)):
+        idx = source
+    elif hasattr(source, "index"):
+        idx = pd.Index(getattr(source, "index"))
     else:
-        idx = pd.RangeIndex(0, 0)
+        return None
+
     if isinstance(idx, pd.DatetimeIndex):
         freq = idx.freq or idx.inferred_freq
         if freq is not None and len(idx):
             return pd.date_range(start=idx[-1] + freq, periods=steps, freq=freq)
     if isinstance(idx, pd.PeriodIndex):
-        return pd.period_range(start=idx[-1] + 1, periods=steps, freq=idx.freq)
+        if len(idx):
+            return pd.period_range(start=idx[-1] + 1, periods=steps, freq=idx.freq)
     if len(idx):
         try:
-            return pd.Index(range(int(idx[-1]) + 1, int(idx[-1]) + 1 + steps))
+            last = idx[-1]
+            return pd.Index(range(int(last) + 1, int(last) + 1 + steps))
         except (TypeError, ValueError):
-            pass
+            return None
+    return None
+
+
+def _next_index(selected, steps: int) -> pd.Index:
+    """Create a deterministic future index, preferring fitted-model labels."""
+    ts_result = getattr(selected, "ts_result", None)
+    stats_result = getattr(ts_result, "result", None)
+    fitted_model = getattr(ts_result, "fitted_model", None)
+
+    for obj in (
+        getattr(getattr(stats_result, "model", None), "data", None),
+        getattr(getattr(fitted_model, "data", None), "data", None),
+        getattr(stats_result, "model", None),
+        getattr(ts_result, "original", None),
+    ):
+        labels = getattr(obj, "row_labels", None)
+        if labels is not None:
+            future = _future_index_from_source(pd.Index(labels), steps)
+            if future is not None:
+                return future
+        future = _future_index_from_source(obj, steps)
+        if future is not None:
+            return future
+
     return pd.RangeIndex(1, steps + 1)
 
 
@@ -156,13 +186,12 @@ def forecast_box_jenkins(
 
     selected = selection.selected
     frame = _forecast_frame(selected, steps, float(alpha))
-    original = getattr(selected.ts_result, "original", None)
     if forecast_index is not None:
         index = pd.Index(forecast_index)
         if len(index) != steps:
             raise ValueError("forecast_index length must equal steps")
     else:
-        index = _next_index(original, steps)
+        index = _next_index(selected, steps)
         if len(index) != steps:
             index = pd.Index(frame.index)
 
