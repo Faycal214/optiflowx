@@ -45,6 +45,8 @@ nav:
   - Examples:
       - Worked Examples: examples.md
   - Release:
+      - Stage 12.1 — Release Readiness: stage12/12.1_release_readiness.md
+      - Stage 12.2 — Distribution Hardening: stage12/12.2_distribution_hardening.md
       - Stage 12.3 — Release Surface Closure: stage12/12.3_release_surface_closure.md
   - About: about.md
 
