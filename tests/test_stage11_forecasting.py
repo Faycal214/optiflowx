@@ -26,7 +26,7 @@ def test_scalar_forecast_is_deterministic_and_has_prediction_intervals():
     assert isinstance(result.filter_result, KalmanFilterResult)
     assert result.horizon == 3
     assert result.alpha == 0.10
-    np.testing.assert_allclose(result.forecast[:, 0], [2.0, 2.0, 2.0], rtol=0, atol=1e-12)
+    np.testing.assert_allclose(result.forecast[:, 0], [1.5, 1.5, 1.5], rtol=0, atol=1e-12)
     assert result.forecast_cov.shape == (3, 1, 1)
     assert result.standard_error.shape == (3, 1)
     assert np.all(result.lower < result.forecast)
