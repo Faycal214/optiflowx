@@ -14,7 +14,7 @@ from typing import Iterable
 import numpy as np
 import pandas as pd
 
-from .models import TSResult, estimate
+from .models import TSResult, estimate, fit_arima
 
 
 @dataclass(frozen=True)
@@ -55,8 +55,7 @@ class EstimatedCandidate:
             "ma_roots",
             "residuals",
         ):
-            array = np.asarray(getattr(self, name))
-            array = array.copy()
+            array = np.asarray(getattr(self, name)).copy()
             array.setflags(write=False)
             object.__setattr__(self, name, array)
         if self.estimation_nobs is not None:
@@ -66,12 +65,58 @@ class EstimatedCandidate:
 
     @property
     def coefficient_names(self) -> tuple[str, ...]:
+        """Return fitted parameter names when supplied by the estimator."""
         if self.ts_result is None:
             return tuple()
         names = getattr(self.ts_result.result, "param_names", None)
         if names is None:
-            names = getattr(self.ts_result.result, "params", pd.Series(dtype=float)).index if hasattr(getattr(self.ts_result.result, "params", None), "index") else []
+            params = getattr(self.ts_result.result, "params", None)
+            names = params.index if hasattr(params, "index") else []
         return tuple(str(name) for name in names)
+
+    @property
+    def coefficients(self) -> np.ndarray:
+        return self.params
+
+    @property
+    def se(self) -> np.ndarray:
+        return self.standard_errors
+
+    @property
+    def t_stats(self) -> np.ndarray:
+        return self.tvalues
+
+    @property
+    def p_values(self) -> np.ndarray:
+        return self.pvalues
+
+    @property
+    def llf(self) -> float:
+        return self.log_likelihood
+
+    @property
+    def SIGMASQ(self) -> float:
+        return self.sigma_sq
+
+    @property
+    def SC(self) -> float:
+        return self.bic
+
+    @property
+    def HQ(self) -> float:
+        return self.hq
+
+    @property
+    def AR_roots(self) -> np.ndarray:
+        return self.ar_roots
+
+    @property
+    def MA_roots(self) -> np.ndarray:
+        return self.ma_roots
+
+    @property
+    def convergence(self) -> bool:
+        return self.converged
 
 
 @dataclass(frozen=True)
@@ -125,10 +170,9 @@ class BoxJenkinsEstimationResult:
 def _float_attr(result, name: str, default: float = np.nan) -> float:
     value = getattr(result, name, default)
     try:
-        value = float(value)
+        return float(value)
     except (TypeError, ValueError):
         return float(default)
-    return value
 
 
 def _array_attr(result, name: str) -> np.ndarray:
@@ -139,13 +183,11 @@ def _array_attr(result, name: str) -> np.ndarray:
 
 
 def _converged(result) -> bool:
-    converged = getattr(result, "mle_retvals", None)
-    if isinstance(converged, dict) and "converged" in converged:
-        return bool(converged["converged"])
+    retvals = getattr(result, "mle_retvals", None)
+    if isinstance(retvals, dict) and "converged" in retvals:
+        return bool(retvals["converged"])
     flag = getattr(result, "converged", None)
-    if flag is not None:
-        return bool(flag)
-    return True
+    return True if flag is None else bool(flag)
 
 
 def _sigma_sq(result, residuals: np.ndarray) -> float:
@@ -170,7 +212,10 @@ def _residuals(result) -> np.ndarray:
 def _fit_candidate(y, order: tuple[int, int, int]) -> EstimatedCandidate:
     p, d, q = order
     try:
-        fitted = estimate(y, p=p, d=d, q=q)
+        # The existing unified dispatcher intentionally rejects (0,0,0).
+        # Stage 9.2 may generate that legitimate white-noise candidate, so
+        # route only that case directly through the existing ARIMA estimator.
+        fitted = fit_arima(y, 0, 0, 0) if order == (0, 0, 0) else estimate(y, p=p, d=d, q=q)
         result = fitted.result
         residuals = _residuals(result)
         params = _array_attr(result, "params")
@@ -229,9 +274,8 @@ def estimate_box_jenkins_candidates(
 ) -> BoxJenkinsEstimationResult:
     """Estimate candidates in deterministic order using the existing estimators.
 
-    Each candidate is attempted independently.  One failed candidate is stored
-    as a structured failure and does not prevent the remaining candidates from
-    being estimated.
+    Each candidate is attempted independently. One failed candidate is stored
+    as a structured failure and does not prevent later candidates from running.
     """
     orders = tuple((int(p), int(d), int(q)) for p, d, q in candidate_orders)
     if len(set(orders)) != len(orders):
