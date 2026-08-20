@@ -33,10 +33,11 @@ def test_innovation_diagnostics_matches_filter_semantics():
     assert result.overall_effective_nobs == 4
     assert result.overall_missing_observations == 1
     assert result.numerically_stable
+    observed = np.isfinite(filtered.innovations[:, 0])
     np.testing.assert_allclose(
-        result.standardized_innovations[np.isfinite(filtered.innovations)],
-        filtered.innovations[np.isfinite(filtered.innovations)]
-        / np.sqrt(filtered.innovation_cov[np.isfinite(filtered.innovations), 0, 0]),
+        result.standardized_innovations[observed, 0],
+        filtered.innovations[observed, 0]
+        / np.sqrt(filtered.innovation_cov[observed, 0, 0]),
         rtol=0,
         atol=1e-12,
     )
