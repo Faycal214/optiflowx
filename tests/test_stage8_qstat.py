@@ -9,12 +9,12 @@ from stochx.timeseries.correlation import acf
 
 
 def _reference_q(ac_values, nobs, nlags):
-    """Independently reconstruct Ljung-Box Q from lag-1..lag-K AC values."""
+    """Independently reconstruct Ljung-Box Q from displayed lag-1..lag-K AC values."""
     ac_values = np.asarray(ac_values, dtype=float)
     if ac_values.size == nlags + 1:
         lag_values = ac_values[1 : nlags + 1]
     elif ac_values.size == nlags:
-        lag_values = ac_values[:nlags]
+        lag_values = ac_values
     else:
         raise ValueError("ac_values must contain either lag 0..K or lag 1..K")
 
