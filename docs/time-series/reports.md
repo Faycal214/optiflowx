@@ -46,7 +46,7 @@ Do not confuse a root report with an estimation success flag. A model can conver
 
 `interpret()` is a convenience layer for communicating the statistical conclusion. The underlying statistic, p-value, coefficients and metadata remain available for reproducible analysis.
 
-This mirrors the best documentation practice used by scientific Python libraries: explain the estimator and its assumptions, then show a compact example and the resulting object rather than hiding the computational steps. citeturn866057view0turn866057search1
+A mature scientific-Python documentation page should explain the estimator and its assumptions, then show a compact example and the resulting object rather than hiding the computational steps. StochX follows that model here.
 
 ## Exporting reports
 
