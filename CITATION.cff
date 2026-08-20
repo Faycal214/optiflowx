@@ -4,8 +4,8 @@ version: "0.2.0"
 date-released: "2026-08-15"
 type: software
 abstract: >-
-  A lightweight Python library for stochastic-process analysis,
-  simulation, and finite-probability objects.
+  A Python library for stochastic-process analysis, time-series modelling,
+  simulation, Box-Jenkins workflows, and linear-Gaussian state-space analysis.
 message: "If you use StochX in academic work, please cite this software."
 authors:
   - family-names: "Alikacem"
@@ -22,3 +22,9 @@ keywords:
   - conditional expectation
   - martingales
   - stochastic simulation
+  - time-series analysis
+  - Box-Jenkins
+  - ARIMA
+  - state-space models
+  - Kalman filtering
+  - forecasting
