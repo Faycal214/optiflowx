@@ -36,13 +36,30 @@ def _symmetrize(matrix: np.ndarray) -> np.ndarray:
     return 0.5 * (matrix + matrix.T)
 
 
+def _stabilize_covariance(covariance: np.ndarray) -> np.ndarray:
+    """Return a deterministic positive-definite working covariance."""
+    covariance = _symmetrize(covariance)
+    try:
+        np.linalg.cholesky(covariance)
+        return covariance
+    except np.linalg.LinAlgError:
+        scale = max(1.0, float(np.trace(covariance)))
+        jitter = max(_EPS, 1e-12 * scale)
+        stabilized = covariance + jitter * np.eye(covariance.shape[0])
+        try:
+            np.linalg.cholesky(stabilized)
+        except np.linalg.LinAlgError as exc:
+            raise ValueError("innovation covariance is numerically singular and could not be stabilized") from exc
+        return stabilized
+
+
 @dataclass(frozen=True)
 class LinearStateSpace:
     """Validated time-invariant linear-Gaussian state-space model.
 
     The model follows
 
-    ``x_t = transition @ x_{t-1} + state_noise``
+    ``x_t = transition @ x_(t-1) + state_noise``
 
     ``y_t = design @ x_t + observation_noise``
 
@@ -167,13 +184,8 @@ class KalmanFilterResult:
 
 
 def _normal_loglik(innovation: np.ndarray, covariance: np.ndarray) -> tuple[float, np.ndarray]:
-    covariance = _symmetrize(covariance)
-    try:
-        chol = np.linalg.cholesky(covariance)
-    except np.linalg.LinAlgError:
-        jitter = max(_EPS, 1e-12 * max(1.0, float(np.trace(covariance))))
-        chol = np.linalg.cholesky(covariance + jitter * np.eye(covariance.shape[0]))
-        covariance = covariance + jitter * np.eye(covariance.shape[0])
+    covariance = _stabilize_covariance(covariance)
+    chol = np.linalg.cholesky(covariance)
     whitened = np.linalg.solve(chol, innovation)
     logdet = 2.0 * float(np.log(np.diag(chol)).sum())
     loglik = -0.5 * (innovation.size * np.log(2.0 * np.pi) + logdet + float(whitened @ whitened))
@@ -246,7 +258,7 @@ def kalman_filter(
         R = model.observation_cov[np.ix_(idx, idx)]
         measurement = y[t, idx] - model.observation_intercept[idx]
         innovation = measurement - H @ state
-        S = _symmetrize(H @ covariance @ H.T + R)
+        S = _stabilize_covariance(H @ covariance @ H.T + R)
         gain = np.linalg.solve(S, H @ covariance).T
         updated_state = state + gain @ innovation
         identity = np.eye(model.n_state)
