@@ -17,6 +17,12 @@ The time-series guide follows the workflow most users already know:
 
 The same sequence also leads naturally to the linear state-space and Kalman workflow.
 
+## Course material
+
+The mathematical foundations behind this workflow are collected in the [USTHB Time Series Course Material](course-material.md). It is based on the supplied **F. Hamdi, Analyse de régression et prévision, Chapitre 5 — Modèles de base en séries chronologiques** and covers temporal data, forecasting notation and criteria, stationarity, white noise, autocorrelation, the lag operator, MA/AR/ARMA, TS/DS non-stationarity, ARIMA, ADF, SARIMA, seasonal testing, estimation and Box–Jenkins validation. fileciteturn789file0L9-L17
+
+The course page is intentionally kept beside the practical guide: read the mathematical ideas first when you need the model, then use the StochX pages for syntax and executable workflows.
+
 ## Why StochX for an EViews user?
 
 StochX deliberately uses familiar EViews concepts and names where the underlying operation is implemented: **workfiles, samples, series expressions, lags, differences, `C`, `@TREND`, equations, LS estimation, ADF, AR/MA error terms, summary tables, interpretation helpers, roots reports, and forecast reports**.
