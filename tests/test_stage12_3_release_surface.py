@@ -42,13 +42,14 @@ def test_stage12_release_documentation_files_exist() -> None:
     assert (ROOT / "docs" / "stage12" / "12.1_release_readiness.md").exists()
     assert (ROOT / "docs" / "stage12" / "12.2_distribution_hardening.md").exists()
     assert (ROOT / "docs" / "stage12" / "12.3_release_surface_closure.md").exists()
+    assert (ROOT / "docs" / "stage12" / "12.6_release_candidate.md").exists()
     assert (ROOT / "docs" / "stage10" / "10.2_state_space_kalman.md").exists()
     assert (ROOT / "docs" / "stage11" / "11.10_stage_freeze.md").exists()
     assert (ROOT / "docs" / "time_series.md").exists()
     assert (ROOT / "docs" / "examples.md").exists()
 
 
-def test_stage12_version_remains_single_sourced_before_release_candidate() -> None:
+def test_stage12_version_is_single_sourced_for_release_candidate() -> None:
     init_text = (ROOT / "stochx" / "__init__.py").read_text(encoding="utf-8")
     assert f'__version__ = "{stochx.__version__}"' in init_text
-    assert stochx.__version__ == "0.2.0"
+    assert stochx.__version__ == "0.3.0rc1"
