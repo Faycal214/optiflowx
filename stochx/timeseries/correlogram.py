@@ -183,6 +183,17 @@ class CorrelogramResult:
         return self.pvalues
 
     @property
+    def columns(self) -> pd.Index:
+        """Backward-compatible DataFrame-style column index.
+
+        Stage 8 returns a structured ``CorrelogramResult`` rather than a
+        DataFrame. This read-only projection keeps legacy callers that inspect
+        ``correlogram(...).columns`` working while directing data consumers to
+        ``result.table()``.
+        """
+        return self.table().columns.copy()
+
+    @property
     def band_standard_error(self) -> float:
         return 1.0 / np.sqrt(self.nobs)
 
