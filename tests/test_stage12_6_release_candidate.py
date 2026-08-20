@@ -7,10 +7,12 @@ import stochx
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_release_candidate_version_is_single_sourced() -> None:
-    assert stochx.__version__ == "0.3.0rc1"
-    assert version("stochx") == "0.3.0rc1"
-    assert metadata("stochx")["Version"] == "0.3.0rc1"
+def test_release_candidate_version_contract_is_frozen() -> None:
+    # The RC remains historically documented as 0.3.0rc1, but the codebase
+    # has since been promoted to the stable 0.3.0 release.
+    assert stochx.__version__ == "0.3.0"
+    assert version("stochx") == "0.3.0"
+    assert metadata("stochx")["Version"] == "0.3.0"
 
 
 def test_release_candidate_contract_is_present() -> None:
