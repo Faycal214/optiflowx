@@ -8,6 +8,7 @@ nav:
   - Time Series:
       - User Guide: time-series/index.md
       - EViews-style workflow: time-series/eviews-workflow.md
+      - EViews numerical parity: eviews_parity.md
       - Data and TimeSeries: time-series/data-series.md
       - Transformations and decomposition: time-series/transforms.md
       - Stationarity and unit roots: time-series/stationarity.md
