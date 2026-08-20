@@ -38,6 +38,15 @@ def test_stage9_3_estimates_deterministic_candidate_sequence():
         assert candidate.residuals.size > 0
         assert candidate.ts_result is not None
         assert len(candidate.coefficient_names) == n_params
+        assert np.array_equal(candidate.coefficients, candidate.params)
+        assert np.array_equal(candidate.se, candidate.standard_errors)
+        assert np.array_equal(candidate.t_stats, candidate.tvalues)
+        assert np.array_equal(candidate.p_values, candidate.pvalues)
+        assert candidate.llf == candidate.log_likelihood
+        assert candidate.SIGMASQ == candidate.sigma_sq
+        assert candidate.SC == candidate.bic
+        assert candidate.HQ == candidate.hq
+        assert candidate.convergence is candidate.converged
         assert not candidate.params.flags.writeable
         assert not candidate.standard_errors.flags.writeable
         assert not candidate.residuals.flags.writeable
@@ -62,7 +71,7 @@ def test_stage9_3_table_is_stable_and_contains_required_model_statistics():
 
 
 def test_stage9_3_one_failed_candidate_does_not_abort_remaining_candidates(monkeypatch):
-    from stochx.timeseries import box_jenkins_estimation as estimation
+    import stochx.timeseries.box_jenkins_estimation as estimation
 
     real_estimate = estimation.estimate
 
@@ -91,6 +100,16 @@ def test_stage9_3_rejects_duplicate_or_invalid_candidate_orders():
 
     with pytest.raises(ValueError, match=r"non-negative \(p, d, q\) triples"):
         estimate_box_jenkins_candidates(y, ((1, -1, 0),))
+
+
+def test_stage9_3_white_noise_candidate_uses_existing_arima_estimator():
+    y = np.linspace(1.0, 10.0, 80) + np.random.default_rng(3).normal(0.0, 0.2, 80)
+    result = estimate_box_jenkins_candidates(y, ((0, 0, 0),))
+    candidate = result.candidates[0]
+    assert candidate.success is True
+    assert candidate.model_name == "ARIMA"
+    assert candidate.ts_result is not None
+    assert np.isfinite(candidate.sigma_sq)
 
 
 def test_stage9_3_failed_candidate_snapshot_remains_immutable():
