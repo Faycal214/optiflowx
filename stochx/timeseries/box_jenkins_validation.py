@@ -30,7 +30,7 @@ class CandidateValidation:
     estimation_success: bool
     serially_adequate: bool
     adequate: bool
-    residual_nobs: int
+    residual_nobs: int | None
     validation_lags: int
     alpha: float
     residual_correlogram: object | None
@@ -47,7 +47,8 @@ class CandidateValidation:
     def __post_init__(self) -> None:
         object.__setattr__(self, "order", tuple(int(v) for v in self.order))
         object.__setattr__(self, "alpha", float(self.alpha))
-        object.__setattr__(self, "residual_nobs", int(self.residual_nobs))
+        if self.residual_nobs is not None:
+            object.__setattr__(self, "residual_nobs", int(self.residual_nobs))
         object.__setattr__(self, "validation_lags", int(self.validation_lags))
         object.__setattr__(self, "required_lag_pvalues", tuple(float(v) for v in self.required_lag_pvalues))
         object.__setattr__(self, "failed_checks", tuple(str(v) for v in self.failed_checks))
