@@ -38,8 +38,10 @@ def test_partial_and_full_missing_observations_are_handled_without_losing_dimens
     result = kalman_filter(y, model)
 
     assert result.nobs == 4
-    assert result.effective_nobs == 6
-    assert result.missing_observations == 2
+    # effective_nobs counts observed scalar measurements: 2 + 1 + 0 + 2 = 5.
+    assert result.effective_nobs == 5
+    # missing_observations counts missing scalar measurements: 0 + 1 + 2 + 0 = 3.
+    assert result.missing_observations == 3
     np.testing.assert_array_equal(result.observed_dimensions[2], [0, 0])
     assert np.isnan(result.innovations[2]).all()
     assert np.isfinite(result.filtered_state).all()
