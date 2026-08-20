@@ -15,8 +15,6 @@ from stochx.timeseries.box_jenkins_selection import BoxJenkinsSelectionResult
 def _selected(y, order=(1, 0, 0)):
     estimation = estimate_box_jenkins_candidates(y, (order,))
     candidate = estimation.candidates[0]
-    # Forecasting tests focus on the forecast boundary, so use a tiny explicit
-    # validation result with this estimated candidate marked eligible.
     from stochx.timeseries.box_jenkins_validation import BoxJenkinsValidationResult, CandidateValidation
 
     validation = BoxJenkinsValidationResult((CandidateValidation(
@@ -35,6 +33,7 @@ def _selected(y, order=(1, 0, 0)):
         required_lag_pvalues=(0.9,),
         failed_checks=(),
         rationale="synthetic eligible candidate",
+        estimated_candidate=candidate,
     ),))
     return select_box_jenkins_model(validation, criterion="aic")
 
