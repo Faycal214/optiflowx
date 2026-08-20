@@ -112,7 +112,8 @@ def _future_index_from_source(source: object, steps: int) -> pd.Index | None:
     if isinstance(idx, pd.DatetimeIndex):
         freq = idx.freq or idx.inferred_freq
         if freq is not None and len(idx):
-            return pd.date_range(start=idx[-1] + freq, periods=steps, freq=freq)
+            offset = pd.tseries.frequencies.to_offset(freq)
+            return pd.date_range(start=idx[-1] + offset, periods=steps, freq=offset)
     if isinstance(idx, pd.PeriodIndex):
         if len(idx):
             return pd.period_range(start=idx[-1] + 1, periods=steps, freq=idx.freq)
@@ -126,7 +127,7 @@ def _future_index_from_source(source: object, steps: int) -> pd.Index | None:
 
 
 def _next_index(selected, steps: int) -> pd.Index:
-    """Create a deterministic future index using preserved source provenance."""
+    """Create a deterministic future index, preferring source-index provenance."""
     source_index = getattr(selected, "source_index", None)
     if source_index is not None:
         future = _future_index_from_source(source_index, steps)
