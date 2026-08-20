@@ -1,45 +1,41 @@
 # API Reference
 
-StochX exposes stochastic-process objects as explicit Python classes. The reference follows a PyDTMC-style layout: each class page describes the mathematical object, constructor, public properties, public methods, examples, and related course material.
+StochX has two public namespaces with different purposes:
 
-## Markov chains
+- `stochx.timeseries` — the main applied layer for time-series analysis, econometrics, Box–Jenkins workflows, forecasting and state-space models.
+- `stochx.stochastic` — mathematical stochastic-process objects for probability and stochastic-process coursework.
 
-- [`MarkovChain`](markov_chain.md) — finite homogeneous discrete-time Markov chains.
+The API pages use the same pattern as the User Guide: what the object represents, constructor parameters, important properties, public methods, a small example and numerical/validation conventions.
 
-## Poisson processes
+## Time-series API
 
-- [`PoissonProcess`](poisson_process.md) — homogeneous Poisson process.
-- [`NonHomogeneousPoissonProcess`](poisson_process.md#nonhomogeneouspoissonprocess) — intensity-driven Poisson process.
+Start with the [Time-series API map](time-series.md). The most important public families are:
 
-## Continuous-time Markov chains
+- `TimeSeries`, `Workfile`, `Expression`, `Equation`;
+- `acf`, `pacf`, `correlogram`;
+- `adf`, `dickey_fuller`, `kpss_test`, `phillips_perron`;
+- `moving_average`, `exponential_smoothing`, `holt`, `holt_winters`, `decompose`;
+- `fit_ar`, `fit_ma`, `fit_arma`, `fit_arima`, `fit_sarima`, `estimate`;
+- Box–Jenkins identification, estimation, validation, selection and forecasting;
+- residual diagnostics and statistical tests;
+- naive/drift forecasting and forecast metrics;
+- `LinearStateSpace` and the Kalman filter/smoother/forecasting/diagnostics workflow.
 
-- [`ContinuousTimeMarkovChain`](continuous_time_markov_chain.md) — finite homogeneous CTMCs.
-- [`CTMCPath`](continuous_time_markov_chain.md#ctmcpath) — simulated CTMC trajectories.
-- [`BirthDeathProcess`](birth_death_process.md) — birth-death specialization of a CTMC.
+## Stochastic-process API
 
-## Conditional expectation
+Start with the [Stochastic-process API map](stochastic-processes.md). The object families are:
 
-- [`FiniteProbabilitySpace`](probability_space.md)
-- [`RandomVariable`](random_variable.md)
-- [`Partition`](partition.md)
-
-## Martingales
-
-- [`Filtration`](filtration.md)
-- [`Martingale`](martingale.md)
-- [`StoppingTime`](stopping_time.md)
-- [`StoppedProcess`](stopped_process.md)
-
-## Standalone analysis
-
-- [`empirical_state_frequencies`](analysis.md) — generic trajectory-frequency analysis.
-
-## Exceptions
-
-- [`Exception hierarchy`](exceptions.md) — semantic validation and numerical exceptions.
+- `MarkovChain`;
+- `PoissonProcess` and `NonHomogeneousPoissonProcess`;
+- `ContinuousTimeMarkovChain`, `CTMCPath`, `BirthDeathProcess`;
+- `FiniteProbabilitySpace`, `RandomVariable`, `Partition`;
+- `Filtration`, `Martingale`, `StoppingTime`, `StoppedProcess`;
+- trajectory-frequency analysis and exceptions.
 
 ## API conventions
 
-Properties describe intrinsic information already attached to an object. Methods perform computations or operations that require arguments. Public state labels are preserved at the API boundary while numerical implementations may use integer indices internally.
+Public constructors validate mathematical invariants early. Result objects preserve the metadata required to interpret a calculation, and numerical arrays are protected from accidental mutation where the corresponding contract requires immutability.
 
-The API reference is separate from the mathematical Course material. For definitions and proofs, use the corresponding course chapter first.
+The package does not hide failures behind automatic fallbacks. A rejected model specification, invalid matrix, impossible probability vector or unavailable adequate model is surfaced explicitly.
+
+For mathematical definitions and proofs, use [Course Material](../course_material.md). For applied workflows, start with [Time Series](../time-series/index.md) or [Stochastic Processes](../stochastic/index.md).
