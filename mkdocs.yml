@@ -7,6 +7,7 @@ nav:
   - Home: index.md
   - Time Series:
       - User Guide: time-series/index.md
+      - Course Material: time-series/course-material.md
       - EViews-style workflow: time-series/eviews-workflow.md
       - EViews numerical parity: eviews_parity.md
       - Data and TimeSeries: time-series/data-series.md
