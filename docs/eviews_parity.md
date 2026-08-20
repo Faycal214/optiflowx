@@ -1,21 +1,81 @@
-# EViews numerical parity
+# EViews compatibility and numerical parity
 
-StochX uses the official EViews Time Series Estimation tutorial as a numerical benchmark in addition to the USTHB course materials used as the methodological specification.
+StochX uses **two references for its time-series layer**:
 
-## Phase A benchmark
+1. the USTHB course material defines the statistical methodology, notation and decision workflow;
+2. official EViews Time Series Estimation examples provide numerical benchmarks for the subset of workflows that are explicitly tested.
 
-The benchmark covers the four tutorial equations:
+This distinction is important. StochX is intended to feel familiar to EViews users, but it is implemented as a native Python library. We therefore claim parity only where a benchmark exists and passes.
 
-| Equation | EViews specification | Observations |
-|---|---|---:|
-| EQ01 | `LOG(M1) C LOG(IP) LOG(CPI) TBILL` | 624 |
-| EQ02 | `LOG(M1) C LOG(CPI) LOG(CPI(-1)) LOG(CPI(-2))` | 622 |
-| EQ02A | `M1 C CPI(0 to -12)` | 612 |
-| EQ03 | `LOG(M1) C LOG(M1(-1)) LOG(CPI) LOG(CPI(-1)) LOG(CPI(-2))` | 622 |
+## What is intentionally familiar?
 
-The expected EViews values are stored in `tests/fixtures/eviews_phase_a_expected.json`.
+The following vocabulary and operations are deliberately recognizable:
 
-The raw `Data.xlsx` benchmark file is intentionally not vendored in the repository. Obtain it from the official EViews Time Series Estimation tutorial and set:
+| EViews concept | StochX |
+|---|---|
+| workfile | `Workfile` |
+| sample | `Workfile.set_sample(...)` |
+| series | `TimeSeries`, `Workfile[name]` |
+| lag | `Y(-1)` / `Workfile.lag()` |
+| lead | `Y(1)` |
+| difference | `D(Y)` |
+| log difference | `DLOG(Y)` |
+| logarithm | `LOG(Y)` |
+| intercept | `C` in supported equation specifications |
+| trend | `@TREND` in supported equation specifications |
+| equation LS | `Workfile.ls(...)` |
+| ADF / DF | `adf(...)`, `dickey_fuller(...)` |
+| correlogram | `correlogram(...)` |
+| ARMA error | `AR(...)`, `MA(...)` |
+| equation report | `summary()`, `table()`, `statistics()` |
+| interpretation | `interpret()` |
+| roots | `roots_report()` |
+| forecast | model-specific `forecast_*` functions |
+
+## A real EViews-to-StochX translation
+
+An EViews-style equation
+
+```text
+Y C X X(-1)
+```
+
+becomes:
+
+```python
+eq = wf.ls("Y C X X(-1)", name="EQ01")
+```
+
+A transformed series:
+
+```text
+series DY = D(Y)
+```
+
+becomes:
+
+```python
+wf.generate("DY", "D(Y)")
+```
+
+A simple unit-root view becomes:
+
+```python
+result = adf(wf["Y"], regression="c", lags=1, autolag=None)
+print(result.summary())
+```
+
+The point is not syntactic mimicry for its own sake. Keeping familiar commands reduces the amount of methodological translation an EViews user has to perform.
+
+## Phase A — basic equation parity
+
+The repository contains a Phase A benchmark based on the official EViews Time Series Estimation tutorial. The expected values are stored in:
+
+```text
+tests/fixtures/eviews_phase_a_expected.json
+```
+
+The raw `Data.xlsx` file is intentionally not vendored. Obtain it from the official tutorial and set:
 
 ```bash
 export STOCHX_EVIEWS_DATA=/path/to/Data.xlsx
@@ -27,22 +87,46 @@ Then run:
 pytest -q tests/test_eviews_phase_a.py -m parity
 ```
 
-Without the raw benchmark file the numerical parity test is skipped. A separate range-expansion test runs without external data.
+Without the external workbook, the numerical parity test is skipped. The repository still validates the expression/range expansion behavior independently.
 
-## EViews compatibility rules validated here
+## Validated EViews conventions
 
-- Negative offsets are lags: `X(-1)` means the previous observation.
-- Positive offsets are leads: `X(1)` means the next observation.
-- Inclusive ranges such as `CPI(0 to -12)` expand to `CPI`, `CPI(-1)`, ..., `CPI(-12)`.
-- Equation samples contract automatically after lagged regressors introduce missing observations.
-- Equation statistics use EViews' normalized AIC, Schwarz/BIC, Hannan-Quinn, and standard error of regression conventions.
+The current benchmark documents these conventions explicitly:
 
-## Planned parity phases
+- negative offsets are lags;
+- positive offsets are leads;
+- inclusive distributed-lag ranges expand to every included lag;
+- lagged regressors contract the usable equation sample automatically;
+- equation reports expose the information criteria and standard-error conventions used by the benchmark.
 
-1. **Phase A — basic regressions:** lags, leads, transformations, distributed lags, dynamic OLS.
-2. **Phase B — serial correlation:** residual diagnostics, AR/MA/ARMA corrections.
-3. **Phase C — heteroskedasticity/ARCH/HAC:** White, ARCH LM, Newey-West/HAC and related outputs.
-4. **Phase D — forecasting:** static/dynamic forecasts, forecast evaluation and ARMA/ARIMA forecasting.
-5. **Phase E — unit roots:** dedicated EViews ADF/DF workfiles and exact critical-value/statistic parity.
+## Output-report philosophy
 
-The USTHB course PDFs remain the authoritative specification for the statistical workflow; EViews benchmark packages are the numerical validation layer.
+The goal is **the same analysis story**, not a screenshot clone.
+
+A StochX result should let an EViews user answer the same questions from Python:
+
+- Which observations were estimated?
+- Which coefficients were obtained?
+- How precise are those coefficients?
+- What are the fit statistics?
+- Are the residuals adequate?
+- What are the roots/stability diagnostics?
+- What are the forecasts and uncertainty bounds?
+
+`summary()`, `table()`, `statistics()`, `roots_report()`, `interpret()` and forecast result objects are the programmatic report layer.
+
+## Parity roadmap
+
+The repository currently organizes parity as explicit validation phases:
+
+1. basic regressions: transformations, lags, leads and distributed lags;
+2. serial correlation: AR/MA/ARMA corrections and residual diagnostics;
+3. heteroskedasticity/ARCH/HAC;
+4. forecasting and forecast evaluation;
+5. unit-root and DF/ADF benchmarks.
+
+Each phase should be considered complete only when the corresponding numerical fixture is committed and tested.
+
+## Important limitation
+
+An EViews benchmark is evidence for a **specific dataset, specification and numerical convention**. It is not evidence that every possible dataset will match bit-for-bit across software. This is why StochX keeps parity fixtures separate from the general API contract.
