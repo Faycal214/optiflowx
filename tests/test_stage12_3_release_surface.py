@@ -49,7 +49,7 @@ def test_stage12_release_documentation_files_exist() -> None:
     assert (ROOT / "docs" / "examples.md").exists()
 
 
-def test_stage12_version_is_single_sourced_for_release_candidate() -> None:
+def test_stage12_version_is_single_sourced() -> None:
     init_text = (ROOT / "stochx" / "__init__.py").read_text(encoding="utf-8")
     assert f'__version__ = "{stochx.__version__}"' in init_text
-    assert stochx.__version__ == "0.3.0rc1"
+    assert stochx.__version__ == "0.3.0"
