@@ -27,12 +27,40 @@ class TSResult(UnifiedResult):
         return self.title
 
     def forecast(self, steps: int = 1, alpha: float = 0.05) -> pd.DataFrame:
-        """Forecast future values with prediction intervals."""
+        """Forecast future values with prediction intervals.
+
+        ARIMA/SARIMAX results expose ``get_forecast`` while AutoReg exposes
+        ``get_prediction``. Both paths are normalized to the same result frame.
+        """
         if steps < 1:
             raise ValueError("steps must be positive")
-        prediction = self.result.get_forecast(steps=steps)
+
+        if hasattr(self.result, "get_forecast"):
+            prediction = self.result.get_forecast(steps=steps)
+        elif hasattr(self.result, "get_prediction"):
+            nobs = int(
+                getattr(
+                    self.result,
+                    "nobs",
+                    len(self.original) if self.original is not None else 0,
+                )
+            )
+            prediction = self.result.get_prediction(
+                start=nobs,
+                end=nobs + steps - 1,
+                dynamic=False,
+            )
+        else:
+            raise AttributeError("fitted model does not provide a forecast API")
+
         frame = prediction.summary_frame(alpha=alpha)
-        return frame.rename(columns={"mean": "Forecast", "mean_ci_lower": "Lower", "mean_ci_upper": "Upper"})
+        return frame.rename(
+            columns={
+                "mean": "Forecast",
+                "mean_ci_lower": "Lower",
+                "mean_ci_upper": "Upper",
+            }
+        )
 
     def diagnostics(self, lags: int = 12):
         """Run the standard StochX residual validation battery."""
