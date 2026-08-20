@@ -29,7 +29,8 @@ def test_stage10_6_public_cross_stage_integration_preserves_frozen_contracts():
     # Stage 9: public identification -> estimation -> validation -> selection path.
     ident = identify_box_jenkins(y, d=0, nlags=4, max_p=1, max_q=1)
     assert ident.d == 0
-    estimation = estimate_box_jenkins_candidates(y, ident.candidates)
+    assert ident.candidate_orders
+    estimation = estimate_box_jenkins_candidates(y, ident.candidate_orders)
     validation = validate_box_jenkins_candidates(estimation, lags=(1, 2), alpha=0.05)
     selection = select_box_jenkins_model(validation)
     assert isinstance(selection, BoxJenkinsSelectionResult)
