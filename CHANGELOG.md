@@ -17,11 +17,14 @@ All notable changes to StochX are documented here.
 
 - Added distribution-build and clean-wheel installation validation to CI.
 - Added Stage 12 release-surface documentation and regression coverage.
+- Added a documented migration guide for users moving from the `0.2.x` release line.
 - Kept the package version at `0.2.0` pending an explicit release-candidate decision.
 
 ### Compatibility
 
 - Stage 8, Stage 9, Stage 10, and Stage 11 numerical and public API contracts remain frozen.
+- Existing `stochx` imports remain the canonical package boundary.
+- New Box–Jenkins and state-space APIs are additive and may be adopted incrementally.
 
 ## [0.2.0] - 2026-08-15
 
