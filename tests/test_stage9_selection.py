@@ -51,6 +51,7 @@ def _validation(candidates):
             failed_checks=() if c.success else ("estimation",),
             rationale="eligible" if c.success else "failed",
             error=c.error,
+            estimated_candidate=c,
         )
         for c in candidates
     )
