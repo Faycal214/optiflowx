@@ -355,6 +355,17 @@ class Workfile:
         """Run an EViews-style Phillips-Perron test on the active sample."""
         from .stationarity import phillips_perron
         return phillips_perron(self.sample_series(name), trend=trend, lags=lags, alpha=alpha, d=d)
+    def uroot(self, name: str, *, test: str = "adf", exog: str = "const", dif: int = 0,
+              lags: int | None = None, autolag: str | None = "SIC",
+              alpha: float = 0.05, max_lag: int | None = None):
+        """EViews-style unit-root dispatcher for ADF, PP and KPSS."""
+        if test.lower() == "adf":
+            return self.adf(name, regression=exog, lags=lags, autolag=autolag, alpha=alpha, max_lag=max_lag, d=dif)
+        if test.lower() == "pp":
+            return self.phillips_perron(name, trend=exog, lags=lags, alpha=alpha, d=dif)
+        if test.lower() == "kpss":
+            return self.kpss(name, regression=exog, nlags="auto" if lags is None else lags, alpha=alpha, d=dif)
+        raise ValueError("test must be 'adf', 'pp', or 'kpss'")
     def adf(
         self,
         name: str,
