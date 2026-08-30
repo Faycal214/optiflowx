@@ -127,43 +127,48 @@ def _result(model_name: str, model: Any, result: Any, y, order, seasonal_order=N
     )
 
 
-def fit_ar(y: TimeSeries | Iterable[float], p: int, *, trend: str = "c", method: str = "yule_walker") -> TSResult:
-    """Estimate AR(p); the course treats Yule-Walker/OLS as the AR-specific route."""
+def fit_ar(y: TimeSeries | Iterable[float], p: int, *, trend: str = "c", method: str = "ml") -> TSResult:
+    """Estimate AR(p) using the EViews default maximum-likelihood method."""
     if p < 1:
         raise ValueError("p must be positive")
     series = _as_series(y)
-    from statsmodels.tsa.ar_model import AutoReg
+    from statsmodels.tsa.arima.model import ARIMA
 
-    trend_map = {"n": "n", "c": "c", "ct": "ct"}
-    if trend not in trend_map:
+    if method.lower() != "ml":
+        raise ValueError("fit_ar currently supports method='ml'; CLS/GLS are not yet implemented")
+    if trend not in {"n", "c", "ct"}:
         raise ValueError("trend must be 'n', 'c', or 'ct'")
-    model = AutoReg(series, lags=p, trend=trend_map[trend], old_names=False)
+    model = ARIMA(series, order=(p, 0, 0), trend=trend)
     result = model.fit()
     return _result("AR", model, result, y, (p, 0, 0))
 
 
-def fit_ma(y: TimeSeries | Iterable[float], q: int, *, trend: str = "c") -> TSResult:
+def fit_ma(y: TimeSeries | Iterable[float], q: int, *, trend: str = "c", method: str = "ml") -> TSResult:
     """Estimate MA(q) under Gaussian maximum likelihood."""
     if q < 1:
         raise ValueError("q must be positive")
     series = _as_series(y)
     from statsmodels.tsa.arima.model import ARIMA
 
+    if method.lower() != "ml":
+        raise ValueError("fit_ma currently supports method='ml'; CLS/GLS are not yet implemented")
     model = ARIMA(series, order=(0, 0, q), trend=trend)
     result = model.fit()
-    return _result("MA", model, result, y, (0, 0, q))
+    return _result("MA", model, result, y, (0, 0, q), method="Maximum Likelihood")
 
 
-def fit_arma(y: TimeSeries | Iterable[float], p: int, q: int, *, trend: str = "c") -> TSResult:
+def fit_arma(y: TimeSeries | Iterable[float], p: int, q: int, *, trend: str = "c", method: str = "ml") -> TSResult:
     """Estimate ARMA(p,q) by maximum likelihood."""
     if p < 0 or q < 0 or (p == 0 and q == 0):
         raise ValueError("at least one of p or q must be positive")
     series = _as_series(y)
     from statsmodels.tsa.arima.model import ARIMA
 
+    if method.lower() != "ml":
+        raise ValueError("fit_arma currently supports method='ml'; CLS/GLS are not yet implemented")
     model = ARIMA(series, order=(p, 0, q), trend=trend)
     result = model.fit()
-    return _result("ARMA", model, result, y, (p, 0, q))
+    return _result("ARMA", model, result, y, (p, 0, q), method="Maximum Likelihood")
 
 
 def fit_arima(y: TimeSeries | Iterable[float], p: int, d: int, q: int, *, trend: str | None = None) -> TSResult:
