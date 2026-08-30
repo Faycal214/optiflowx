@@ -55,3 +55,15 @@ Because results are ordinary Python objects/data frames, users can put them into
 ## Benchmarking against EViews
 
 Where an EViews benchmark is part of the StochX test suite, the benchmark defines explicit numerical expectations. This is preferable to saying that all outputs are universally identical: it tells users exactly which conventions have been verified.
+
+## Descriptive statistics
+
+The descriptive-statistics view is sample-aware and reports observations, included observations, mean, median, maximum, minimum, sample standard deviation, sample variance, skewness, kurtosis, Jarque-Bera and its probability.
+
+EViews calculates these statistics from observations in the current sample. Its basic expression functions also distinguish sample standard deviation from population variance conventions.
+
+```python
+print(series.describe())
+print(wf.stats())
+print(wf.stats(individual=True))
+```
