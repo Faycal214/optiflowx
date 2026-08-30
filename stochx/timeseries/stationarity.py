@@ -326,10 +326,8 @@ def _eviews_max_lag(nobs: int) -> int:
     """Return EViews' default maximum ADF lag using Schwert's rule."""
     if nobs < 1:
         return 0
-    candidates = (2, 4, 6, 8, 10, 12)
-    values = [int(np.floor(k * (nobs / 100.0) ** 0.25)) for k in candidates]
-    valid = [value for value in values if value < nobs]
-    return max(valid, default=0)
+    value = int(np.floor(12.0 * (nobs / 100.0) ** 0.25))
+    return max(0, min(value, nobs - 2))
 def _decision(statistic: float, critical_values: dict[str, float], alpha: float) -> Decision:
     _validate_alpha(alpha)
     level = {0.01: "1%", 0.05: "5%", 0.10: "10%"}[alpha]
