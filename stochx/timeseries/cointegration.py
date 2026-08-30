@@ -286,7 +286,7 @@ def johansen(data, *, k_ar_diff=1, det_order=0, variables=None):
     rank = int(np.sum(result.lr1 > result.cvt[:, 1]))
     names = tuple(str(c) for c in frame.columns) if variables is None else tuple(variables)
     return JohansenResult(
-        result.eve, result.lr1, result.cvt, result.lr2, result.cvm,
+        result.eig, result.lr1, result.cvt, result.lr2, result.cvm,
         rank, det_order, k_ar_diff, names
     )
 
