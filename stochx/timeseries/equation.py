@@ -432,7 +432,7 @@ class Equation:
     def estimate(self, method: str = "LS", specification: str | None = None, *, start_params: np.ndarray | list[float] | None = None) -> EquationResult:
         """Estimate using LS/OLS or ARMA maximum likelihood error terms."""
         method_upper = method.upper().replace(" ", "")
-        if method_upper in {"LS", "OLS", "MCO", "ML", "ARMA", "ARMAX"}:
+        if method_upper in {"LS", "OLS", "MCO", "ML", "ARMA", "ARMAX", "CLS", "GLS"}:
             return self.ls(specification, start_params=start_params)
         raise NotImplementedError("Equation supports LS/OLS and ARMA-error maximum likelihood")
 
