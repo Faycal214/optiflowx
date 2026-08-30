@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "stochx"
 dynamic = ["version"]
 requires-python = ">=3.10"
-description = "A Python library for stochastic-process analysis, time-series modelling, simulation, and forecasting."
+description = "An EViews-inspired Python library for time-series analysis, econometrics, and forecasting."
 readme = "README.md"
 authors = [{ name = "Alikacem Faycal", email = "faycal213.dz@gmail.com" }]
 license = { text = "MIT" }
@@ -18,16 +18,15 @@ dependencies = [
   "matplotlib",
 ]
 keywords = [
-  "stochastic processes",
-  "probability",
   "time series",
+  "time-series analysis",
+  "econometrics",
+  "EViews",
   "ARMA",
   "ARIMA",
   "SARIMA",
   "forecasting",
-  "econometrics",
-  "simulation",
-  "Markov chains",
+  "Box-Jenkins",
 ]
 
 classifiers = [
