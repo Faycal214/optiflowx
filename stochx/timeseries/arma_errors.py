@@ -16,6 +16,8 @@ class ErrorProcess:
 
     p: tuple[int, ...] = ()
     q: tuple[int, ...] = ()
+    sar: tuple[int, ...] = ()
+    sma: tuple[int, ...] = ()
 
     @property
     def max_p(self) -> int:
@@ -24,6 +26,14 @@ class ErrorProcess:
     @property
     def max_q(self) -> int:
         return max(self.q, default=0)
+
+    @property
+    def max_sar(self) -> int:
+        return max(self.sar, default=0)
+
+    @property
+    def max_sma(self) -> int:
+        return max(self.sma, default=0)
 
     @property
     def order(self) -> tuple[int, int]:
