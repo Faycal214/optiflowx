@@ -186,6 +186,10 @@ def fit_ma(y: TimeSeries | Iterable[float], q: int, *, trend: str = "c", method:
     from statsmodels.tsa.statespace.sarimax import SARIMAX
     if method.lower() != "ml":
         raise ValueError("fit_ma currently supports method='ml'; CLS/GLS are not yet implemented")
+    if optimizer.lower() != "bfgs" or covariance.lower() != "opg":
+        raise ValueError("only optimizer='bfgs' and covariance='opg' are currently implemented")
+    if not isinstance(maxiter, int) or isinstance(maxiter, bool) or maxiter < 1:
+        raise ValueError("maxiter must be a positive integer")
     if trend not in {"n", "c", "ct"}:
         raise ValueError("trend must be 'n', 'c', or 'ct'")
     model = SARIMAX(series, order=(0, 0, q), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
@@ -199,6 +203,10 @@ def fit_arma(y: TimeSeries | Iterable[float], p: int, q: int, *, trend: str = "c
     from statsmodels.tsa.statespace.sarimax import SARIMAX
     if method.lower() != "ml":
         raise ValueError("fit_arma currently supports method='ml'; CLS/GLS are not yet implemented")
+    if optimizer.lower() != "bfgs" or covariance.lower() != "opg":
+        raise ValueError("only optimizer='bfgs' and covariance='opg' are currently implemented")
+    if not isinstance(maxiter, int) or isinstance(maxiter, bool) or maxiter < 1:
+        raise ValueError("maxiter must be a positive integer")
     if trend not in {"n", "c", "ct"}:
         raise ValueError("trend must be 'n', 'c', or 'ct'")
     model = SARIMAX(series, order=(p, 0, q), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
