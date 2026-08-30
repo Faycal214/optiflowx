@@ -71,6 +71,19 @@ class Workfile:
         end = self.nobs if self.sample_end is None else self.sample_end + 1
         return slice(start, end)
 
+    _RESERVED_NAMES = frozenset({
+        "ABS", "ACOS", "AND", "AR", "ASIN", "C", "CON", "CNORM", "COEF",
+        "COS", "D", "DLOG", "DNORM", "ELSE", "ENDIF", "EXP", "LOG", "LOGIT",
+        "MA", "NA", "NOT", "NRND", "OR", "PDL", "RESID", "RND", "SAR", "SIN",
+        "SMA", "SQR", "THEN",
+    })
+
+    @staticmethod
+    def _name_key(name: str) -> str:
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("series name must be a non-empty string")
+        return name.strip().casefold()
+
     def add(
         self,
         name: str,
@@ -78,7 +91,18 @@ class Workfile:
         *,
         index: Iterable | None = None,
     ) -> TimeSeries:
-        """Add or replace a named series in the workfile."""
+        """Add or replace a named series in the workfile.
+
+        EViews object names are case-insensitive; the original capitalization
+        is retained for display and reporting.
+        """
+        name = name.strip()
+        key = self._name_key(name)
+        if key.upper() in self._RESERVED_NAMES:
+            raise ValueError(f"series name {name!r} is reserved by EViews")
+        existing_key = next((k for k in self.series if self._name_key(k) == key), None)
+        if existing_key is not None and existing_key != name:
+            del self.series[existing_key]
         if isinstance(values, TimeSeries):
             series = values.copy(name=name)
         else:
@@ -108,17 +132,19 @@ class Workfile:
         return series
 
     def get(self, name: str) -> TimeSeries:
-        """Return a named series."""
-        try:
-            return self.series[name]
-        except KeyError as exc:
-            raise KeyError(f"Series {name!r} is not present in the workfile") from exc
+        """Return a named series using EViews-compatible case-insensitive lookup."""
+        key = self._name_key(name)
+        for existing, series in self.series.items():
+            if self._name_key(existing) == key:
+                return series
+        raise KeyError(f"Series {name!r} is not present in the workfile")
 
     def __getitem__(self, name: str) -> TimeSeries:
         return self.get(name)
 
     def __contains__(self, name: str) -> bool:
-        return name in self.series
+        key = self._name_key(name)
+        return any(self._name_key(existing) == key for existing in self.series)
 
     def names(self) -> list[str]:
         """Return series names in insertion order."""
@@ -227,7 +253,8 @@ class Workfile:
 
     def generate(self, name: str, expression, *, overwrite: bool = False) -> TimeSeries:
         """Generate a new series using an expression string or callable."""
-        if name in self.series and not overwrite:
+        exists = name in self
+        if exists and not overwrite:
             raise ValueError(f"series {name!r} already exists; set overwrite=True")
         if isinstance(expression, str):
             values = self.eval(expression)
