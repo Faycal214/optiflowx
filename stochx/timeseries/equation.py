@@ -144,6 +144,59 @@ class EquationResult(UnifiedResult):
             return "ordinary"
         return "model default"
 
+    def forecast(
+        self, *, steps: int | None = None, start: int | None = None, end: int | None = None,
+        dynamic: bool = False, structural: bool = False, alpha: float = 0.05,
+        coef_uncertainty: bool = true, ma_backcast: str = "estimation",
+        forecast_fill: str = "actual", future_exog=None, actuals=None,
+    ) -> pd.DataFrame:
+        """Forecast this equation using EViews-style controls."""
+        if not 0 < float(alpha) < 1: raise ValueError("alpha must lie strictly between 0 and 1")
+        if ma_backcast.lower() not in {"estimation", "forecast_available", "fa"}: raise ValueError("invalid ma_backcast")
+        if forecast_fill.lower() not in {"actual", "na"}: raise ValueError("forecast_fill must be actual or na")
+        model = self.result
+        nobs = int(getattr(model, "nobs", len(self.observed) if self.observed is not None else 0))
+        if steps is not None and (start is not None or end is not None): raise ValueError("use steps or start/end")
+        if steps is not None:
+            if not isinstance(steps, int) or isinstance(steps, bool) or steps < 1: raise ValueError("steps must be a positive integer")
+            start_i, end_i = nobs, nobs + steps - 1
+        else:
+            if start is None: raise ValueError("steps or start is required")
+            start_i, end_i = int(start), int(end if end is not None else start)
+            if end_i < start_i: raise ValueError("end must be >= start")
+        horizon = end_i - start_i + 1
+        if structural:
+            model_exog = np.asarray(getattr(getattr(model, "model", None), "exog", np.empty((0,0))), dtype=float)
+            arma_labels = {f"AR({i})" for i in self.error_process.p} | {f"MA({i})" for i in self.error_process.q} | {f"SAR({i})" for i in self.error_process.sar} | {f"SMA({i})" for i in self.error_process.sma} | {"SIGMASQ"}
+            beta_names = [name for name in self.params.index if str(name) not in arma_labels]
+            beta = np.asarray([self.params[name] for name in beta_names], dtype=float)
+            if future_exog is not None:
+                Xf = np.asarray(future_exog, dtype=float); Xf = Xf.reshape(1,-1) if Xf.ndim == 1 else Xf
+            elif start_i < nobs:
+                Xf = model_exog[start_i:end_i+1]
+            elif beta_names == ["C"]:
+                Xf = np.ones((horizon, 1))
+            else:
+                raise ValueError("future_exog is required for out-of-sample structural forecasts")
+            if Xf.shape[1] != beta.size: raise ValueError("future_exog columns do not match structural coefficients")
+            point = Xf @ beta
+            se = np.full(horizon, np.nan); lower = np.full(horizon, np.nan); upper = np.full(horizon, np.nan)
+        else:
+            kwargs = {}
+            if future_exog is not None: kwargs["exog"] = np.asarray(future_exog, dtype=float)
+            prediction = model.get_prediction(start=start_i, end=end_i, dynamic=dynamic, **kwargs)
+            frame = prediction.summary_frame(alpha=alpha)
+            point = frame["mean"].to_numpy(dtype=float)
+            se = frame["mean_se"].to_numpy(dtype=float) if "mean_se" in frame else np.full(horizon, np.nan)
+            lower = frame["mean_ci_lower"].to_numpy(dtype=float)
+            upper = frame["mean_ci_upper"].to_numpy(dtype=float)
+        out = pd.DataFrame({"Forecast": point, "Std. Error": se, "Lower": lower, "Upper": upper})
+        if actuals is not None:
+            actual = np.asarray(actuals, dtype=float).reshape(-1)
+            if actual.size != horizon: raise ValueError("actuals length must equal forecast horizon")
+            out["Actual"] = actual; out["Error"] = actual - out["Forecast"]
+        out.attrs.update({"forecast_sample": (start_i, end_i), "dynamic": dynamic, "structural": structural, "coef_uncertainty": coef_uncertainty, "ma_backcast": ma_backcast, "forecast_fill": forecast_fill})
+        return out
     def forecast_evaluation(self, forecast, actual) -> dict[str, float]:
         """Evaluate a forecast using EViews-style standard measures."""
         f = np.asarray(list(forecast), dtype=float)
