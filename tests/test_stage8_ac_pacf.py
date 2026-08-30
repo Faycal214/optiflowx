@@ -1,6 +1,32 @@
 import numpy as np
 
-from stochx.timeseries import acf, ar, arma, ma, pacf, white_noise
+from stochx.timeseries import TimeSeries, acf, pacf
+
+def _ar1(phi: float, n: int, seed: int) -> TimeSeries:
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(size=n)
+    values = np.empty(n)
+    values[0] = eps[0]
+    for t in range(1, n):
+        values[t] = phi * values[t - 1] + eps[t]
+    return TimeSeries(values, name="AR1")
+
+
+def _ma1(theta: float, n: int, seed: int) -> TimeSeries:
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(size=n + 1)
+    values = eps[1:] + theta * eps[:-1]
+    return TimeSeries(values, name="MA1")
+
+
+def _arma11(phi: float, theta: float, n: int, seed: int) -> TimeSeries:
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(size=n)
+    values = np.empty(n)
+    values[0] = eps[0]
+    for t in range(1, n):
+        values[t] = phi * values[t - 1] + eps[t] + theta * eps[t - 1]
+    return TimeSeries(values, name="ARMA11")
 
 
 def _reference_ac(values: np.ndarray, nlags: int) -> np.ndarray:
@@ -58,14 +84,14 @@ def _assert_ac_pacf_match(series, nlags=12):
 
 
 def test_stage8_ac_pacf_white_noise():
-    series = white_noise(512, rng=123)
+    series = TimeSeries(np.random.default_rng(123).normal(size=512), name="WN")
     _assert_ac_pacf_match(series, nlags=16)
     assert np.max(np.abs(acf(series, nlags=16).values[1:])) < 0.2
     assert np.max(np.abs(pacf(series, nlags=16).values[2:])) < 0.2
 
 
 def test_stage8_ac_pacf_ar1():
-    series = ar(1, [0.7], 512, burnin=1000, rng=123)
+    series = _ar1(0.7, 512, 123)
     _assert_ac_pacf_match(series, nlags=16)
     result = pacf(series, nlags=8)
     assert abs(result.values[1]) > abs(result.values[2])
@@ -73,7 +99,7 @@ def test_stage8_ac_pacf_ar1():
 
 
 def test_stage8_ac_pacf_ma1():
-    series = ma(1, [0.8], 512, burnin=200, rng=123)
+    series = _ma1(0.8, 512, 123)
     _assert_ac_pacf_match(series, nlags=16)
     result = acf(series, nlags=8)
     theoretical_rho1 = 0.8 / (1.0 + 0.8**2)
@@ -81,7 +107,7 @@ def test_stage8_ac_pacf_ma1():
 
 
 def test_stage8_ac_pacf_arma11():
-    series = arma(1, 1, [0.6], [0.5], 512, burnin=1000, rng=123)
+    series = _arma11(0.6, 0.5, 512, 123)
     _assert_ac_pacf_match(series, nlags=16)
     ac_result = acf(series, nlags=8)
     pac_result = pacf(series, nlags=8)
@@ -91,7 +117,7 @@ def test_stage8_ac_pacf_arma11():
 
 
 def test_stage8_public_ac_pacf_lag_zero_and_validation():
-    series = white_noise(100, rng=7)
+    series = TimeSeries(np.random.default_rng(7).normal(size=100), name="WN")
     ac_result = acf(series, nlags=0)
     pac_result = pacf(series, nlags=0)
     assert ac_result.lags.tolist() == [0]
@@ -110,7 +136,7 @@ def test_stage8_ac_uses_a_single_overall_mean():
 
 
 def test_stage8_5_eviews_two_standard_error_bands_for_ordinary_series():
-    series = white_noise(400, rng=21)
+    series = TimeSeries(np.random.default_rng(21).normal(size=400), name="WN")
     for alpha in (0.01, 0.05, 0.10):
         ac_result = acf(series, nlags=8, alpha=alpha)
         pac_result = pacf(series, nlags=8, alpha=alpha)
@@ -129,7 +155,7 @@ def test_stage8_5_eviews_two_standard_error_bands_for_ordinary_series():
 
 
 def test_stage8_5_residual_bands_use_shared_effective_nobs():
-    residual = arma(p=1, q=1, phi=[0.45], theta=[0.25], n=300, rng=42)
+    residual = _arma11(0.45, 0.25, 300, 42)
     ac_result = acf(residual, nlags=8)
     pac_result = pacf(residual, nlags=8)
     expected = 2.0 / np.sqrt(300)
