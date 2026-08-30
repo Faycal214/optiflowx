@@ -170,12 +170,30 @@ class EquationResult(UnifiedResult):
     @property
     def inverted_ar_roots(self) -> np.ndarray:
         roots = np.asarray(getattr(self.result, "arroots", np.array([], dtype=complex)), dtype=complex)
-        return 1.0 / roots if roots.size else roots
+        if roots.size:
+            return 1.0 / roots
+        if self.error_process.p:
+            from numpy.polynomial import polynomial
+            coeff = np.zeros(self.error_process.max_p + 1)
+            coeff[0] = 1.0
+            for lag in self.error_process.p:
+                coeff[lag] = -float(self.params[f"AR({lag})"])
+            return polynomial.polyroots(coeff)[::-1]
+        return roots
 
     @property
     def inverted_ma_roots(self) -> np.ndarray:
         roots = np.asarray(getattr(self.result, "maroots", np.array([], dtype=complex)), dtype=complex)
-        return 1.0 / roots if roots.size else roots
+        if roots.size:
+            return 1.0 / roots
+        if self.error_process.q:
+            from numpy.polynomial import polynomial
+            coeff = np.zeros(self.error_process.max_q + 1)
+            coeff[0] = 1.0
+            for lag in self.error_process.q:
+                coeff[lag] = float(self.params[f"MA({lag})"])
+            return polynomial.polyroots(coeff)[::-1]
+        return roots
 
     def arma_structure(self, type: str = "root", *, hrz: int = 25, impulse: float | None = None) -> pd.DataFrame | dict[str, np.ndarray]:
         """Replicate EViews Equation.arma views: root, acf, imp, or freq."""
@@ -212,6 +230,15 @@ class EquationResult(UnifiedResult):
 
     def roots_report(self) -> dict[str, np.ndarray]:
         return {"Inverted AR Roots": self.inverted_ar_roots, "Inverted MA Roots": self.inverted_ma_roots}
+
+    def convergence_info(self) -> dict[str, Any]:
+        if hasattr(self.result, "converged"):
+            return {"converged": bool(self.result.converged), "iterations": int(getattr(self.result, "iterations", 0)), "optimizer": "BFGS"}
+        retvals = getattr(self.result, "mle_retvals", {}) or {}
+        return {"converged": retvals.get("converged"), "iterations": retvals.get("iterations", retvals.get("nit")), "optimizer": "BFGS"}
+
+    def arma(self, type: str = "root", *, hrz: int = 25, impulse: float | None = None):
+        return self.arma_structure(type=type, hrz=hrz, impulse=impulse)
 
     def statistics(self) -> dict[str, float]:
         """Return EViews-normalized regression statistics."""
