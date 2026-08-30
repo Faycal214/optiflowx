@@ -198,23 +198,41 @@ class EquationResult(UnifiedResult):
         out.attrs.update({"forecast_sample": (start_i, end_i), "dynamic": dynamic, "structural": structural, "coef_uncertainty": coef_uncertainty, "ma_backcast": ma_backcast, "forecast_fill": forecast_fill})
         return out
     def forecast_evaluation(self, forecast, actual) -> dict[str, float]:
-        """Evaluate a forecast using EViews-style standard measures."""
+        """Evaluate forecasts with the EViews four-statistic report."""
         f = np.asarray(list(forecast), dtype=float)
         y = np.asarray(list(actual), dtype=float)
         if f.shape != y.shape:
             raise ValueError("forecast and actual must have the same shape")
         mask = np.isfinite(f) & np.isfinite(y)
-        f = f[mask]
-        y = y[mask]
+        f, y = f[mask], y[mask]
         if f.size == 0:
             raise ValueError("no finite forecast/actual observations")
         e = y - f
-        rmse = float(np.sqrt(np.mean(e ** 2)))
+        mse = float(np.mean(e ** 2))
+        rmse = float(np.sqrt(mse))
         mae = float(np.mean(np.abs(e)))
-        nz = np.abs(y) > np.finfo(float).eps
-        mape = float(np.mean(np.abs(e[nz] / y[nz])) * 100) if np.any(nz) else float("nan")
+        nonzero = np.abs(y) > np.finfo(float).eps
+        mape = float(np.mean(np.abs(e[nonzero] / y[nonzero])) * 100.0) if np.any(nonzero) else float("nan")
         theil = rmse / (float(np.sqrt(np.mean(y ** 2))) + float(np.sqrt(np.mean(f ** 2))))
-        return {"RMSE": rmse, "MAE": mae, "MAPE": mape, "Mean Error": float(np.mean(e)), "Theil U": theil}
+        y_mean, f_mean = float(np.mean(y)), float(np.mean(f))
+        y_sd = float(np.std(y, ddof=0))
+        f_sd = float(np.std(f, ddof=0))
+        corr = float(np.corrcoef(y, f)[0, 1]) if y.size > 1 and y_sd > 0 and f_sd > 0 else 0.0
+        denom = mse if mse > np.finfo(float).eps else np.nan
+        bias_prop = float((f_mean - y_mean) ** 2 / denom) if np.isfinite(denom) else 0.0
+        variance_prop = float((f_sd - y_sd) ** 2 / denom) if np.isfinite(denom) else 0.0
+        covariance_prop = float(1.0 - bias_prop - variance_prop) if np.isfinite(denom) else 0.0
+        return {
+            "RMSE": rmse,
+            "MAE": mae,
+            "MAPE": mape,
+            "Theil Inequality Coefficient": theil,
+            "Bias Proportion": bias_prop,
+            "Variance Proportion": variance_prop,
+            "Covariance Proportion": covariance_prop,
+            "Mean Error": float(np.mean(e)),
+            "Observations": float(f.size),
+        }
 
     def diagnostics(self, *, lags: int = 12, alpha: float = 0.05, het_test: str = "BPG", white_cross_terms: bool = False) -> dict[str, object]:
         """Return EViews-style residual diagnostics for this equation."""
