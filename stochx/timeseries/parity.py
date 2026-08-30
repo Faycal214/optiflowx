@@ -436,3 +436,53 @@ def validate_forecast_reference_metadata(forecast_frame, reference: Mapping[str,
         if exp is not None:
             report.comparisons.append(Comparison(name, actual == exp, actual, exp))
     return report
+
+
+def validate_diagnostics_reference(reference: Mapping[str, Any]) -> ParityReport:
+    report = ParityReport("diagnostics-reference")
+    views = reference.get("views", {})
+    required = {
+        "residual_correlogram",
+        "squared_residual_correlogram",
+        "histogram_normality",
+        "serial_correlation_lm",
+        "heteroskedasticity",
+        "stability",
+    }
+    report.comparisons.append(
+        Comparison("diagnostic_views", required.issubset(views), sorted(views), sorted(required))
+    )
+    for view in required:
+        if view not in views:
+            continue
+        cols = views[view].get("columns") if isinstance(views[view], Mapping) else None
+        if cols is not None:
+            report.comparisons.append(
+                Comparison(f"{view}.columns", isinstance(cols, list) and len(cols) > 0, cols, "non-empty EViews columns")
+            )
+    return report
+
+
+def validate_cointegration_reference(reference: Mapping[str, Any]) -> ParityReport:
+    report = ParityReport("cointegration-reference")
+    single = reference.get("single_equation", {})
+    tests = single.get("tests", {})
+    required_tests = {"hansen", "park", "engle_granger", "phillips_ouliaris"}
+    report.comparisons.append(
+        Comparison("single_equation_tests", required_tests.issubset(tests), sorted(tests), sorted(required_tests))
+    )
+    cointreg = single.get("cointreg", {})
+    methods = {"fmols"}
+    if cointreg.get("method") not in methods:
+        report.comparisons.append(
+            Comparison("cointreg.default_method", False, cointreg.get("method"), "fmols")
+        )
+    else:
+        report.comparisons.append(
+            Comparison("cointreg.default_method", True, cointreg.get("method"), "fmols")
+        )
+    system = reference.get("system", {})
+    report.comparisons.append(
+        Comparison("system.method", system.get("method") == "Johansen", system.get("method"), "Johansen")
+    )
+    return report
