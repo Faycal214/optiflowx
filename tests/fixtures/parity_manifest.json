@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "reference_policy": {
+    "structural": "exact labels, ordering, counts, model specification, and decisions",
+    "displayed": "within half of the last displayed decimal place plus relative tolerance",
+    "numerical": "feature-specific absolute/relative tolerance documented by the fixture",
+    "reports": "semantic equality first; exact whitespace only when an EViews capture exists"
+  },
+  "steps": {
+    "01_workfile_sample": {"status": "validation_required", "class": "structural"},
+    "02_descriptive_statistics": {"status": "validation_required", "class": "displayed"},
+    "03_correlogram": {"status": "validation_required", "class": "displayed"},
+    "04_unit_roots": {"status": "validation_required", "class": "numerical"},
+    "05_arma": {"status": "fixture_available", "class": "displayed"},
+    "06_arima_sarima": {"status": "fixture_required", "class": "numerical"},
+    "07_equation": {"status": "fixture_available_for_arma", "class": "displayed"},
+    "08_diagnostics": {"status": "fixture_required", "class": "numerical"},
+    "09_autoarma": {"status": "fixture_required", "class": "structural"},
+    "10_forecasting": {"status": "fixture_required", "class": "numerical"},
+    "11_reports": {"status": "fixture_required", "class": "reports"},
+    "12_cointegration": {"status": "fixture_required", "class": "numerical"}
+  },
+  "tolerances": {
+    "ols_display_relative": 1e-8,
+    "arma_display_relative": 2e-5,
+    "information_criteria_relative": 2e-8,
+    "roots_relative": 0.02,
+    "default_numeric_absolute": 1e-8,
+    "default_numeric_relative": 1e-8
+  }
+}
