@@ -297,4 +297,153 @@ def compare_orders(
         frame["Rank by AIC"] = frame["AIC"].rank(method="min")
         frame["Rank by BIC"] = frame["BIC"].rank(method="min")
         frame["Rank by HQ"] = frame["HQ"].rank(method="min")
+    return frame.sort_values("AIC", na_position="last") if not frame.empty else framedef _lag_tuple(value: int | Iterable[int], name: str, *, allow_empty: bool = False) -> tuple[int, ...]:
+    """Normalize an EViews lag specification while preserving sparse lags."""
+    if isinstance(value, int) and not isinstance(value, bool):
+        if value < 0 or (value == 0 and not allow_empty):
+            raise ValueError(f"{name} must be positive")
+        return tuple(range(1, value + 1))
+    lags = tuple(sorted(set(int(v) for v in value)))
+    if (not lags and not allow_empty) or any(v < 1 for v in lags):
+        raise ValueError(f"{name} must contain positive lag orders")
+    return lags
+
+def fit_ar(y: TimeSeries | Iterable[float], p: int | Iterable[int], *, trend: str = "c", method: str = "ml", optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000) -> TSResult:
+    """Estimate AR terms using the EViews ML/BFGS/OPG defaults."""
+    p_lags = _lag_tuple(p, "p")
+    series = _as_series(y)
+    from statsmodels.tsa.statespace.sarimax import SARIMAX
+    if method.lower() != "ml":
+        raise ValueError("only EViews ARMA method='ml' is implemented")
+    if optimizer.lower() != "bfgs" or covariance.lower() != "opg":
+        raise ValueError("only EViews-default optimizer='bfgs' and covariance='opg' are implemented")
+    if not isinstance(maxiter, int) or isinstance(maxiter, bool) or maxiter < 1:
+        raise ValueError("maxiter must be a positive integer")
+    if trend not in {"n", "c", "ct"}:
+        raise ValueError("trend must be 'n', 'c', or 'ct'")
+    model = SARIMAX(series, order=(p_lags, 0, ()), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
+    result = model.fit(method="bfgs", maxiter=maxiter, disp=False, cov_type="opg")
+    return _result("AR", model, result, y, (max(p_lags), 0, 0))
+
+def fit_ma(y: TimeSeries | Iterable[float], q: int | Iterable[int], *, trend: str = "c", method: str = "ml", optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000) -> TSResult:
+    """Estimate MA terms using the EViews ML/BFGS/OPG defaults."""
+    q_lags = _lag_tuple(q, "q")
+    series = _as_series(y)
+    from statsmodels.tsa.statespace.sarimax import SARIMAX
+    if method.lower() != "ml":
+        raise ValueError("only EViews ARMA method='ml' is implemented")
+    if optimizer.lower() != "bfgs" or covariance.lower() != "opg":
+        raise ValueError("only EViews-default optimizer='bfgs' and covariance='opg' are implemented")
+    if not isinstance(maxiter, int) or isinstance(maxiter, bool) or maxiter < 1:
+        raise ValueError("maxiter must be a positive integer")
+    if trend not in {"n", "c", "ct"}:
+        raise ValueError("trend must be 'n', 'c', or 'ct'")
+    model = SARIMAX(series, order=((), 0, q_lags), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
+    result = model.fit(method="bfgs", maxiter=maxiter, disp=False, cov_type="opg")
+    return _result("MA", model, result, y, (0, 0, max(q_lags)))
+
+def fit_arma(y: TimeSeries | Iterable[float], p: int | Iterable[int], q: int | Iterable[int], *, trend: str = "c", method: str = "ml", optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000) -> TSResult:
+    """Estimate sparse/dense ARMA terms using EViews ML/BFGS/OPG defaults."""
+    p_lags = _lag_tuple(p, "p", allow_empty=isinstance(p, int) and p == 0)
+    q_lags = _lag_tuple(q, "q", allow_empty=isinstance(q, int) and q == 0)
+    if not p_lags and not q_lags:
+        raise ValueError("at least one AR or MA lag must be present")
+    series = _as_series(y)
+    from statsmodels.tsa.statespace.sarimax import SARIMAX
+    if method.lower() != "ml":
+        raise ValueError("only EViews ARMA method='ml' is implemented")
+    if optimizer.lower() != "bfgs" or covariance.lower() != "opg":
+        raise ValueError("only EViews-default optimizer='bfgs' and covariance='opg' are implemented")
+    if not isinstance(maxiter, int) or isinstance(maxiter, bool) or maxiter < 1:
+        raise ValueError("maxiter must be a positive integer")
+    if trend not in {"n", "c", "ct"}:
+        raise ValueError("trend must be 'n', 'c', or 'ct'")
+    model = SARIMAX(series, order=(p_lags, 0, q_lags), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
+    result = model.fit(method="bfgs", maxiter=maxiter, disp=False, cov_type="opg")
+    return _result("ARMA", model, result, y, (max(p_lags, default=0), 0, max(q_lags, default=0)))
+def fit_arima(y: TimeSeries | Iterable[float], p: int, d: int, q: int, *, trend: str | None = None) -> TSResult:
+    """Estimate ARIMA(p,d,q) with automatic handling of differencing."""
+    if min(p, d, q) < 0:
+        raise ValueError("p, d, and q must be non-negative")
+    series = _as_series(y)
+    from statsmodels.tsa.arima.model import ARIMA
+
+    model = ARIMA(series, order=(p, d, q), trend=trend)
+    result = model.fit()
+    return _result("ARIMA", model, result, y, (p, d, q))
+
+
+def fit_sarima(
+    y: TimeSeries | Iterable[float],
+    order: tuple[int, int, int],
+    seasonal_order: tuple[int, int, int, int],
+    *,
+    trend: str | None = None,
+) -> TSResult:
+    """Estimate SARIMA(p,d,q)(P,D,Q,s) with state-space likelihood."""
+    series = _as_series(y)
+    from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+    model = SARIMAX(
+        series,
+        order=order,
+        seasonal_order=seasonal_order,
+        trend=trend,
+        enforce_stationarity=False,
+        enforce_invertibility=False,
+    )
+    result = model.fit(disp=False)
+    return _result("SARIMA", model, result, y, order, seasonal_order)
+
+
+def estimate(
+    y: TimeSeries | Iterable[float],
+    *,
+    p: int = 0,
+    d: int = 0,
+    q: int = 0,
+    seasonal_order: tuple[int, int, int, int] | None = None,
+) -> TSResult:
+    """Unified estimator dispatcher for AR/MA/ARMA/ARIMA/SARIMA."""
+    if seasonal_order is not None:
+        return fit_sarima(y, (p, d, q), seasonal_order)
+    if d > 0:
+        return fit_arima(y, p, d, q)
+    if p and not q:
+        return fit_ar(y, p)
+    if q and not p:
+        return fit_ma(y, q)
+    return fit_arma(y, p, q)
+
+
+def compare_orders(
+    y: TimeSeries | Iterable[float],
+    orders: Iterable[tuple[int, int, int]],
+) -> pd.DataFrame:
+    """Estimate competing ARIMA orders and return AIC/BIC/HQ ranking."""
+    rows = []
+    for order in orders:
+        try:
+            result = fit_arima(y, *order)
+            stats = result.statistics()
+            rows.append({
+                "p": order[0],
+                "d": order[1],
+                "q": order[2],
+                "AIC": stats["Akaike info criterion"],
+                "BIC": stats["Schwarz criterion"],
+                "HQ": stats["Hannan-Quinn criterion"],
+                "LogLik": stats["Log likelihood"],
+            })
+        except Exception as exc:  # noqa: BLE001
+            rows.append({
+                "p": order[0], "d": order[1], "q": order[2],
+                "AIC": np.nan, "BIC": np.nan, "HQ": np.nan,
+                "LogLik": np.nan, "Error": str(exc),
+            })
+    frame = pd.DataFrame(rows)
+    if not frame.empty:
+        frame["Rank by AIC"] = frame["AIC"].rank(method="min")
+        frame["Rank by BIC"] = frame["BIC"].rank(method="min")
+        frame["Rank by HQ"] = frame["HQ"].rank(method="min")
     return frame.sort_values("AIC", na_position="last") if not frame.empty else frame
