@@ -500,6 +500,22 @@ class Workfile:
         from .models import fit_ma
         return fit_ma(self.sample_series(name), q, trend=trend, method=method)
 
+    @property
+    def seasonal_period(self) -> int:
+        if self.frequency is None:
+            raise ValueError("seasonal period cannot be inferred from an undated workfile")
+        key = str(self.frequency).upper()
+        mapping = {"M": 12, "MONTHLY": 12, "Q": 4, "QUARTERLY": 4, "W": 52, "WEEKLY": 52, "D": 7, "DAILY": 7}
+        if key not in mapping:
+            raise ValueError(f"unsupported frequency for seasonal period inference: {self.frequency!r}")
+        return mapping[key]
+
+    def sarima(self, name: str, order: tuple[int, int, int], seasonal_order: tuple[int, int, int, int] | None = None, *, trend: str | None = "c"):
+        from .models import fit_sarima
+        if seasonal_order is None:
+            seasonal_order = (0, 0, 0, self.seasonal_period)
+        return fit_sarima(self.sample_series(name), order, seasonal_order, trend=trend)
+
     def arma(self, name: str, p: int, q: int, *, trend: str = "c", method: str = "ml"):
         """Estimate an ARMA(p,q) model on the active sample."""
         from .models import fit_arma
