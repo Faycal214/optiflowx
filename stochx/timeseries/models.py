@@ -161,7 +161,7 @@ def _result(model_name: str, model: Any, result: Any, y, order, seasonal_order=N
     )
 
 
-def fit_ar(y: TimeSeries | Iterable[float], p: int, *, trend: str = "c", method: str = "ml") -> TSResult:
+def fit_ar(y: TimeSeries | Iterable[float], p: int, *, trend: str = "c", method: str = "ml", optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000) -> TSResult:
     """Estimate AR(p) using the EViews default ML method."""
     if p < 1:
         raise ValueError("p must be positive")
@@ -171,8 +171,12 @@ def fit_ar(y: TimeSeries | Iterable[float], p: int, *, trend: str = "c", method:
         raise ValueError("fit_ar currently supports method='ml'; CLS/GLS are not yet implemented")
     if trend not in {"n", "c", "ct"}:
         raise ValueError("trend must be 'n', 'c', or 'ct'")
+    if optimizer.lower() != "bfgs" or covariance.lower() != "opg":
+        raise ValueError("only optimizer='bfgs' and covariance='opg' are currently implemented")
+    if not isinstance(maxiter, int) or isinstance(maxiter, bool) or maxiter < 1:
+        raise ValueError("maxiter must be a positive integer")
     model = SARIMAX(series, order=(p, 0, 0), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
-    result = model.fit(method="bfgs", maxiter=1000, disp=False, cov_type="opg")
+    result = model.fit(method=optimizer.lower(), maxiter=maxiter, disp=False, cov_type=covariance.lower())
     return _result("AR", model, result, y, (p, 0, 0))
 def fit_ma(y: TimeSeries | Iterable[float], q: int, *, trend: str = "c", method: str = "ml") -> TSResult:
     """Estimate MA(q) using the EViews default ML method."""
