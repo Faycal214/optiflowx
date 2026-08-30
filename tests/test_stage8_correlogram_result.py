@@ -2,11 +2,25 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from stochx.timeseries import CorrelogramResult, arma, correlogram, white_noise
+from stochx.timeseries import CorrelogramResult, TimeSeries, correlogram
+
+
+def _arma11(phi: float, theta: float, n: int, seed: int) -> TimeSeries:
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(size=n)
+    values = np.empty(n)
+    values[0] = eps[0]
+    for t in range(1, n):
+        values[t] = phi * values[t - 1] + eps[t] + theta * eps[t - 1]
+    return TimeSeries(values, name="ARMA11")
+
+
+def _white_noise(n: int, seed: int) -> TimeSeries:
+    return TimeSeries(np.random.default_rng(seed).normal(size=n), name="WN")
 
 
 def test_stage8_6_ordinary_result_public_contract_and_aliases():
-    result = correlogram(white_noise(120, rng=21), nlags=8, model_df=0, alpha=0.05)
+    result = correlogram(_white_noise(120, 21), nlags=8, model_df=0, alpha=0.05)
 
     assert isinstance(result, CorrelogramResult)
     assert result.nobs == 120
@@ -31,7 +45,7 @@ def test_stage8_6_ordinary_result_public_contract_and_aliases():
 
 
 def test_stage8_6_residual_result_preserves_model_df_and_band_metadata():
-    result = correlogram(arma(p=1, q=1, phi=[0.45], theta=[0.25], n=160, rng=7), nlags=7, model_df=2)
+    result = correlogram(_arma11(0.45, 0.25, 160, 7), nlags=7, model_df=2)
 
     assert result.nobs == 160
     assert result.nlags == 7
@@ -46,28 +60,26 @@ def test_stage8_6_residual_result_preserves_model_df_and_band_metadata():
 
 
 def test_stage8_6_table_is_stable_display_projection():
-    result = correlogram(white_noise(90, rng=4), nlags=5, model_df=0)
+    result = correlogram(_white_noise(90, 4), nlags=5, model_df=0)
     table = result.table()
 
     assert isinstance(table, pd.DataFrame)
-    assert list(table.columns) == [
-        "Lag", "AC", "PAC", "Q-Stat", "Prob.", "DF",
-        "AC Lower", "AC Upper", "PAC Lower", "PAC Upper",
-    ]
+    assert list(table.columns) == ["Lag", "AC", "PAC", "Q-Stat", "Prob."]
     assert np.array_equal(table["Lag"].to_numpy(), result.lags)
     assert np.allclose(table["AC"].to_numpy(), result.AC)
     assert np.allclose(table["PAC"].to_numpy(), result.PAC)
     assert np.allclose(table["Q-Stat"].to_numpy(), result.Q_Stat)
     assert np.allclose(table["Prob."].to_numpy(), result.Prob, equal_nan=True)
-    assert np.array_equal(table["DF"].to_numpy(), result.DF)
-    assert np.allclose(table["AC Lower"].to_numpy(), result.ac_lower)
-    assert np.allclose(table["AC Upper"].to_numpy(), result.ac_upper)
-    assert np.allclose(table["PAC Lower"].to_numpy(), result.pac_lower)
-    assert np.allclose(table["PAC Upper"].to_numpy(), result.pac_upper)
+    audit = result.table(include_df=True, include_bands=True)
+    assert np.array_equal(audit["DF"].to_numpy(), result.DF)
+    assert np.allclose(audit["AC Lower"].to_numpy(), result.ac_lower)
+    assert np.allclose(audit["AC Upper"].to_numpy(), result.ac_upper)
+    assert np.allclose(audit["PAC Lower"].to_numpy(), result.pac_lower)
+    assert np.allclose(audit["PAC Upper"].to_numpy(), result.pac_upper)
 
 
 def test_stage8_6_constructor_rejects_inconsistent_metadata_and_shapes():
-    base = correlogram(white_noise(50, rng=3), nlags=4)
+    base = correlogram(_white_noise(50, 3), nlags=4)
     kwargs = dict(
         lags=base.lags,
         ac=base.ac,
@@ -111,7 +123,7 @@ def test_stage8_6_constructor_rejects_inconsistent_metadata_and_shapes():
 
 
 def test_stage8_6_arrays_are_read_only_and_cannot_mutate_result():
-    result = correlogram(white_noise(80, rng=9), nlags=5)
+    result = correlogram(_white_noise(80, 9), nlags=5)
 
     with pytest.raises(ValueError):
         result.ac[0] = 999.0
