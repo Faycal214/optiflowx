@@ -456,3 +456,11 @@ def test_workfile_describe_defaults_to_common_sample_and_supports_individual_sam
     assert individual.loc["X", "Included observations"] == 3
     assert individual.loc["Y", "Included observations"] == 3
     assert wf.stats().equals(common)
+
+
+def test_descriptive_expression_functions_honor_range_samples():
+    wf = Workfile()
+    wf.add("X", [1.0, 2.0, 3.0, 100.0, 5.0])
+    wf.set_sample(0, 2)
+    assert wf.eval("@mean(X)") == pytest.approx(2.0)
+    assert wf.eval("@obs(X)") == pytest.approx(3.0)
