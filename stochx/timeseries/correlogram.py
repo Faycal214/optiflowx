@@ -22,16 +22,19 @@ class LjungBoxResult:
     nobs: int
     model_df: int
 
-    def table(self, *, include_bands: bool = False) -> pd.DataFrame:
-        """Return the EViews-shaped correlogram table.
+    def table(self, *, include_bands: bool = False, include_df: bool = False) -> pd.DataFrame:
+        """Return the EViews correlogram display table.
 
-        The default columns mirror EViews. Confidence bands remain available
-        through the result attributes and can be appended explicitly.
+        EViews displays Lag, AC, PAC, Q-Stat and Prob. The adjusted
+        degrees of freedom are retained as result metadata and can be
+        appended with ``include_df=True`` for audit/debugging.
         """
         data: dict[str, np.ndarray] = {
             "Lag": self.lags, "AC": self.ac, "PAC": self.pac,
-            "Q-Stat": self.q_stat, "Prob.": self.pvalues, "DF": self.df,
+            "Q-Stat": self.q_stat, "Prob.": self.pvalues,
         }
+        if include_df:
+            data["DF"] = self.df
         if include_bands and self.ac_lower is not None:
             data.update({
                 "AC Lower": self.ac_lower, "AC Upper": self.ac_upper,
