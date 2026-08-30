@@ -389,6 +389,7 @@ class Equation:
                 model = SARIMAX(
                     y, exog=exog,
                     order=(error_process.max_p, 0, error_process.max_q),
+                    seasonal_order=(error_process.max_sar, 0, error_process.max_sma, self.workfile.seasonal_period) if (error_process.max_sar or error_process.max_sma) else (0, 0, 0, 0),
                     trend="n", enforce_stationarity=True, enforce_invertibility=True,
                 )
                 if covariance.lower() not in {"opg", "hessian"}:
