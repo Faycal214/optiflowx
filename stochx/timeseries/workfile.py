@@ -530,6 +530,29 @@ class Workfile:
         """Estimate an EViews-style equation with optional ARMA controls."""
         return self.equation(name, specification).ls(start_params=start_params, arma_method=arma_method, arma_start=arma_start, backcast=backcast, covariance=covariance, optimizer=optimizer, maxiter=maxiter, tol=tol, random_seed=random_seed)
 
+    def coint(self, names, *, method: str = "eg", trend: str = "const", lag=None, maxlag=None):
+        from .cointegration import engle_granger, phillips_ouliaris, johansen
+        series = [self.get(n) for n in names]
+        X = np.column_stack([s.values for s in series[1:]])
+        if method.lower() == "eg": return engle_granger(series[0], X, trend=trend, lag=lag, maxlag=maxlag)
+        if method.lower() == "po": return phillips_ouliaris(series[0], X, trend=trend, lag=lag, maxlag=maxlag)
+        if method.lower() == "johansen": return johansen(pd.DataFrame({n:self.get(n).values for n in names}))
+        raise ValueError("method must be eg, po, or johansen")
+
+    def cointreg(self, dependent: str, regressors, *, method: str = "fmols", trend: str = "const", leads: int = 0, lags: int = 0, kernel: str = "bartlett", bandwidth=None):
+        from .cointegration import cointreg
+        X = np.column_stack([self.get(n).values for n in regressors])
+        return cointreg(self.get(dependent), X, method=method, trend=trend, leads=leads, lags=lags, kernel=kernel, bandwidth=bandwidth)
+
+    def johansen(self, names, *, k_ar_diff: int = 1, det_order: int = 0):
+        from .cointegration import johansen
+        frame = pd.DataFrame({n: self.get(n).values for n in names})
+        return johansen(frame, k_ar_diff=k_ar_diff, det_order=det_order)
+
+    def vecm(self, names, *, rank: int, k_ar_diff: int = 1, deterministic: str = "co"):
+        from .cointegration import vecm
+        frame = pd.DataFrame({n: self.get(n).values for n in names})
+        return vecm(frame, rank=rank, k_ar_diff=k_ar_diff, deterministic=deterministic)
     def estimate(
         self, specification: str, *, method: str = "LS", name: str = "EQ01",
         start_params=None, arma_start: str = "automatic", backcast: bool = True,
