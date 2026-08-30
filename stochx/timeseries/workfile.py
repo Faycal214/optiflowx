@@ -514,9 +514,18 @@ class Workfile:
         """Estimate an EViews-style equation with optional ARMA controls."""
         return self.equation(name, specification).ls(start_params=start_params, arma_method=arma_method, arma_start=arma_start, backcast=backcast, covariance=covariance, optimizer=optimizer, maxiter=maxiter, tol=tol, random_seed=random_seed)
 
-    def estimate(self, specification: str, *, method: str = "LS", name: str = "EQ01"):
-        """Estimate an equation using the supported EViews-style estimator."""
-        return self.equation(name, specification).estimate(method=method)
+    def estimate(
+        self, specification: str, *, method: str = "LS", name: str = "EQ01",
+        start_params=None, arma_start: str = "automatic", backcast: bool = True,
+        covariance: str = "opg", optimizer: str = "bfgs", maxiter: int = 1000,
+        tol: float = 1e-8, random_seed: int | None = None,
+    ):
+        """Estimate an equation with EViews-compatible method controls."""
+        return self.equation(name, specification).estimate(
+            method=method, specification=specification, start_params=start_params,
+            arma_start=arma_start, backcast=backcast, covariance=covariance,
+            optimizer=optimizer, maxiter=maxiter, tol=tol, random_seed=random_seed,
+        )
 
     def describe(self, *, individual: bool = False) -> pd.DataFrame:
         """Return EViews-style descriptive statistics for workfile series.
