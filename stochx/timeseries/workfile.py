@@ -510,9 +510,9 @@ class Workfile:
 
         return Equation(self, name=name, specification=specification)
 
-    def ls(self, specification: str, *, name: str = "EQ01"):
-        """Estimate an OLS equation using EViews-like ``Y C X(-1)`` syntax."""
-        return self.equation(name, specification).ls()
+    def ls(self, specification: str, *, name: str = "EQ01", start_params=None, arma_method: str = "ml", arma_start: str = "automatic", backcast: bool = True, covariance: str = "opg", optimizer: str = "bfgs", maxiter: int = 1000, tol: float = 1e-8, random_seed: int | None = None):
+        """Estimate an EViews-style equation with optional ARMA controls."""
+        return self.equation(name, specification).ls(start_params=start_params, arma_method=arma_method, arma_start=arma_start, backcast=backcast, covariance=covariance, optimizer=optimizer, maxiter=maxiter, tol=tol, random_seed=random_seed)
 
     def estimate(self, specification: str, *, method: str = "LS", name: str = "EQ01"):
         """Estimate an equation using the supported EViews-style estimator."""
