@@ -117,7 +117,7 @@ def test_dickey_fuller_is_unaugmented():
     assert result.critical_value == result.critical_values["5%"]
 
 
-def test_adf_uses_regression_specific_nonstandard_critical_values():
+def test_adf_uses_eviews_critical_values_for_fixed_lag():
     rng = np.random.default_rng(11)
     values = np.cumsum(rng.normal(size=200))
     y = TimeSeries(values, name="Y")
@@ -130,10 +130,8 @@ def test_adf_uses_regression_specific_nonstandard_critical_values():
         assert result.decision in {"reject", "fail_to_reject"}
         expected = "reject" if result.statistic < result.critical_values["5%"] else "fail_to_reject"
         assert result.decision == expected
-        assert "ordinary" not in result.decision_rule.lower()
-        assert "Null hypothesis" in result.summary()
-        assert "Decision rule" in result.summary()
-        assert "not the decision rule" in result.summary()
+        assert result.lag_selection_method == "Fixed"
+        assert "MacKinnon" in result.critical_value_source
 
 
 def test_adf_summary_exposes_course_hypotheses_and_interpretation():
@@ -481,3 +479,28 @@ def test_workfile_correlogram_uses_active_sample_and_eviews_difference_option():
     assert level.series_name == "Y"
     assert np.isfinite(level.AC).all()
     assert np.isfinite(differenced.AC).all()
+
+
+def test_adf_defaults_match_eviews_constant_sic_and_schwert_maxlag():
+    values = np.cumsum(np.random.default_rng(123).normal(size=221))
+    result = adf(TimeSeries(values, name="TBILL"))
+
+    assert result.regression == "c"
+    assert result.lag_selection_method.startswith("Automatic based on SIC")
+    assert result.max_lag == 14
+    assert "Maxlag=14" in result.lag_selection_method or "maxlag=14" in result.lag_selection_method
+    assert {"1%", "5%", "10%"}.issubset(result.critical_values)
+    assert "MacKinnon" in result.summary()
+
+
+def test_workfile_adf_uses_active_sample_and_supports_differences():
+    values = np.cumsum(np.random.default_rng(9).normal(size=120))
+    wf = Workfile(frequency="M")
+    wf.add("Y", values)
+    wf.set_sample(10, 109)
+
+    level = wf.adf("Y", autolag=None, lags=1)
+    diff = wf.adf("Y", autolag=None, lags=1, d=1)
+
+    assert level.nobs == 98
+    assert diff.nobs == 97
