@@ -56,3 +56,17 @@ def test_fixture_schema_contains_all_published_phase_b_equations():
         assert "coefficients" in reference
         assert "statistics" in reference
         assert "roots" in reference
+
+
+def test_fixture_loader_and_reports_dataframe_are_machine_readable(tmp_path):
+    import json
+    fixture = {"equations": {"EQ": {"nobs": 10}}}
+    target = tmp_path / "fixture.json"
+    target.write_text(json.dumps(fixture), encoding="utf-8")
+    from stochx.timeseries.parity import load_fixture, reports_dataframe
+    assert load_fixture(str(target)) == fixture
+    report = ParityReport("EQ")
+    report.comparisons.append(compare_number(1.0, "1.000000", name="C"))
+    frame = reports_dataframe({"EQ": report})
+    assert list(frame.columns)[:3] == ["Model", "Check", "Passed"]
+    assert frame.iloc[0]["Passed"]
