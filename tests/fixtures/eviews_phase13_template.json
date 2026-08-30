@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "source": {
+    "software": "EViews",
+    "source_type": "captured_reference",
+    "notes": "Populate from EViews output; do not include proprietary .wf1/.exe files."
+  },
+  "models": {
+    "ARIMA_EXAMPLE": {
+      "category": "arima",
+      "specification": "Y C AR(1) MA(1)",
+      "integration_order": 1,
+      "seasonal_order": null,
+      "nobs": null,
+      "coefficients": {
+        "C": {"coefficient": null, "std_error": null, "t_stat": null, "p_value": null},
+        "AR(1)": {"coefficient": null, "std_error": null, "t_stat": null, "p_value": null},
+        "MA(1)": {"coefficient": null, "std_error": null, "t_stat": null, "p_value": null},
+        "SIGMASQ": {"coefficient": null, "std_error": null, "t_stat": null, "p_value": null}
+      },
+      "statistics": {
+        "Log likelihood": null,
+        "Akaike info criterion": null,
+        "Schwarz criterion": null,
+        "Hannan-Quinn criterion": null
+      },
+      "roots": {"ar": [], "ma": [], "sar": [], "sma": []}
+    },
+    "SARIMA_EXAMPLE": {
+      "category": "sarima",
+      "specification": "Y C AR(1) MA(1) SAR(12) SMA(12)",
+      "integration_order": 1,
+      "seasonal_order": [1, 1, 1, 12],
+      "nobs": null,
+      "coefficients": {},
+      "statistics": {},
+      "roots": {"ar": [], "ma": [], "sar": [], "sma": []}
+    }
+  },
+  "forecasts": {
+    "ARIMA_EXAMPLE": {
+      "sample": {"start": null, "end": null},
+      "dynamic": false,
+      "structural": false,
+      "coef_uncertainty": true,
+      "columns": {
+        "Forecast": [],
+        "Std. Error": [],
+        "Lower": [],
+        "Upper": [],
+        "Actual": [],
+        "Error": []
+      }
+    }
+  },
+  "diagnostics": {
+    "ARMA_EXAMPLE": {
+      "correlogram_q": {},
+      "squared_residual_correlogram": {},
+      "normality": {},
+      "serial_correlation_lm": {},
+      "heteroskedasticity": {},
+      "stability": {}
+    }
+  },
+  "cointegration": {
+    "EG_EXAMPLE": {
+      "method": "Engle-Granger",
+      "statistic": null,
+      "p_value": null,
+      "critical_values": {},
+      "lags": null
+    },
+    "JOHANSEN_EXAMPLE": {
+      "rank": null,
+      "trace": [],
+      "max_eigen": [],
+      "trace_critical": [],
+      "max_eigen_critical": []
+    }
+  }
+}
