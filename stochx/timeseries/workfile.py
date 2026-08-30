@@ -10,7 +10,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from .series import TimeSeries
+from .series import TimeSeries, descriptive_statistics
 
 
 @dataclass
@@ -342,16 +342,31 @@ class Workfile:
         return self.equation(name, specification).estimate(method=method)
 
     def describe(self) -> pd.DataFrame:
-        """Return an EViews-style descriptive-statistics table for all series."""
+        """Return descriptive statistics for all series in the active sample."""
         rows = []
         for name, series in self.series.items():
-            stats = series.describe()
+            sampled = series[self.sample_indexer]
+            stats = descriptive_statistics(sampled.values)
             stats["Series"] = name
             rows.append(stats)
         if not rows:
             return pd.DataFrame()
         frame = pd.DataFrame(rows).set_index("Series")
-        return frame[["Observations", "Included observations", "Mean", "Std. Dev.", "Variance", "Minimum", "Maximum"]]
+        return frame[
+            [
+                "Observations",
+                "Included observations",
+                "Mean",
+                "Std. Dev.",
+                "Variance",
+                "Minimum",
+                "Maximum",
+                "Skewness",
+                "Kurtosis",
+                "Jarque-Bera",
+                "Probability",
+            ]
+        ]
 
     def info(self) -> str:
         """Return workfile metadata similar to an EViews workfile view."""
