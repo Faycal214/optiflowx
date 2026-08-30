@@ -1,90 +1,48 @@
-# Forecasting
+# Forecasting parity
 
-Forecasting should be the end of a validated modeling workflow, not the first operation.
+EViews treats forecasting as an equation procedure with an explicit forecast sample, static/dynamic solution method, optional structural forecast, forecast standard errors, coefficient-uncertainty control, MA backcast control, and forecast evaluation. 
 
-## Simple baselines
+## Equation API
 
-StochX exposes baseline forecasts that are useful for sanity checks:
+Dynamic forecast:
 
-```python
-from stochx.timeseries import naive_forecast, drift_forecast, metrics
+    eq.forecast(start=120, end=140, dynamic=True)
 
-naive = naive_forecast(y, steps=12)
-drift = drift_forecast(y, steps=12)
-```
+Static forecast:
 
-Use these before celebrating an elaborate model. A complex model should beat a defensible baseline for the metric that matters.
+    eq.fit(start=120, end=140)
 
-## Prediction intervals
+Structural forecast:
 
-For stochastic forecasts, a point prediction is incomplete without uncertainty information.
+    eq.forecast(start=120, end=140, structural=True)
 
-```python
-from stochx.timeseries import prediction_interval
+EViews defines Static as a sequence of one-step-ahead forecasts using actual lagged dependent values where available; Dynamic recursively uses forecasted lagged dependent values. With ARMA terms, both include the forecasted residual process by default; Structural suppresses ARMA terms. 
 
-lower, upper = prediction_interval(
-    forecast,
-    standard_error,
-    alpha=0.05,
-)
-```
+## Forecast output
 
-The `alpha` argument controls the significance level, so a 95% interval uses `alpha=0.05`.
+StochX normalizes forecast output to:
 
-## Box–Jenkins forecasts
+    Forecast
+    Std. Error
+    Lower
+    Upper
 
-```python
-from stochx.timeseries import forecast_box_jenkins
+EViews forecast standard errors represent forecast uncertainty and may include coefficient uncertainty. Its forecast dialog provides a switch to omit coefficient uncertainty. 
 
-result = forecast_box_jenkins(selection, steps=12, alpha=0.05)
-print(result.forecast)
-print(result.standard_error)
-print(result.lower)
-print(result.upper)
-```
+## ARMA forecasting
 
-The forecast result keeps the model order, criterion, horizon, alpha level and output index together with the numerical arrays.
+For AR errors, EViews uses actual or forecasted lagged residual information according to Static/Dynamic mode. MA errors require presample innovation values and a backcast procedure. The current StochX API exposes `ma_backcast` but exact EViews MA pre-sample recursion remains fixture-dependent. 
 
-## State-space forecasts
+## Transformations
 
-```python
-from stochx.timeseries import kalman_forecast
+The automatic ARIMA path supports `tform='auto'`, `tform='none'`, and `tform='log'`. Log forecasts are back-transformed to the original scale, including the interval endpoints. EViews notes that nonlinear dependent-variable expressions require special interval transformation rather than simply symmetrically adding a standard error on the original scale. 
 
-result = kalman_forecast(
-    observations,
-    model,
-    steps=8,
-    alpha=0.05,
-    filter_result=filtered,
-)
-```
+## Forecast evaluation
 
-State-space forecasting propagates the filtered state and covariance through future transition steps. This is especially useful when the observation process and latent state are not identical.
+EViews reports RMSE, MAE, MAPE and Theil inequality coefficient and also provides bias, variance and covariance proportions. StochX exposes these through `eq.forecast_evaluation(forecast, actual)`. 
 
-## Evaluation
+## Parity boundary
 
-Use held-out observations whenever possible:
+Implemented: forecast sample controls, static/dynamic API, structural ARMA switch, forecast-error standard-error output, log back-transformation, forecast evaluation, and explicit MA backcast option.
 
-```python
-from stochx.timeseries import metrics
-
-report = metrics(actual, predicted)
-print(report)
-```
-
-Evaluation should be tied to the forecast horizon and the decision problem. Never compare models on a metric that ignores the scale or cost of forecast errors in the application.
-
-## Index preservation
-
-When the original series carries a datetime index with a valid frequency, StochX preserves that temporal structure for future labels. This is essential for report-ready forecasts and downstream joins.
-
-## Interpretation
-
-A useful forecast report communicates:
-
-- the model and estimation sample;
-- the horizon;
-- point forecasts;
-- standard errors or intervals;
-- the future index;
-- any transformations that were restored before reporting.
+Still requiring direct EViews fixtures: exact static ARMA residual recursion, exact MA presample values, exact coefficient-uncertainty-off standard errors, exact nonlinear-expression interval normalization, actual-versus-NA fill behavior, and exact finite-sample forecast interval equality.
