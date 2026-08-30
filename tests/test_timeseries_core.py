@@ -352,3 +352,12 @@ def test_workfile_accepts_eviews_period_sample_labels():
     )
     wf.set_sample("2011M1 2011M12")
     assert wf.sample == slice(12, 24)
+
+
+def test_eviews_trend_expression_starts_at_zero():
+    wf = Workfile()
+    wf.add("X", np.arange(5.0))
+    trend = wf.eval("@TREND")
+    assert np.array_equal(trend.values, np.arange(5.0))
+    generated = wf.generate("T", "@TREND")
+    assert np.array_equal(generated.values, np.arange(5.0))
