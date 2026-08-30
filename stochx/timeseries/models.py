@@ -64,7 +64,7 @@ class TSResult(UnifiedResult):
         """Return the model family name."""
         return self.title
 
-    def forecast(self, steps: int = 1, alpha: float = 0.05) -> pd.DataFrame:
+    def forecast(self, steps: int = 1, alpha: float = 0.05, dynamic: bool = False) -> pd.DataFrame:
         """Forecast future values with prediction intervals.
 
         ARIMA/SARIMAX results expose ``get_forecast`` while AutoReg exposes
@@ -83,11 +83,7 @@ class TSResult(UnifiedResult):
                     len(self.original) if self.original is not None else 0,
                 )
             )
-            prediction = self.result.get_prediction(
-                start=nobs,
-                end=nobs + steps - 1,
-                dynamic=False,
-            )
+            prediction = self.result.get_prediction(start=nobs, end=nobs + steps - 1, dynamic=dynamic)
         else:
             raise AttributeError("fitted model does not provide a forecast API")
 
