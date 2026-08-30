@@ -365,7 +365,7 @@ class Equation:
             raise ValueError("no observations remain after applying the equation sample")
         y = frame[dependent_name]
         exog = frame[X.columns]
-        if error_process.max_p or error_process.max_q:
+        if error_process.max_p or error_process.max_q or error_process.max_sar or error_process.max_sma:
             method_key = arma_method.lower()
             if method_key not in {"ml", "gls", "cls"}:
                 raise ValueError("arma_method must be ml, gls, or cls")
