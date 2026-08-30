@@ -139,6 +139,9 @@ class EquationResult(UnifiedResult):
         if self._opg_covariance is not None:
             return self._opg_covariance.copy()
         covariance = getattr(self.result, "cov_params", None)
+        if covariance is None and hasattr(self.result, "covariance"):
+            value = self.result.covariance
+            return value.copy() if isinstance(value, pd.DataFrame) else pd.DataFrame(np.asarray(value, dtype=float), index=self.params.index, columns=self.params.index)
         if callable(covariance):
             values = np.asarray(covariance(), dtype=float)
             return pd.DataFrame(values, index=self.params.index, columns=self.params.index)
@@ -169,6 +172,39 @@ class EquationResult(UnifiedResult):
     def inverted_ma_roots(self) -> np.ndarray:
         roots = np.asarray(getattr(self.result, "maroots", np.array([], dtype=complex)), dtype=complex)
         return 1.0 / roots if roots.size else roots
+
+    def arma_structure(self, type: str = "root", *, hrz: int = 25, impulse: float | None = None) -> pd.DataFrame | dict[str, np.ndarray]:
+        """Replicate EViews Equation.arma views: root, acf, imp, or freq."""
+        if not (self.error_process.max_p or self.error_process.max_q):
+            raise ValueError("ARMA structure views require an AR or MA error term")
+        kind = type.lower()
+        if kind == "root":
+            return self.roots_report()
+        if hrz < 1:
+            raise ValueError("hrz must be positive")
+        from statsmodels.tsa.arima_process import ArmaProcess
+        params = self.params
+        ar_poly = np.zeros(self.error_process.max_p + 1)
+        ma_poly = np.zeros(self.error_process.max_q + 1)
+        ar_poly[0] = 1.0
+        ma_poly[0] = 1.0
+        for lag in self.error_process.p:
+            ar_poly[lag] = -float(params[f"AR({lag})"])
+        for lag in self.error_process.q:
+            ma_poly[lag] = float(params[f"MA({lag})"])
+        process = ArmaProcess(ar_poly, ma_poly)
+        if kind == "acf":
+            ac = process.acf(lags=hrz + 1)
+            pac = process.pacf(lags=hrz + 1)
+            return pd.DataFrame({"Lag": np.arange(ac.size), "AC": ac, "PAC": pac})
+        if kind == "imp":
+            shock = float(np.sqrt(params.get("SIGMASQ", np.nan))) if impulse is None else float(impulse)
+            response = process.impulse_response(leads=hrz - 1) * shock
+            return pd.DataFrame({"Period": np.arange(response.size), "Impulse response": response})
+        if kind == "freq":
+            freq, spec = process.periodogram(nobs=max(256, hrz * 16), whole=True)
+            return pd.DataFrame({"Frequency": freq, "Spectrum": spec})
+        raise ValueError("type must be 'root', 'acf', 'imp', or 'freq'")
 
     def roots_report(self) -> dict[str, np.ndarray]:
         return {"Inverted AR Roots": self.inverted_ar_roots, "Inverted MA Roots": self.inverted_ma_roots}
