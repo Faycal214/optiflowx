@@ -45,6 +45,8 @@ def parse_error_terms(tokens: list[str]) -> tuple[list[str], ErrorProcess]:
     regressors: list[str] = []
     ar: set[int] = set()
     ma: set[int] = set()
+    sar: set[int] = set()
+    sma: set[int] = set()
 
     for token in tokens:
         match = _TERM_RE.match(token)
@@ -52,7 +54,8 @@ def parse_error_terms(tokens: list[str]) -> tuple[list[str], ErrorProcess]:
             order = int(match.group(2))
             if order <= 0:
                 raise ValueError("AR/MA error orders must be positive")
-            (ar if match.group(1).upper() == "AR" else ma).add(order)
+            kind = match.group(1).upper()
+            (ar if kind == "AR" else ma if kind == "MA" else sar if kind == "SAR" else sma).add(order)
             continue
         match = _RANGE_RE.match(token)
         if match:
@@ -62,9 +65,9 @@ def parse_error_terms(tokens: list[str]) -> tuple[list[str], ErrorProcess]:
             if start <= 0 or end <= 0:
                 raise ValueError("AR/MA error orders must be positive")
             step = 1 if end >= start else -1
-            target = ar if kind == "AR" else ma
+            target = ar if kind == "AR" else ma if kind == "MA" else sar if kind == "SAR" else sma
             target.update(range(start, end + step, step))
             continue
         regressors.append(token)
 
-    return regressors, ErrorProcess(tuple(sorted(ar)), tuple(sorted(ma)))
+    return regressors, ErrorProcess(tuple(sorted(ar)), tuple(sorted(ma)), tuple(sorted(sar)), tuple(sorted(sma)))
