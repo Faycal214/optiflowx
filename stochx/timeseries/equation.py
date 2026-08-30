@@ -133,7 +133,11 @@ class EquationResult(UnifiedResult):
 
     @property
     def covariance_method(self) -> str:
-        return "outer product of gradients (OPG)" if self._opg_covariance is not None else "model default"
+        if self._opg_covariance is not None:
+            return "outer product of gradients (OPG)"
+        if hasattr(self.result, "covariance"):
+            return "ordinary"
+        return "model default"
 
     def covariance_matrix(self) -> pd.DataFrame:
         if self._opg_covariance is not None:
