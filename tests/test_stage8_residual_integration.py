@@ -2,7 +2,6 @@ import numpy as np
 
 from stochx.timeseries import (
     CorrelogramResult,
-    arma,
     correlogram,
     fit_ar,
     residual_correlogram,
@@ -11,7 +10,13 @@ from stochx.timeseries import (
 
 
 def test_stage8_12_direct_residual_correlogram_reuses_frozen_result_contract():
-    residuals = arma(p=1, q=1, phi=[0.45], theta=[0.25], n=160, rng=7)
+    rng = np.random.default_rng(7)
+    eps = rng.normal(size=160)
+    values = np.empty(160)
+    values[0] = eps[0]
+    for t in range(1, 160):
+        values[t] = 0.45 * values[t - 1] + eps[t] + 0.25 * eps[t - 1]
+    residuals = values
     result = residual_correlogram(residuals, lags=6, model_df=2, alpha=0.05)
     reference = correlogram(residuals, nlags=6, model_df=2, alpha=0.05)
 
