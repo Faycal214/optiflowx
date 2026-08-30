@@ -441,3 +441,18 @@ def test_descriptive_expression_functions_use_current_sample():
     assert wf.eval("@var(X)") == pytest.approx(np.var([1.0, 2.0, 100.0, 4.0], ddof=0))
     assert wf.eval("@stdev(X)") == pytest.approx(np.std([1.0, 2.0, 100.0, 4.0], ddof=1))
     assert wf.eval("@obs(X)") == pytest.approx(4.0)
+
+
+def test_workfile_describe_defaults_to_common_sample_and_supports_individual_samples():
+    wf = Workfile()
+    wf.add("X", [1.0, 2.0, np.nan, 4.0])
+    wf.add("Y", [10.0, np.nan, 30.0, 40.0])
+
+    common = wf.describe()
+    individual = wf.describe(individual=True)
+
+    assert common.loc["X", "Included observations"] == 2
+    assert common.loc["Y", "Included observations"] == 2
+    assert individual.loc["X", "Included observations"] == 3
+    assert individual.loc["Y", "Included observations"] == 3
+    assert wf.stats().equals(common)
