@@ -47,6 +47,21 @@ class TSResult(UnifiedResult):
             elif text.lower() in {"sigma2", "sigmasq"}: mapping[name] = "SIGMASQ"
         return raw.rename(index=mapping)
 
+    def _eviews_parameter(self, attribute: str) -> pd.Series:
+        raw = getattr(super(), attribute)
+        if not isinstance(raw, pd.Series):
+            raw = pd.Series(raw)
+        mapping = {}
+        for name in raw.index:
+            text = str(name)
+            if text.startswith("ar.L"):
+                mapping[name] = f"AR({int(text[4:])})"
+            elif text.startswith("ma.L"):
+                mapping[name] = f"MA({int(text[4:])})"
+            elif text.lower() in {"sigma2", "sigmasq"}:
+                mapping[name] = "SIGMASQ"
+        return raw.rename(index=mapping)
+
     @property
     def params(self) -> pd.Series:
         return self._eviews_parameter("params")
@@ -66,9 +81,6 @@ class TSResult(UnifiedResult):
     @property
     def params_eviews(self) -> pd.Series:
         return self.params
-
-    def coefficient_table(self):
-        return super().coefficient_table()
     @property
     def model_name(self) -> str:
         """Return the model family name."""
