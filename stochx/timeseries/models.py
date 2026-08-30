@@ -21,32 +21,6 @@ class TSResult(UnifiedResult):
     order: tuple[int, int, int] | None = None
     seasonal_order: tuple[int, int, int, int] | None = None
 
-    @property
-    def params_eviews(self) -> pd.Series:
-        """Return model parameters using EViews AR/MA naming."""
-        raw = super().params
-        mapping = {}
-        for name in raw.index:
-            text = str(name)
-            if text.startswith("ar.L"):
-                mapping[name] = f"AR({int(text[4:])})"
-            elif text.startswith("ma.L"):
-                mapping[name] = f"MA({int(text[4:])})"
-            elif text.lower() in {"sigma2", "sigmasq"}:
-                mapping[name] = "SIGMASQ"
-        return raw.rename(index=mapping)
-    def _eviews_parameter(self, attribute: str) -> pd.Series:
-        raw = getattr(super(), attribute)
-        if not isinstance(raw, pd.Series):
-            raw = pd.Series(raw)
-        mapping = {}
-        for name in raw.index:
-            text = str(name)
-            if text.startswith("ar.L"): mapping[name] = f"AR({int(text[4:])})"
-            elif text.startswith("ma.L"): mapping[name] = f"MA({int(text[4:])})"
-            elif text.lower() in {"sigma2", "sigmasq"}: mapping[name] = "SIGMASQ"
-        return raw.rename(index=mapping)
-
     def _eviews_parameter(self, attribute: str) -> pd.Series:
         raw = getattr(super(), attribute)
         if not isinstance(raw, pd.Series):
@@ -174,12 +148,12 @@ def _as_series(y: TimeSeries | Iterable[float]) -> pd.Series:
     return pd.Series(np.asarray(list(y), dtype=float), dtype=float)
 
 
-def _result(model_name: str, model: Any, result: Any, y, order, seasonal_order=None) -> TSResult:
+def _result(model_name: str, model: Any, result: Any, y, order, seasonal_order=None, method: str = "Maximum Likelihood") -> TSResult:
     return TSResult(
         result=result,
         title=model_name,
         dependent=getattr(y, "name", "Y"),
-        method="Maximum Likelihood" if model_name != "AR" else "Conditional Least Squares / Yule-Walker-compatible AR estimation",
+        method=method,
         fitted_model=model,
         original=y,
         order=order,
