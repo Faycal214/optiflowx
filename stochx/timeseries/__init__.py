@@ -76,3 +76,5 @@ __all__ = [
     "polynomial_roots", "is_stationary_ar", "is_invertible_ma", "process_mean", "impulse_response", "inverse_ar_coefficients", "theoretical_ar_acf", "theoretical_ma_acf",
     "plot_series", "plot_correlogram", "plot_eviews_correlogram", "plot_forecast", "plot_decomposition",
 ]
+
+from .parity import ParityReport, Comparison, compare_number, compare_array, compare_dataframe, compare_equation_fixture, compare_forecast
