@@ -429,12 +429,30 @@ class Equation:
         self.result = wrapped
         return wrapped
 
-    def estimate(self, method: str = "LS", specification: str | None = None, *, start_params: np.ndarray | list[float] | None = None) -> EquationResult:
-        """Estimate using LS/OLS or ARMA maximum likelihood error terms."""
+    def estimate(
+        self, method: str = "LS", specification: str | None = None,
+        *, start_params: np.ndarray | list[float] | None = None,
+        arma_start: str = "automatic", backcast: bool = True,
+        covariance: str = "opg", optimizer: str = "bfgs",
+        maxiter: int = 1000, tol: float = 1e-8, random_seed: int | None = None,
+    ) -> EquationResult:
+        """Estimate using an EViews-compatible equation method."""
         method_upper = method.upper().replace(" ", "")
-        if method_upper in {"LS", "OLS", "MCO", "ML", "ARMA", "ARMAX", "CLS", "GLS"}:
-            return self.ls(specification, start_params=start_params)
-        raise NotImplementedError("Equation supports LS/OLS and ARMA-error maximum likelihood")
+        if method_upper in {"LS", "OLS", "MCO"}:
+            return self.ls(specification)
+        if method_upper in {"ML", "ARMA", "ARMAX"}:
+            arma_method = "ml"
+        elif method_upper == "CLS":
+            arma_method = "cls"
+        elif method_upper == "GLS":
+            arma_method = "gls"
+        else:
+            raise ValueError("method must be LS/OLS, ML, CLS, or GLS")
+        return self.ls(
+            specification, start_params=start_params, arma_method=arma_method,
+            arma_start=arma_start, backcast=backcast, covariance=covariance,
+            optimizer=optimizer, maxiter=maxiter, tol=tol, random_seed=random_seed,
+        )
 
     def show(self) -> str:
         if self.result is None:
