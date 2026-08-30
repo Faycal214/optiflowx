@@ -329,6 +329,25 @@ out["Recursive Estimates"]["coefficients"] = recursive_coefficient_estimates(y, 
     def arma(self, type: str = "root", *, hrz: int = 25, impulse: float | None = None):
         return self.arma_structure(type=type, hrz=hrz, impulse=impulse)
 
+    def auto(self, order: int = 1, *, alpha: float = 0.05):
+        """EViews equation.auto(order): Breusch-Godfrey LM test."""
+        return self.serial_correlation_lm(order, alpha=alpha)
+
+    def hettest(self, *, type: str = "BPG", lags: int = 12, cross_terms: bool = False, alpha: float = 0.05):
+        """EViews equation.hettest(type=...) diagnostic."""
+        return self.heteroskedasticity(test=type, lags=lags, cross_terms=cross_terms, alpha=alpha)
+
+    def archtest(self, lags: int = 12, *, alpha: float = 0.05):
+        """EViews equation.archtest diagnostic."""
+        return self.heteroskedasticity(test="ARCH", lags=lags, alpha=alpha)
+
+    def white(self, *, cross_terms: bool = False, alpha: float = 0.05):
+        """EViews equation.white diagnostic."""
+        return self.heteroskedasticity(test="White", cross_terms=cross_terms, alpha=alpha)
+
+    def histogram_normality(self, *, alpha: float = 0.05):
+        """EViews Histogram-Normality residual view."""
+        return self.normality_test(alpha=alpha)
     def statistics(self) -> dict[str, float]:
         """Return EViews-normalized regression statistics."""
         nobs = float(self.nobs)
