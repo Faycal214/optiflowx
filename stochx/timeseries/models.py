@@ -161,7 +161,7 @@ def _result(model_name: str, model: Any, result: Any, y, order, seasonal_order=N
     )
 
 
-def fit_ar(y: TimeSeries | Iterable[float], p: int, *, trend: str = "c", method: str = "ml", optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000) -> TSResult:
+def fit_ar(y: TimeSeries | Iterable[float], p: int | Iterable[int], *, trend: str = "c", method: str = "ml", optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000) -> TSResult:
     """Estimate AR(p) using the EViews default ML method."""
     if p < 1:
         raise ValueError("p must be positive")
@@ -178,7 +178,7 @@ def fit_ar(y: TimeSeries | Iterable[float], p: int, *, trend: str = "c", method:
     model = SARIMAX(series, order=(p, 0, 0), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
     result = model.fit(method=optimizer.lower(), maxiter=maxiter, disp=False, cov_type=covariance.lower())
     return _result("AR", model, result, y, (p, 0, 0))
-def fit_ma(y: TimeSeries | Iterable[float], q: int, *, trend: str = "c", method: str = "ml", optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000) -> TSResult:
+def fit_ma(y: TimeSeries | Iterable[float], q: int | Iterable[int], *, trend: str = "c", method: str = "ml", optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000) -> TSResult:
     """Estimate MA(q) using the EViews default ML method."""
     if q < 1:
         raise ValueError("q must be positive")
@@ -195,7 +195,7 @@ def fit_ma(y: TimeSeries | Iterable[float], q: int, *, trend: str = "c", method:
     model = SARIMAX(series, order=(0, 0, q), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
     result = model.fit(method=optimizer.lower(), maxiter=maxiter, disp=False, cov_type=covariance.lower())
     return _result("MA", model, result, y, (0, 0, q))
-def fit_arma(y: TimeSeries | Iterable[float], p: int, q: int, *, trend: str = "c", method: str = "ml", optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000) -> TSResult:
+def fit_arma(y: TimeSeries | Iterable[float], p: int | Iterable[int], q: int | Iterable[int], *, trend: str = "c", method: str = "ml", optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000) -> TSResult:
     """Estimate ARMA(p,q) using the EViews default ML method."""
     if p < 0 or q < 0 or (p == 0 and q == 0):
         raise ValueError("at least one of p or q must be positive")
