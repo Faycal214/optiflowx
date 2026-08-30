@@ -516,3 +516,12 @@ def test_workfile_uroot_matches_eviews_style_dispatcher():
 
     with pytest.raises(ValueError):
         wf.uroot("Y", test="kpss", exog="none")
+
+
+def test_smpl_supports_eviews_multiple_ranges_and_offsets():
+    wf = Workfile()
+    wf.add("X", np.arange(10.0))
+    wf.smpl("smpl 1 3 7 9")
+    assert np.array_equal(wf.sample_series("X").values, np.array([0.0, 1.0, 2.0, 6.0, 7.0, 8.0]))
+    wf.smpl("smpl @first+1 @last-1")
+    assert np.array_equal(wf.sample_series("X").values, np.arange(1.0, 9.0))
