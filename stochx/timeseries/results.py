@@ -89,29 +89,25 @@ class UnifiedResult:
         return ResultTable(frame, "Variable")
 
     def statistics(self) -> dict[str, float]:
-        """Return common model statistics using EViews naming conventions."""
+        """Return model statistics using EViews' reported scaling conventions."""
+        n = max(self.nobs, 1)
+        k = len(self.params)
+        llf = float(getattr(self.result, "llf", np.nan))
+        scale = float(getattr(self.result, "scale", np.nan))
         mapping = {
-            "R-squared": "rsquared",
-            "Adjusted R-squared": "rsquared_adj",
-            "S.E. of regression": "scale",
-            "Sum squared resid": "ssr",
-            "Log likelihood": "llf",
-            "Akaike info criterion": "aic",
-            "Schwarz criterion": "bic",
-            "Hannan-Quinn criterion": "hqic",
-            "Durbin-Watson": "dw",
-            "F-statistic": "fvalue",
-            "Prob(F-statistic)": "f_pvalue",
+            "R-squared": getattr(self.result, "rsquared", np.nan),
+            "Adjusted R-squared": getattr(self.result, "rsquared_adj", np.nan),
+            "S.E. of regression": np.sqrt(scale) if np.isfinite(scale) else np.nan,
+            "Sum squared resid": getattr(self.result, "ssr", np.nan),
+            "Log likelihood": llf,
+            "Akaike info criterion": (-2.0 * llf + 2.0 * k) / n if np.isfinite(llf) else np.nan,
+            "Schwarz criterion": (-2.0 * llf + k * np.log(n)) / n if np.isfinite(llf) else np.nan,
+            "Hannan-Quinn criter.": (-2.0 * llf + 2.0 * k * np.log(np.log(n))) / n if np.isfinite(llf) and n > 1 else np.nan,
+            "Durbin-Watson stat": getattr(self.result, "dw", np.nan),
+            "F-statistic": getattr(self.result, "fvalue", np.nan),
+            "Prob(F-statistic)": getattr(self.result, "f_pvalue", np.nan),
         }
-        values: dict[str, float] = {}
-        for label, attr in mapping.items():
-            value = getattr(self.result, attr, np.nan)
-            try:
-                values[label] = float(value)
-            except (TypeError, ValueError):
-                values[label] = float("nan")
-        return values
-
+        return {label: float(value) if np.isscalar(value) else np.nan for label, value in mapping.items()}
     def eviews_statistics(self) -> dict[str, float]:
         values = dict(self.statistics())
         y = getattr(getattr(self.result, "model", None), "endog", None)
