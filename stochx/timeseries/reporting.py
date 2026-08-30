@@ -47,7 +47,7 @@ class EViewsReport:
             ]
             lines.append(f"{str(name):<16s}{vals[0]:>17s}{vals[1]:>17s}{vals[2]:>17s}{vals[3]:>13s}")
         lines.append("")
-        stats = r.statistics()
+        stats = r.eviews_statistics() if hasattr(r, "eviews_statistics") else r.statistics()
         pairs = [
             ("R-squared", "R-squared", "Akaike info criterion", "Akaike info criterion"),
             ("Adjusted R-squared", "Adjusted R-squared", "Schwarz criterion", "Schwarz criterion"),
