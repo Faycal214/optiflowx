@@ -577,7 +577,7 @@ def adf(
         elif method == "AIC":
             sm_method = "AIC"
         elif method == "HQC":
-            sm_method = "BIC"
+            raise ValueError("HQC automatic lag selection is not yet implemented; use SIC, AIC, or None")
         else:
             raise ValueError("autolag must be 'SIC', 'AIC', 'HQC', or None")
         selected_max_lag = _eviews_max_lag(x.size) if max_lag is None else int(max_lag)
