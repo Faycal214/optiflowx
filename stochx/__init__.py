@@ -1,7 +1,7 @@
-"""StochX stochastic-process and time-series toolkit."""
+"""StochX — EViews-inspired time-series and econometrics toolkit."""
 
 __version__ = "0.3.0"
 
-from . import stochastic, timeseries
+from . import timeseries
 
-__all__ = ["stochastic", "timeseries"]
+__all__ = ["timeseries"]
