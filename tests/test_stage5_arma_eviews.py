@@ -69,3 +69,40 @@ def test_direct_arma_api_preserves_sparse_lags():
     assert "MA(5)" in names
     assert "AR(2)" not in names
     assert "MA(1)" not in names
+
+
+def test_eviews_starting_value_modes_are_supported():
+    from stochx.timeseries.arma_estimation import make_starting_values
+    y = np.arange(20.0)
+    X = np.column_stack([np.ones(20), np.arange(20.0)])
+    for mode in ["automatic", "eviews fixed", "random", "user-specified"]:
+        user = [1.0, 0.5, 0.1, 0.2, 1.0] if mode == "user-specified" else None
+        values = make_starting_values(y, X, (1,), (1,), method="ml", mode=mode, user=user, random_seed=1)
+        assert values.shape == (5,)
+
+
+def test_cls_starting_value_modes_and_backcasting_controls():
+    y = _arma11(0.5, 0.3, 160, 48)
+    wf = Workfile()
+    wf.add("Y", y.values)
+    for mode in ["OLS/TSLS", ".8 x OLS/TSLS", ".5 x OLS/TSLS", ".3 x OLS/TSLS", "Zero"]:
+        result = wf.ls("Y C AR(1) MA(1)", arma_method="cls", arma_start=mode, backcast=True, name="CLS1")
+        assert result.method.startswith("ARMA Conditional Least Squares")
+        assert result.nobs > 0
+    no_backcast = wf.ls("Y C AR(1) MA(1)", arma_method="cls", arma_start="Zero", backcast=False, name="CLS2")
+    assert no_backcast.method.startswith("ARMA Conditional Least Squares")
+
+
+def test_eviews_arma_structure_views_exist():
+    y = _arma11(0.5, 0.3, 220, 49)
+    wf = Workfile()
+    wf.add("Y", y.values)
+    result = wf.ls("Y C AR(1) MA(1)", name="ARMA1")
+    roots = result.arma(type="root")
+    acf = result.arma(type="acf", hrz=12)
+    imp = result.arma(type="imp", hrz=12)
+    freq = result.arma(type="freq", hrz=12)
+    assert set(roots) == {"Inverted AR Roots", "Inverted MA Roots"}
+    assert list(acf.columns) == ["Lag", "AC", "PAC"]
+    assert list(imp.columns) == ["Period", "Impulse response"]
+    assert list(freq.columns) == ["Frequency", "Spectrum"]
