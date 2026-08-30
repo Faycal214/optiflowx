@@ -89,13 +89,17 @@ class TSResult(UnifiedResult):
             raise AttributeError("fitted model does not provide a forecast API")
 
         frame = prediction.summary_frame(alpha=alpha)
-        return frame.rename(
+        frame = frame.rename(
             columns={
                 "mean": "Forecast",
+                "mean_se": "Std. Error",
                 "mean_ci_lower": "Lower",
                 "mean_ci_upper": "Upper",
             }
         )
+        if "Std. Error" not in frame:
+            frame["Std. Error"] = np.nan
+        return frame
 
     def diagnostics(self, lags: int = 12):
         """Run the standard StochX residual validation battery."""
