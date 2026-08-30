@@ -5,7 +5,6 @@ from stochx.timeseries import (
     SequentialDFResult,
     TimeSeries,
     adf,
-    fit_ar,
     correlogram,
     difference,
     dickey_fuller,
@@ -15,8 +14,8 @@ from stochx.timeseries import (
     identify,
     ljung_box,
     moving_average,
-        seasonal_difference,
-    )
+    seasonal_difference,
+)
 from stochx.timeseries.forecasting import metrics
 from stochx.timeseries.workfile import Workfile
 
