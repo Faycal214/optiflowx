@@ -173,3 +173,12 @@ def test_phase_b_eq01_breusch_godfrey_api_on_original_regression():
     out = breusch_godfrey_raw(eq.result, lags=1)
     assert set(out) == {"LM statistic", "LM p-value", "F-statistic", "F p-value"}
     assert all(np.isfinite(value) for value in out.values())
+
+
+def test_phase_b_sparse_ar_ma_lags_are_preserved():
+    regressors, process = parse_error_terms([
+        "C", "LOG(M1)", "AR(1)", "AR(4)", "MA(2)", "MA(5)"
+    ])
+    assert regressors == ["C", "LOG(M1)"]
+    assert process.p == (1, 4)
+    assert process.q == (2, 5)
