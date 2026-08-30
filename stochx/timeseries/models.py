@@ -84,10 +84,13 @@ class TSResult(UnifiedResult):
         return self.residual_correlogram(lags=lags, alpha=alpha)
 
     def roots(self) -> dict[str, np.ndarray]:
-        """Return AR and MA roots when available."""
+        """Return EViews-style inverted AR and MA roots."""
         ar_roots = np.asarray(getattr(self.result, "arroots", []), dtype=complex)
         ma_roots = np.asarray(getattr(self.result, "maroots", []), dtype=complex)
-        return {"AR roots": ar_roots, "MA roots": ma_roots}
+        return {
+            "AR roots": 1.0 / ar_roots if ar_roots.size else ar_roots,
+            "MA roots": 1.0 / ma_roots if ma_roots.size else ma_roots,
+        }
 
     def stability(self) -> dict[str, bool]:
         """Check the course stationarity and invertibility root conditions."""
