@@ -64,6 +64,10 @@ def _rename_arma_parameters(series: pd.Series, error_process: ErrorProcess) -> p
             mapping[text] = f"AR({int(text[4:])})"
         elif text.startswith("ma.L"):
             mapping[text] = f"MA({int(text[4:])})"
+        elif text.startswith("ar.S.L"):
+            mapping[text] = f"SAR({int(text[6:])})"
+        elif text.startswith("ma.S.L"):
+            mapping[text] = f"SMA({int(text[6:])})"
         elif text.lower() in {"sigma2", "sigmasq"}:
             mapping[text] = "SIGMASQ"
     return series.rename(index=mapping)
