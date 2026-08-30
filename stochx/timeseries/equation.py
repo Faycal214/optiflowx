@@ -147,7 +147,7 @@ class EquationResult(UnifiedResult):
     def forecast(
         self, *, steps: int | None = None, start: int | None = None, end: int | None = None,
         dynamic: bool = False, structural: bool = False, alpha: float = 0.05,
-        coef_uncertainty: bool = true, ma_backcast: str = "estimation",
+        coef_uncertainty: bool = True, ma_backcast: str = "estimation",
         forecast_fill: str = "actual", future_exog=None, actuals=None,
     ) -> pd.DataFrame:
         """Forecast this equation using EViews-style controls."""
