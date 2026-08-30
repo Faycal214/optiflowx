@@ -187,9 +187,15 @@ class EquationResult(UnifiedResult):
             prediction = model.get_prediction(start=start_i, end=end_i, dynamic=dynamic, **kwargs)
             frame = prediction.summary_frame(alpha=alpha)
             point = frame["mean"].to_numpy(dtype=float)
-            se = frame["mean_se"].to_numpy(dtype=float) if "mean_se" in frame else np.full(horizon, np.nan)
-            lower = frame["mean_ci_lower"].to_numpy(dtype=float)
-            upper = frame["mean_ci_upper"].to_numpy(dtype=float)
+            if "obs_ci_lower" in frame and "obs_ci_upper" in frame:
+                lower = frame["obs_ci_lower"].to_numpy(dtype=float)
+                upper = frame["obs_ci_upper"].to_numpy(dtype=float)
+                z = float(scipy_stats.norm.ppf(1.0 - alpha / 2.0))
+                se = (upper - lower) / (2.0 * z)
+            else:
+                lower = frame["mean_ci_lower"].to_numpy(dtype=float)
+                upper = frame["mean_ci_upper"].to_numpy(dtype=float)
+                se = frame["mean_se"].to_numpy(dtype=float) if "mean_se" in frame else np.full(horizon, np.nan)
         out = pd.DataFrame({"Forecast": point, "Std. Error": se, "Lower": lower, "Upper": upper})
         if actuals is not None:
             actual = np.asarray(actuals, dtype=float).reshape(-1)
