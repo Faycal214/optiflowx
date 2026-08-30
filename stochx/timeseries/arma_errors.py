@@ -7,7 +7,7 @@ import re
 
 
 _TERM_RE = re.compile(r"^(AR|MA|SAR|SMA)\((-?\d+)\)$", re.IGNORECASE)
-_RANGE_RE = re.compile(r"^(AR|MA)\(\s*(-?\d+)\s+to\s+(-?\d+)\s*\)$", re.IGNORECASE)
+_RANGE_RE = re.compile(r"^(AR|MA|SAR|SMA)\(\s*(-?\d+)\s+to\s+(-?\d+)\s*\)$", re.IGNORECASE)
 
 
 @dataclass(frozen=True)
