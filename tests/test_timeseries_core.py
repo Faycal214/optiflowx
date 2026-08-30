@@ -370,3 +370,19 @@ def test_workfile_series_names_are_case_insensitive_like_eviews():
     assert np.array_equal(wf["gDp"].values, np.arange(5.0))
     with pytest.raises(ValueError, match="reserved"):
         wf.add("c", np.ones(5))
+
+
+def test_workfile_smpl_supports_eviews_if_conditions():
+    wf = Workfile()
+    wf.add("X", np.arange(-2.0, 5.0))
+    wf.smpl("smpl @all if X>=0")
+    assert wf.sample_mask is not None
+    assert wf.sample_series("X").nobs == 5
+    assert np.array_equal(wf.sample_series("X").values, np.arange(5.0))
+
+
+def test_expression_supports_eviews_comparisons_and_logic():
+    wf = Workfile()
+    wf.add("X", np.arange(5.0))
+    result = wf.eval("(X>=2) and (X<4)")
+    assert np.array_equal(result.values, np.array([0.0, 0.0, 1.0, 1.0, 0.0]))
