@@ -215,6 +215,19 @@ class EquationResult(UnifiedResult):
         y = np.asarray(self.result.model.endog, dtype=float).reshape(-1)
         X = np.asarray(self.result.model.exog, dtype=float)
         return chow_breakpoint(y, X, breakpoint, alpha=alpha)
+    def stability_diagnostics(self, *, breakpoint: int | None = None, forecast_start: int | None = None, alpha: float = 0.05) -> dict[str, object]:
+        """Return EViews-style stability diagnostics where supported."""
+        if self.error_process.max_p or self.error_process.max_q or self.error_process.max_sar or self.error_process.max_sma:
+            raise ValueError("recursive OLS stability diagnostics are restricted to equations without ARMA terms")
+        from .diagnostics import chow_breakpoint, chow_forecast, cusum_tests
+        y = np.asarray(self.result.model.endog, dtype=float).reshape(-1)
+        X = np.asarray(self.result.model.exog, dtype=float)
+        out = {"recursive": cusum_tests(y, X, alpha=alpha)}
+        if breakpoint is not None:
+            out["Chow breakpoint"] = chow_breakpoint(y, X, breakpoint, alpha=alpha)
+        if forecast_start is not None:
+            out["Chow forecast"] = chow_forecast(y, X, forecast_start, alpha=alpha)
+        return out
     def covariance_matrix(self) -> pd.DataFrame:
         if self._opg_covariance is not None:
             return self._opg_covariance.copy()
