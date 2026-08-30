@@ -241,26 +241,65 @@ class Workfile:
         return self.get(name)[self.sample_indexer]
 
     def smpl(self, specification: str) -> "Workfile":
-        """Set the current workfile sample using EViews-style syntax."""
+        """Set the workfile sample using EViews-style range and IF syntax."""
         if not isinstance(specification, str) or not specification.strip():
             raise ValueError("sample specification must be a non-empty string")
         text = specification.strip()
         if text.lower().startswith("smpl "):
             text = text[5:].strip()
-
-        match = re.search(r"\s+if\s+", text, flags=re.IGNORECASE)
         condition = None
-        base = text
-        if match:
-            base = text[:match.start()].strip()
-            condition = text[match.end():].strip()
+        split = re.split(r"\s+if\s+", text, maxsplit=1, flags=re.IGNORECASE)
+        base = split[0].strip()
+        if len(split) == 2:
+            condition = split[1].strip()
             if not condition:
-                raise ValueError("sample condition after 'if' must not be empty")
+                raise ValueError("sample condition after if must not be empty")
 
-        if not base or base.lower() == "@all":
+        if base.lower() == '@all' or not base:
             self.reset_sample()
         else:
-            self.set_sample(base)
+            reference = next(iter(self.series.values()), None)
+            if reference is None:
+                raise ValueError("cannot set a sample on an empty workfile")
+            tokens = base.split()
+            if len(tokens) % 2 != 0:
+                raise ValueError("sample ranges must contain start/end pairs")
+            labels = list(reference.index) if reference.index is not None else None
+
+            def resolve(token: str) -> int:
+                token = token.strip()
+                if token.lower() == '@first':
+                    return 0
+                if token.lower() == '@last':
+                    return self.nobs - 1
+                m = re.fullmatch(r'(@first|@last)([+-]\d+)', token, flags=re.IGNORECASE)
+                if m:
+                    basepos = 0 if m.group(1).lower() == '@first' else self.nobs - 1
+                    pos = basepos + int(m.group(2))
+                    if not 0 <= pos < self.nobs:
+                        raise ValueError(f"sample endpoint {token!r} is outside the workfile")
+                    return pos
+                if token.isdigit():
+                    pos = int(token)
+                    # EViews observation ranges are 1-based; keep Python's
+                    # zero-based API for set_sample but map smpl endpoints here.
+                    if not 1 <= pos <= self.nobs:
+                        raise ValueError(f"sample observation {token!r} is outside the workfile")
+                    return pos - 1
+                if labels is None:
+                    raise ValueError("date labels require an indexed workfile")
+                return self._resolve_sample_label(labels, token)
+
+            mask = np.zeros(self.nobs, dtype=bool)
+            for i in range(0, len(tokens), 2):
+                start = resolve(tokens[i])
+                end = resolve(tokens[i + 1])
+                if end < start:
+                    raise ValueError("sample range end precedes start")
+                mask[start : end + 1] = True
+            self.sample_start = int(np.flatnonzero(mask)[0])
+            self.sample_end = int(np.flatnonzero(mask)[-1])
+            self.sample_mask = mask
 
         if condition is not None:
             from .expression import ExpressionError, evaluate
@@ -273,7 +312,10 @@ class Workfile:
             values = np.asarray(result.values, dtype=float)
             mask = np.isfinite(values) & (values != 0)
             base_mask = np.zeros(self.nobs, dtype=bool)
-            base_mask[self.sample] = True
+            if self.sample_mask is not None:
+                base_mask[:] = self.sample_mask
+            else:
+                base_mask[self.sample] = True
             self.sample_mask = base_mask & mask
         return self
 
