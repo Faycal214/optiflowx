@@ -1,3 +1,4 @@
+import scipy
 import pytest
 import pandas as pd
 
@@ -386,3 +387,57 @@ def test_expression_supports_eviews_comparisons_and_logic():
     wf.add("X", np.arange(5.0))
     result = wf.eval("(X>=2) and (X<4)")
     assert np.array_equal(result.values, np.array([0.0, 0.0, 1.0, 1.0, 0.0]))
+
+
+def test_descriptive_statistics_match_eviews_moment_conventions():
+    values = np.array([1.0, 2.0, 2.0, 5.0, 10.0])
+    series = TimeSeries(values, name="X")
+    stats = series.describe()
+
+    centered = values - values.mean()
+    m2 = np.mean(centered ** 2)
+    m3 = np.mean(centered ** 3)
+    m4 = np.mean(centered ** 4)
+
+    assert stats["Observations"] == 5
+    assert stats["Included observations"] == 5
+    assert stats["Mean"] == pytest.approx(values.mean())
+    assert stats["Median"] == pytest.approx(2.0)
+    assert stats["Std. Dev."] == pytest.approx(np.std(values, ddof=1))
+    assert stats["Variance"] == pytest.approx(np.var(values, ddof=1))
+    assert stats["Skewness"] == pytest.approx(m3 / m2 ** 1.5)
+    assert stats["Kurtosis"] == pytest.approx(m4 / m2 ** 2)
+    expected_jb = 5 / 6 * (
+        stats["Skewness"] ** 2 + (stats["Kurtosis"] - 3) ** 2 / 4
+    )
+    assert stats["Jarque-Bera"] == pytest.approx(expected_jb)
+    assert stats["Probability"] == pytest.approx(
+        __import__("scipy").stats.chi2.sf(expected_jb, 2)
+    )
+
+
+def test_workfile_describe_uses_active_sample_and_missing_counts():
+    wf = Workfile()
+    wf.add("X", [1.0, np.nan, 3.0, 100.0, 5.0])
+    wf.add("Y", [2.0, 4.0, np.nan, 8.0, 10.0])
+    wf.set_sample(0, 3)
+
+    table = wf.describe()
+    assert table.loc["X", "Observations"] == 4
+    assert table.loc["X", "Included observations"] == 3
+    assert table.loc["X", "Maximum"] == 100.0
+    assert table.loc["Y", "Observations"] == 4
+    assert table.loc["Y", "Included observations"] == 3
+
+
+def test_descriptive_expression_functions_use_current_sample():
+    wf = Workfile()
+    wf.add("X", [1.0, 2.0, 100.0, 4.0, np.nan])
+    wf.set_sample(0, 3)
+    assert wf.eval("@mean(X)") == pytest.approx(26.75)
+    assert wf.eval("@median(X)") == pytest.approx(3.0)
+    assert wf.eval("@max(X)") == pytest.approx(100.0)
+    assert wf.eval("@min(X)") == pytest.approx(1.0)
+    assert wf.eval("@var(X)") == pytest.approx(np.var([1.0, 2.0, 100.0, 4.0], ddof=0))
+    assert wf.eval("@stdev(X)") == pytest.approx(np.std([1.0, 2.0, 100.0, 4.0], ddof=1))
+    assert wf.eval("@obs(X)") == pytest.approx(4.0)
