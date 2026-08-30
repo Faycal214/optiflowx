@@ -413,6 +413,21 @@ def chow_forecast(y, X, forecast_start: int, *, alpha: float = 0.05) -> dict[str
         "restricted_SSR": rss_forecast,
         "full_SSR": rss_full,
     }
+def recursive_coefficient_estimates(y, X) -> dict[str, np.ndarray]:
+    """Compute coefficient paths and recursive standard errors."""
+    y = np.asarray(y, dtype=float).reshape(-1)
+    X = sm.add_constant(np.asarray(X, dtype=float), has_constant="add")
+    n, k = X.shape
+    if n <= k:
+        raise ValueError("insufficient observations for recursive estimates")
+    estimates = np.full((n, k), np.nan)
+    ses = np.full((n, k), np.nan)
+    for t in range(k, n + 1):
+        fit = sm.OLS(y[:t], X[:t]).fit()
+        estimates[t - 1] = fit.params
+        if t > k:
+            ses[t - 1] = fit.bse
+    return {"coefficients": estimates, "standard_errors": ses, "period": np.arange(n)}
 def _clean(values) -> np.ndarray:
     x = np.asarray(values, dtype=float).reshape(-1)
     x = x[~np.isnan(x)]
