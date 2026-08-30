@@ -287,8 +287,19 @@ def ljung_box(ac_values: np.ndarray, *, nobs: int, model_df: int = 0, nlags: int
     return LjungBoxResult(lags, q_stats, pvalues, df, nobs, model_df)
 
 
-def correlogram(series, *, nlags: int = 36, model_df: int = 0, alpha: float = 0.05) -> CorrelogramResult:
-    """Return a unified EViews-style correlogram result."""
+def correlogram(series, *, nlags: int = 36, model_df: int = 0, alpha: float = 0.05, d: int = 0) -> CorrelogramResult:
+    """Return a unified EViews-style correlogram result.
+
+    ``d`` mirrors the EViews ``series.correl(n,d=integer)`` option.
+    """
+    if not isinstance(d, int) or isinstance(d, bool) or d < 0:
+        raise ValueError("d must be a non-negative integer")
+    if d:
+        if hasattr(series, "diff"):
+            series = series.diff(d)
+        else:
+            from .series import TimeSeries
+            series = TimeSeries(np.asarray(series, dtype=float)).diff(d)
     if not isinstance(model_df, int) or isinstance(model_df, bool) or model_df < 0:
         raise ValueError("model_df must be a non-negative integer")
     ac = acf(series, nlags=nlags, alpha=alpha)
