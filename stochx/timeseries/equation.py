@@ -281,7 +281,7 @@ class Equation:
         exog = frame[X.columns]
         if error_process.max_p or error_process.max_q:
             model = SARIMAX(y, exog=exog, order=(error_process.max_p, 0, error_process.max_q), trend="n", enforce_stationarity=True, enforce_invertibility=True)
-            kwargs = {"method": "bfgs", "disp": False, "maxiter": 1000}
+            kwargs = {"method": "bfgs", "disp": False, "maxiter": 1000, "cov_type": "opg"}
             if start_params is not None:
                 kwargs["start_params"] = np.asarray(start_params, dtype=float)
             result = model.fit(**kwargs)
