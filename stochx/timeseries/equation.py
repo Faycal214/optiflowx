@@ -197,6 +197,14 @@ class EquationResult(UnifiedResult):
             out["Actual"] = actual; out["Error"] = actual - out["Forecast"]
         out.attrs.update({"forecast_sample": (start_i, end_i), "dynamic": dynamic, "structural": structural, "coef_uncertainty": coef_uncertainty, "ma_backcast": ma_backcast, "forecast_fill": forecast_fill})
         return out
+    def fit(self, *, start: int | None = None, end: int | None = None, alpha: float = 0.05, structural: bool = False, coef_uncertainty: bool = True, future_exog=None, actuals=None) -> pd.DataFrame:
+        """EViews static fitted/forecast procedure (actual lagged values)."""
+        if start is None and end is None:
+            nobs = int(getattr(self.result, "nobs", len(self.observed) if self.observed is not None else 0))
+            start = 0
+            end = nobs - 1
+        return self.forecast(start=start, end=end, dynamic=False, structural=structural, alpha=alpha, coef_uncertainty=coef_uncertainty, future_exog=future_exog, actuals=actuals)
+
     def forecast_evaluation(self, forecast, actual) -> dict[str, float]:
         """Evaluate forecasts with the EViews four-statistic report."""
         f = np.asarray(list(forecast), dtype=float)
