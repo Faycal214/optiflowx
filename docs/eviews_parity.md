@@ -1,11 +1,6 @@
 # EViews compatibility and numerical parity
 
-StochX uses **two references for its time-series layer**:
-
-1. the USTHB course material defines the statistical methodology, notation and decision workflow;
-2. official EViews Time Series Estimation examples provide numerical benchmarks for the subset of workflows that are explicitly tested.
-
-This distinction is important. StochX is intended to feel familiar to EViews users, but it is implemented as a native Python library. We therefore claim parity only where a benchmark exists and passes.
+StochX uses **EViews as the behavioral specification** for its time-series implementation. The USTHB course material is used only as academic context for what the package is expected to cover. Official EViews documentation and captured EViews outputs define syntax, defaults, formulas, numerical conventions and reports. We claim exact parity only where the corresponding EViews behavior has been benchmarked.
 
 ## What is intentionally familiar?
 
@@ -114,6 +109,12 @@ A StochX result should let an EViews user answer the same questions from Python:
 - What are the forecasts and uncertainty bounds?
 
 `summary()`, `table()`, `statistics()`, `roots_report()`, `interpret()` and forecast result objects are the programmatic report layer.
+
+## ARMA numerical contract
+
+For AR/MA/ARMA estimation, the current EViews target is: ML objective, BFGS optimization, OPG information matrix, no ML degrees-of-freedom covariance correction, EViews ARMA coefficient sign convention, EViews inverse-root display, and explicit/sparse lag lists. EViews also provides automatic starting values, fixed/random/user starting values, CLS and GLS, backcasting and additional optimizer controls; these remain implementation tasks until independently benchmarked. citeturn878001search1turn725304search0
+
+The repository's `eviews_phase_b_expected.json` contains published EViews outputs for EQ18–EQ21, including coefficients, SIGMASQ, information criteria, standard errors, t-statistics, probabilities and inverse roots. The parity suite uses the official tutorial workbook when `STOCHX_EVIEWS_DATA` is supplied.
 
 ## Parity roadmap
 
