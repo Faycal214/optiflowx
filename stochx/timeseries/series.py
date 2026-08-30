@@ -196,6 +196,10 @@ class TimeSeries:
         Workfile-level reports apply the active sample before calculation.
         """
         return descriptive_statistics(self.values)
+    def stats(self) -> dict[str, float]:
+        """Alias for the EViews-style descriptive-statistics view."""
+        return self.describe()
+
     def summary(self) -> str:
         """Return a compact EViews-style descriptive summary."""
         s = self.describe()
