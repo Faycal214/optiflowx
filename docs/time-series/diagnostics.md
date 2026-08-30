@@ -67,3 +67,48 @@ This separation mirrors the actual statistical workflow and prevents a single sc
 ## Interpretation pattern
 
 A practical report should say **what was tested, which statistic was obtained, what the null hypothesis means, and whether the evidence changes the modeling decision**. StochX's `interpret()` helpers are intended to support that narrative while leaving the raw result accessible for reproducibility.
+
+## EViews equation-level diagnostics
+
+EViews exposes residual correlograms/Q-statistics, squared-residual correlograms, histogram/normality, serial-correlation LM, and heteroskedasticity tests from the estimated equation. EViews also provides separate stability diagnostics. 
+
+StochX now attaches these to EquationResult:
+
+    eq.diagnostics(lags=12)
+    eq.residual_correlogram(lags=12)
+    eq.squared_residual_correlogram(lags=12)
+    eq.normality_test()
+    eq.serial_correlation_lm(lags=4)
+    eq.heteroskedasticity(test='BPG')
+    eq.heteroskedasticity(test='Harvey')
+    eq.heteroskedasticity(test='Glejser')
+    eq.heteroskedasticity(test='ARCH', lags=12)
+    eq.heteroskedasticity(test='White', cross_terms=False)
+
+### Residual correlogram
+
+EViews adjusts the Ljung-Box degrees of freedom for included ARMA terms. StochX uses the number of estimated ordinary and seasonal ARMA terms for the equation-level adjustment.
+
+### Squared residual correlogram
+
+EViews computes AC, PAC and Q-statistics from squared residuals as an ARCH diagnostic. StochX exposes this as a separate equation view.
+
+### Histogram / normality
+
+EViews reports residual descriptive statistics and the Jarque-Bera normality statistic with two degrees of freedom.
+
+### Serial correlation LM
+
+EViews exposes the Breusch-Godfrey LM test as equation view auto(order), reporting Obs*R-squared/LM and the auxiliary F test. EViews modifies the auxiliary regression when ARMA terms are included. The StochX standard implementation currently returns the standard Breusch-Godfrey auxiliary regression and retains the model degrees-of-freedom metadata; exact ARMA-modified numerical parity remains fixture-dependent.
+
+### Heteroskedasticity
+
+EViews hettest supports BPG, Harvey, Glejser, ARCH and White, with White cross-products optional. StochX exposes those same test families through EquationResult. 
+
+### Stability
+
+EViews recursive residuals, CUSUM and CUSUM of squares are OLS-only recursive stability views; Chow breakpoint and Chow forecast are separate stability procedures. StochX exposes these through stability_diagnostics and rejects recursive stability requests for ARMA-error equations.
+
+### Parity boundary
+
+Interface and documented test families are implemented. Exact numerical EViews parity still requires captured EViews fixtures for the ARMA-modified LM auxiliary regression, exact CUSUM/CUSUMSQ critical lines, Chow forecast LR details, and every heteroskedasticity auxiliary-regression option.
