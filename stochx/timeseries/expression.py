@@ -89,9 +89,7 @@ def _function(name: str, args: list[Any], workfile) -> TimeSeries | float:
     }:
         if len(args) != 1 or not isinstance(args[0], TimeSeries):
             raise ExpressionError(f"@{upper.lower()}() expects one series")
-        values = args[0].values
-        if getattr(workfile, "sample_mask", None) is not None:
-            values = values[workfile.sample_indexer]
+        values = args[0].values[workfile.sample_indexer]
         values = values[np.isfinite(values)]
         if values.size == 0:
             return float("nan")
