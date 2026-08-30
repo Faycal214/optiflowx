@@ -72,8 +72,10 @@ def autoarma(y, *, max_diff=2, max_ar=4, max_ma=4, max_sar=0, max_sma=0, periods
         raise ValueError("tform must be auto, none, or log in the certified path")
     if tform == "auto":
         tform = _auto_log_choice(vals)
-    if tform == "log":        if np.any(vals<=0): raise ValueError("log transformation requires strictly positive observations")
-        vals=np.log(vals)
+    if tform == "log":
+        if np.any(vals <= 0):
+            raise ValueError("log transformation requires strictly positive observations")
+        vals = np.log(vals)
     if periods is None:
         key=str(s.frequency).upper() if s.frequency is not None else ""
         periods={"M":12,"MONTHLY":12,"Q":4,"QUARTERLY":4,"W":52,"WEEKLY":52,"D":7,"DAILY":7}.get(key,1)
