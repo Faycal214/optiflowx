@@ -100,10 +100,16 @@ class TimeSeries:
     def __len__(self) -> int:
         return self.values.size
 
-    def __getitem__(self, item: int | slice) -> float | "TimeSeries":
-        if isinstance(item, slice):
+    def __getitem__(self, item: int | slice | np.ndarray | list[bool]) -> float | "TimeSeries":
+        if isinstance(item, (slice, np.ndarray, list)):
             values = self.values[item]
-            index = self.index[item] if self.index is not None else None
+            if self.index is None:
+                index = None
+            elif isinstance(item, slice):
+                index = self.index[item]
+            else:
+                mask = np.asarray(item)
+                index = tuple(label for label, keep in zip(self.index, mask) if bool(keep))
             return TimeSeries(values, index=index, name=self.name, frequency=self.frequency)
         return float(self.values[item])
 
