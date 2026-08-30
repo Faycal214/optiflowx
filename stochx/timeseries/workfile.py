@@ -368,6 +368,10 @@ class Workfile:
             ]
         ]
 
+    def stats(self, *, individual: bool = False) -> pd.DataFrame:
+        """Alias for the EViews-style workfile descriptive-statistics view."""
+        return self.describe(individual=individual)
+
     def info(self) -> str:
         """Return workfile metadata similar to an EViews workfile view."""
         return "\n".join([
