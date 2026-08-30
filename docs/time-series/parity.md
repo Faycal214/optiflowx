@@ -108,3 +108,9 @@ This lets us fix implementation errors separately from expected backend-level nu
     Step 12  cointegration/ECM            fixture required
 
 Step 13 therefore begins with the validated ARMA baseline and expands the reference suite feature by feature.
+
+## ARIMA/SARIMA + forecasting reference
+
+A public EViews automatic-ARIMA example is now encoded as tests/fixtures/eviews_arima_forecast_reference.json. The documented case is monthly English/Welsh electricity demand (ELECDMD), using Auto(None/Log), maximum differencing 2, max AR/MA 4, max SAR/SMA 1, periodicity 12, and AIC model selection. EViews reports 100 candidate models and selects a logged, first-differenced (3,3)(1,1) model for the example. The public page documents the estimation sample 2005M01 2014M04 and forecast sample 2014M05 2015M12. 
+
+The public textual documentation does not publish the numerical forecast vector, so the fixture marks forecast numerical capture as pending instead of fabricating expected values. Step 13 therefore validates the documented automatic-ARIMA structure now and numerical coefficients, forecast standard errors, bounds, and other values once an EViews capture is supplied. No EViews workfile or executable belongs in the repository.
