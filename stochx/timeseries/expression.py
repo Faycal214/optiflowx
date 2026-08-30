@@ -120,6 +120,58 @@ def _eval_node(node: ast.AST, workfile) -> TimeSeries | float:
     if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
         operand = _eval_node(node.operand, workfile)
         return _unary(operand, lambda x: +x if isinstance(node.op, ast.UAdd) else -x)
+    if isinstance(node, ast.Compare):
+        left = _eval_node(node.left, workfile)
+        result = None
+        current = left
+        for operator, comparator in zip(node.ops, node.comparators):
+            right = _eval_node(comparator, workfile)
+            if isinstance(operator, ast.Gt):
+                op = lambda a, b: a > b
+            elif isinstance(operator, ast.GtE):
+                op = lambda a, b: a >= b
+            elif isinstance(operator, ast.Lt):
+                op = lambda a, b: a < b
+            elif isinstance(operator, ast.LtE):
+                op = lambda a, b: a <= b
+            elif isinstance(operator, ast.Eq):
+                op = lambda a, b: a == b
+            elif isinstance(operator, ast.NotEq):
+                op = lambda a, b: a != b
+            else:
+                raise ExpressionError("unsupported comparison operator")
+            comparison = _binary(current, right, op)
+            if result is None:
+                result = comparison
+            else:
+                result = _binary(result, comparison, lambda a, b: np.logical_and(a, b))
+            current = right
+        if result is None:
+            raise ExpressionError("comparison requires at least one operator")
+        if isinstance(result, TimeSeries):
+            return TimeSeries(result.values.astype(float), index=result.index, name="expression", frequency=result.frequency)
+        return float(bool(result))
+
+    if isinstance(node, ast.BoolOp):
+        if len(node.values) < 2:
+            raise ExpressionError("logical expressions require at least two operands")
+        values = [_eval_node(value, workfile) for value in node.values]
+        op = np.logical_and if isinstance(node.op, ast.And) else np.logical_or if isinstance(node.op, ast.Or) else None
+        if op is None:
+            raise ExpressionError("unsupported logical operator")
+        result = values[0]
+        for value in values[1:]:
+            result = _binary(result, value, op)
+        if isinstance(result, TimeSeries):
+            return TimeSeries(result.values.astype(float), index=result.index, name="expression", frequency=result.frequency)
+        return float(bool(result))
+
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+        value = _eval_node(node.operand, workfile)
+        if isinstance(value, TimeSeries):
+            return TimeSeries((~value.values.astype(bool)).astype(float), index=value.index, name="expression", frequency=value.frequency)
+        return float(not bool(value))
+
     if isinstance(node, ast.BinOp):
         left = _eval_node(node.left, workfile)
         right = _eval_node(node.right, workfile)
