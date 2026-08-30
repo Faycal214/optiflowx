@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable
+from typing import ClassVar, Iterable
 import re
 
 import numpy as np
@@ -72,7 +72,7 @@ class Workfile:
         end = self.nobs if self.sample_end is None else self.sample_end + 1
         return slice(start, end)
 
-    _RESERVED_NAMES = frozenset({
+    _RESERVED_NAMES: ClassVar[frozenset[str]] = frozenset({
         "ABS", "ACOS", "AND", "AR", "ASIN", "C", "CON", "CNORM", "COEF",
         "COS", "D", "DLOG", "DNORM", "ELSE", "ENDIF", "EXP", "LOG", "LOGIT",
         "MA", "NA", "NOT", "NRND", "OR", "PDL", "RESID", "RND", "SAR", "SIN",
