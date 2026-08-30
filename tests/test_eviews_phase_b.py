@@ -12,7 +12,7 @@ from xml.etree import ElementTree as ET
 import numpy as np
 import pytest
 
-from stochx.timeseries import Workfile, breusch_godfrey_raw, parse_error_terms
+from stochx.timeseries import Workfile, breusch_godfrey_raw, parse_error_terms, compare_equation_fixture
 
 ROOT = Path(__file__).resolve().parent
 EXPECTED = ROOT / "fixtures" / "eviews_phase_b_expected.json"
