@@ -366,3 +366,21 @@ def reports_dataframe(reports: Mapping[str, ParityReport]) -> pd.DataFrame:
         "Model", "Check", "Passed", "Actual", "Expected",
         "Absolute Error", "Relative Error", "Tolerance", "Note",
     ])
+
+
+def validate_fixture_schema(fixture):
+    """Validate the required structure of an EViews reference fixture."""
+    errors = []
+    if fixture.get("schema_version") != 1:
+        errors.append("schema_version must be 1")
+    if "models" not in fixture:
+        errors.append("missing models")
+        return errors
+    required = {"category", "specification", "nobs", "coefficients", "statistics", "roots"}
+    for name, model in fixture["models"].items():
+        for field in sorted(required - set(model)):
+            errors.append(f"models.{name}: missing {field}")
+        for side in ("ar", "ma", "sar", "sma"):
+            if side not in model.get("roots", {}):
+                errors.append(f"models.{name}.roots: missing {side}")
+    return errors
