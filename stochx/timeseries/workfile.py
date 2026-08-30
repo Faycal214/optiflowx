@@ -346,6 +346,31 @@ class Workfile:
             alpha=alpha,
         )
 
+    def adf(
+        self,
+        name: str,
+        *,
+        regression: str = "c",
+        lags: int | None = None,
+        autolag: str | None = "SIC",
+        alpha: float = 0.05,
+        max_lag: int | None = None,
+        d: int = 0,
+    ):
+        """Run an EViews-style ADF test on the active sample."""
+        from .stationarity import adf
+        series = self.sample_series(name)
+        if d:
+            series = series.diff(d)
+        return adf(
+            series,
+            regression=regression,
+            lags=lags,
+            autolag=autolag,
+            alpha=alpha,
+            max_lag=max_lag,
+        )
+
     def acf(self, name: str, *, nlags: int | None = None, d: int = 0, alpha: float = 0.05):
         """Compute the ACF of a workfile series on the active sample."""
         from .correlation import acf
