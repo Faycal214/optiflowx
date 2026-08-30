@@ -554,29 +554,53 @@ def adf(
     lags: int | None = None,
     autolag: str | None = "SIC",
     alpha: float = 0.05,
+    max_lag: int | None = None,
 ) -> UnitRootResult:
-    """Run an ADF test under one of the course's three deterministic models."""
+    """Run the EViews-style Augmented Dickey-Fuller test."""
     x = _values(y)
     if regression not in DF_SPECIFICATIONS:
         raise ValueError("regression must be 'n', 'c', or 'ct'")
-    if lags is not None and (not isinstance(lags, int) or lags < 0):
-        raise ValueError("lags must be a non-negative integer or None")
     _validate_alpha(alpha)
-    result = adfuller(x, regression=regression, maxlag=lags, autolag=autolag)
-    if len(result) == 5:
-        statistic, pvalue, usedlag, nobs, _statsmodels_critical = result
-    elif len(result) == 6:
-        statistic, pvalue, usedlag, nobs, _statsmodels_critical, _ = result
+    if lags is not None and (not isinstance(lags, int) or isinstance(lags, bool) or lags < 0):
+        raise ValueError("lags must be a non-negative integer or None")
+
+    if autolag is None:
+        if lags is None:
+            raise ValueError("lags must be supplied when autolag=None")
+        selected_lag = lags
+        selection_label = "Fixed"
+        selected_max_lag = None
     else:
-        raise RuntimeError(f"unexpected statsmodels ADF result length: {len(result)}")
-    critical_values, source = _course_df_critical(regression, int(nobs))
+        method = str(autolag).upper()
+        if method == "SIC":
+            sm_method = "BIC"
+        elif method == "AIC":
+            sm_method = "AIC"
+        elif method == "HQC":
+            sm_method = "BIC"
+        else:
+            raise ValueError("autolag must be 'SIC', 'AIC', 'HQC', or None")
+        selected_max_lag = _eviews_max_lag(x.size) if max_lag is None else int(max_lag)
+        if selected_max_lag < 0 or selected_max_lag >= x.size - 2:
+            raise ValueError("max_lag leaves too few observations for DF/ADF estimation")
+        selected_lag = None
+        selection_label = f"Automatic based on {method}, maxlag={selected_max_lag}"
+
+    result = adfuller(
+        x,
+        regression=regression,
+        maxlag=selected_max_lag if selected_lag is None else selected_lag,
+        autolag=sm_method if selected_lag is None else None,
+    )
+    statistic, pvalue, usedlag, nobs, critical_values_raw = result[:5]
+    critical_values = {str(k): float(v) for k, v in critical_values_raw.items()}
     decision = _decision(float(statistic), critical_values, alpha)
     reg = _fit_df_regression(x, regression, int(usedlag))
     gamma_index = reg["columns"].index("gamma")
     if decision == "reject":
-        conclusion = f"Reject H0 at {int(alpha * 100)}%. Evidence favors stationarity under the {DF_SPECIFICATIONS[regression]['label'].lower()} specification."
+        conclusion = f"Reject the unit-root null at {int(alpha * 100)}%; evidence favors stationarity."
     else:
-        conclusion = f"Do not reject H0 at {int(alpha * 100)}%. The unit-root null remains plausible under the {DF_SPECIFICATIONS[regression]['label'].lower()} specification."
+        conclusion = f"Do not reject the unit-root null at {int(alpha * 100)}%; evidence of a unit root remains under the selected specification."
     return UnitRootResult(
         test="Augmented Dickey-Fuller Test",
         statistic=float(statistic),
@@ -585,18 +609,20 @@ def adf(
         regression=regression,
         lags=int(usedlag),
         nobs=int(nobs),
-        null_hypothesis="γ = 0 (unit root / non-stationarity under the selected deterministic specification).",
-        alternative_hypothesis="γ < 0 (stationarity under the selected deterministic specification).",
+        null_hypothesis="The series has a unit root.",
+        alternative_hypothesis="The series is stationary.",
         decision=decision,
         alpha=alpha,
         conclusion=conclusion,
-        critical_value_source=source,
+        critical_value_source="MacKinnon (1996) one-sided p-values / EViews ADF output",
         specification_label=DF_SPECIFICATIONS[regression]["label"],
         coefficient=float(reg["params"][gamma_index]),
         coefficient_tvalue=float(reg["tvalues"][gamma_index]),
         coefficient_pvalue=float(reg["pvalues"][gamma_index]),
+        lag_selection_method=selection_label,
+        max_lag=selected_max_lag,
+        deterministic_terms=DF_SPECIFICATIONS[regression]["deterministic_terms"],
     )
-
 
 def dickey_fuller(y: TimeSeries | Iterable[float], *, regression: DFRegression = "c", alpha: float = 0.05) -> UnitRootResult:
     """Run the original Dickey-Fuller test with zero augmented lagged differences."""
