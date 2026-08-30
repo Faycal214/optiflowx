@@ -212,39 +212,58 @@ def fit_arma(y: TimeSeries | Iterable[float], p: int | Iterable[int], q: int | I
     model = SARIMAX(series, order=(p, 0, q), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
     result = model.fit(method="bfgs", maxiter=1000, disp=False)
     return _result("ARMA", model, result, y, (p, 0, q))
-def fit_arima(y: TimeSeries | Iterable[float], p: int, d: int, q: int, *, trend: str | None = None) -> TSResult:
-    """Estimate ARIMA(p,d,q) with automatic handling of differencing."""
+def fit_arima(
+    y: TimeSeries | Iterable[float],
+    p: int, d: int, q: int,
+    *, trend: str | None = "c", method: str = "ml",
+    optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000,
+) -> TSResult:
+    """Estimate EViews-style ARIMA(p,d,q) by state-space maximum likelihood."""
     if min(p, d, q) < 0:
         raise ValueError("p, d, and q must be non-negative")
+    if p == 0 and q == 0 and d == 0:
+        raise ValueError("ARIMA(0,0,0) is a mean specification; use OLS or a constant series model")
+    if method.lower() != "ml":
+        raise ValueError("only EViews ML is currently implemented for direct ARIMA")
+    if optimizer.lower() != "bfgs" or covariance.lower() != "opg":
+        raise ValueError("only EViews-default BFGS optimizer and OPG covariance are implemented")
+    if trend not in {None, "n", "c", "ct"}:
+        raise ValueError("trend must be None, n, c, or ct")
     series = _as_series(y)
-    from statsmodels.tsa.arima.model import ARIMA
-
-    model = ARIMA(series, order=(p, d, q), trend=trend)
-    result = model.fit()
-    return _result("ARIMA", model, result, y, (p, d, q))
-
+    from statsmodels.tsa.statespace.sarimax import SARIMAX
+    model = SARIMAX(
+        series, order=(p, d, q), trend=trend,
+        enforce_stationarity=True, enforce_invertibility=True,
+    )
+    result = model.fit(method="bfgs", maxiter=maxiter, disp=False, cov_type="opg")
+    return _result("ARIMA", model, result, y, (p, d, q), method="Maximum Likelihood")
 
 def fit_sarima(
     y: TimeSeries | Iterable[float],
     order: tuple[int, int, int],
     seasonal_order: tuple[int, int, int, int],
-    *,
-    trend: str | None = None,
+    *, trend: str | None = "c", method: str = "ml",
+    optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000,
 ) -> TSResult:
-    """Estimate SARIMA(p,d,q)(P,D,Q,s) with state-space likelihood."""
+    """Estimate EViews-style multiplicative SARIMA by state-space ML."""
+    p, d, q = order
+    P, D, Q, s = seasonal_order
+    if min(p, d, q, P, D, Q) < 0 or s < 1:
+        raise ValueError("SARIMA orders must be non-negative and seasonal period must be positive")
+    if method.lower() != "ml":
+        raise ValueError("only EViews ML is currently implemented for direct SARIMA")
+    if optimizer.lower() != "bfgs" or covariance.lower() != "opg":
+        raise ValueError("only EViews-default BFGS optimizer and OPG covariance are implemented")
+    if trend not in {None, "n", "c", "ct"}:
+        raise ValueError("trend must be None, n, c, or ct")
     series = _as_series(y)
     from statsmodels.tsa.statespace.sarimax import SARIMAX
-
     model = SARIMAX(
-        series,
-        order=order,
-        seasonal_order=seasonal_order,
-        trend=trend,
-        enforce_stationarity=False,
-        enforce_invertibility=False,
+        series, order=order, seasonal_order=seasonal_order, trend=trend,
+        enforce_stationarity=True, enforce_invertibility=True,
     )
-    result = model.fit(disp=False)
-    return _result("SARIMA", model, result, y, order, seasonal_order)
+    result = model.fit(method="bfgs", maxiter=maxiter, disp=False, cov_type="opg")
+    return _result("SARIMA", model, result, y, order, seasonal_order, method="Maximum Likelihood")
 
 
 def estimate(
