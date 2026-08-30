@@ -245,15 +245,15 @@ def fit_sarima(
     *, trend: str | None = "c", method: str = "ml",
     optimizer: str = "bfgs", covariance: str = "opg", maxiter: int = 1000,
 ) -> TSResult:
-    """Estimate EViews-style multiplicative SARIMA by state-space ML."""
+    """Estimate multiplicative SARIMA with EViews-style ML defaults."""
     p, d, q = order
     P, D, Q, s = seasonal_order
     if min(p, d, q, P, D, Q) < 0 or s < 1:
         raise ValueError("SARIMA orders must be non-negative and seasonal period must be positive")
     if method.lower() != "ml":
-        raise ValueError("only EViews ML is currently implemented for direct SARIMA")
+        raise ValueError("only EViews ML is implemented for direct SARIMA")
     if optimizer.lower() != "bfgs" or covariance.lower() != "opg":
-        raise ValueError("only EViews-default BFGS optimizer and OPG covariance are implemented")
+        raise ValueError("only EViews-default BFGS/OPG is implemented for direct SARIMA")
     if trend not in {None, "n", "c", "ct"}:
         raise ValueError("trend must be None, n, c, or ct")
     series = _as_series(y)
