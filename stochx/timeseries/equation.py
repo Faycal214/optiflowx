@@ -92,8 +92,7 @@ class EquationResult(UnifiedResult):
             tvalues = params / bse
             if attribute == "tvalues":
                 return tvalues
-            df = max(int(self.nobs) - len(params), 1)
-            return pd.Series(2.0 * scipy_stats.t.sf(np.abs(tvalues.to_numpy(dtype=float)), df=df), index=tvalues.index)
+            return pd.Series(2.0 * scipy_stats.norm.sf(np.abs(tvalues.to_numpy(dtype=float))), index=tvalues.index)
         value = getattr(self.result, attribute, pd.Series(dtype=float))
         if isinstance(value, pd.Series):
             series = value.astype(float)
