@@ -112,6 +112,17 @@ class UnifiedResult:
                 values[label] = float("nan")
         return values
 
+    def eviews_statistics(self) -> dict[str, float]:
+        values = dict(self.statistics())
+        y = getattr(getattr(self.result, "model", None), "endog", None)
+        if y is not None:
+            y = np.asarray(y, dtype=float).reshape(-1)
+            y = y[np.isfinite(y)]
+            if y.size:
+                values["Mean dependent var"] = float(np.mean(y))
+                values["S.D. dependent var"] = float(np.std(y, ddof=1)) if y.size > 1 else float("nan")
+        return values
+
     def table(self) -> pd.DataFrame:
         """Return the coefficient table as a DataFrame."""
         return self.coefficient_table().dataframe()
