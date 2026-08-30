@@ -188,49 +188,44 @@ def _result(model_name: str, model: Any, result: Any, y, order, seasonal_order=N
 
 
 def fit_ar(y: TimeSeries | Iterable[float], p: int, *, trend: str = "c", method: str = "ml") -> TSResult:
-    """Estimate AR(p) using the EViews default maximum-likelihood method."""
+    """Estimate AR(p) using the EViews default ML method."""
     if p < 1:
         raise ValueError("p must be positive")
     series = _as_series(y)
-    from statsmodels.tsa.arima.model import ARIMA
-
+    from statsmodels.tsa.statespace.sarimax import SARIMAX
     if method.lower() != "ml":
         raise ValueError("fit_ar currently supports method='ml'; CLS/GLS are not yet implemented")
     if trend not in {"n", "c", "ct"}:
         raise ValueError("trend must be 'n', 'c', or 'ct'")
-    model = ARIMA(series, order=(p, 0, 0), trend=trend)
-    result = model.fit()
+    model = SARIMAX(series, order=(p, 0, 0), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
+    result = model.fit(method="bfgs", maxiter=1000, disp=False)
     return _result("AR", model, result, y, (p, 0, 0))
-
-
 def fit_ma(y: TimeSeries | Iterable[float], q: int, *, trend: str = "c", method: str = "ml") -> TSResult:
-    """Estimate MA(q) under Gaussian maximum likelihood."""
+    """Estimate MA(q) using the EViews default ML method."""
     if q < 1:
         raise ValueError("q must be positive")
     series = _as_series(y)
-    from statsmodels.tsa.arima.model import ARIMA
-
+    from statsmodels.tsa.statespace.sarimax import SARIMAX
     if method.lower() != "ml":
         raise ValueError("fit_ma currently supports method='ml'; CLS/GLS are not yet implemented")
-    model = ARIMA(series, order=(0, 0, q), trend=trend)
-    result = model.fit()
-    return _result("MA", model, result, y, (0, 0, q), method="Maximum Likelihood")
-
-
+    if trend not in {"n", "c", "ct"}:
+        raise ValueError("trend must be 'n', 'c', or 'ct'")
+    model = SARIMAX(series, order=(0, 0, q), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
+    result = model.fit(method="bfgs", maxiter=1000, disp=False)
+    return _result("MA", model, result, y, (0, 0, q))
 def fit_arma(y: TimeSeries | Iterable[float], p: int, q: int, *, trend: str = "c", method: str = "ml") -> TSResult:
-    """Estimate ARMA(p,q) by maximum likelihood."""
+    """Estimate ARMA(p,q) using the EViews default ML method."""
     if p < 0 or q < 0 or (p == 0 and q == 0):
         raise ValueError("at least one of p or q must be positive")
     series = _as_series(y)
-    from statsmodels.tsa.arima.model import ARIMA
-
+    from statsmodels.tsa.statespace.sarimax import SARIMAX
     if method.lower() != "ml":
         raise ValueError("fit_arma currently supports method='ml'; CLS/GLS are not yet implemented")
-    model = ARIMA(series, order=(p, 0, q), trend=trend)
-    result = model.fit()
-    return _result("ARMA", model, result, y, (p, 0, q), method="Maximum Likelihood")
-
-
+    if trend not in {"n", "c", "ct"}:
+        raise ValueError("trend must be 'n', 'c', or 'ct'")
+    model = SARIMAX(series, order=(p, 0, q), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
+    result = model.fit(method="bfgs", maxiter=1000, disp=False)
+    return _result("ARMA", model, result, y, (p, 0, q))
 def fit_arima(y: TimeSeries | Iterable[float], p: int, d: int, q: int, *, trend: str | None = None) -> TSResult:
     """Estimate ARIMA(p,d,q) with automatic handling of differencing."""
     if min(p, d, q) < 0:
