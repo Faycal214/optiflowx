@@ -211,6 +211,26 @@ class EquationResult(UnifiedResult):
             end = nobs - 1
         return self.forecast(start=start, end=end, dynamic=False, structural=structural, alpha=alpha, coef_uncertainty=coef_uncertainty, future_exog=future_exog, actuals=actuals)
 
+    def view_text(self, view: str = "estimate") -> str:
+        """Render a named EViews-style equation view as text."""
+        key = view.lower().replace(" ", "_").replace("-", "_")
+        from .reporting import EViewsReport
+        renderer = EViewsReport(self)
+        if key in {"estimate", "output", "summary"}:
+            return renderer.text()
+        if key in {"covariance", "covariance_matrix"}:
+            return "Coefficient Covariance Matrix\n" + self.covariance.to_string(float_format=lambda x: f"{x:.6f}")
+        if key in {"residual_correlogram", "correlogram_q_statistics"}:
+            return renderer.diagnostic_text("Correlogram - Q-statistics", self.residual_correlogram())
+        if key in {"squared_residual_correlogram", "correlogram_squared_residuals"}:
+            return renderer.diagnostic_text("Correlogram of Squared Residuals", self.squared_residual_correlogram())
+        if key in {"histogram_normality", "histogram_normality_test"}:
+            return renderer.diagnostic_text("Histogram-Normality", self.normality_test())
+        if key in {"serial_correlation_lm", "auto"}:
+            return renderer.diagnostic_text("Breusch-Godfrey Serial Correlation LM Test", self.serial_correlation_lm(1))
+        if key in {"heteroskedasticity", "hettest"}:
+            return renderer.diagnostic_text("Heteroskedasticity Test", self.heteroskedasticity())
+        raise ValueError(f"unknown equation view: {view}")
     def forecast_evaluation(self, forecast, actual) -> dict[str, float]:
         """Evaluate forecasts with the EViews four-statistic report."""
         f = np.asarray(list(forecast), dtype=float)
@@ -648,7 +668,9 @@ class Equation:
             optimizer=optimizer, maxiter=maxiter, tol=tol, random_seed=random_seed,
         )
 
-    def show(self) -> str:
+    def show(self, *, view: str = "estimate") -> str:
         if self.result is None:
             return f"Equation {self.name}: {self.specification or '(not estimated)'}"
-        return self.result.summary()
+        if view.lower() in {"estimate", "output", "summary"}:
+            return self.result.summary()
+        return self.result.view_text(view)
