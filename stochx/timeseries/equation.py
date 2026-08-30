@@ -163,6 +163,58 @@ class EquationResult(UnifiedResult):
         theil = rmse / (float(np.sqrt(np.mean(y ** 2))) + float(np.sqrt(np.mean(f ** 2))))
         return {"RMSE": rmse, "MAE": mae, "MAPE": mape, "Mean Error": float(np.mean(e)), "Theil U": theil}
 
+    def diagnostics(self, *, lags: int = 12, alpha: float = 0.05, het_test: str = "BPG", white_cross_terms: bool = False) -> dict[str, object]:
+        """Return EViews-style residual diagnostics for this equation."""
+        from .diagnostics import histogram_normality, residual_correlogram, residual_correlogram_squared, serial_correlation_lm, heteroskedasticity_test
+        out = {}
+        model_df = len(self.error_process.p) + len(self.error_process.q) + len(self.error_process.sar) + len(self.error_process.sma)
+        out["Correlogram-Q statistics"] = residual_correlogram(self.residuals, lags=lags, model_df=model_df, alpha=alpha)
+        if self.method.lower().startswith(("least", "ols")) or not (self.error_process.max_p or self.error_process.max_q or self.error_process.max_sar or self.error_process.max_sma):
+            out["Squared residual correlogram"] = residual_correlogram_squared(self.residuals, lags=lags, model_df=model_df, alpha=alpha)
+        out["Histogram-Normality"] = histogram_normality(self.residuals, alpha=alpha)
+        if hasattr(self.result, "model") and getattr(self.result.model, "exog", None) is not None:
+            X = np.asarray(self.result.model.exog, dtype=float)
+            out["Heteroskedasticity"] = heteroskedasticity_test(self.residuals, X, test=het_test, lags=lags, cross_terms=white_cross_terms, alpha=alpha)
+            try:
+                out["Serial Correlation LM"] = serial_correlation_lm(self.residuals, X, lags=lags, alpha=alpha, model_df=model_df)
+            except ValueError:
+                pass
+        return out
+
+    def residual_correlogram(self, *, lags: int = 12, alpha: float = 0.05):
+        from .diagnostics import residual_correlogram
+        model_df = len(self.error_process.p) + len(self.error_process.q) + len(self.error_process.sar) + len(self.error_process.sma)
+        return residual_correlogram(self.residuals, lags=lags, model_df=model_df, alpha=alpha)
+
+    def squared_residual_correlogram(self, *, lags: int = 12, alpha: float = 0.05):
+        from .diagnostics import residual_correlogram_squared
+        return residual_correlogram_squared(self.residuals, lags=lags, model_df=0, alpha=alpha)
+
+    def serial_correlation_lm(self, lags: int = 1, *, alpha: float = 0.05):
+        from .diagnostics import serial_correlation_lm
+        model_exog = getattr(self.result.model, "exog", None)
+        if model_exog is None:
+            raise ValueError("serial correlation LM requires regression regressors")
+        return serial_correlation_lm(self.residuals, model_exog, lags=lags, alpha=alpha, model_df=len(self.error_process.p)+len(self.error_process.q))
+
+    def heteroskedasticity(self, *, test: str = "BPG", lags: int = 12, cross_terms: bool = False, alpha: float = 0.05):
+        from .diagnostics import heteroskedasticity_test
+        model_exog = getattr(self.result.model, "exog", None)
+        if model_exog is None and test.upper() != "ARCH":
+            raise ValueError("this heteroskedasticity test requires equation regressors")
+        return heteroskedasticity_test(self.residuals, model_exog if model_exog is not None else np.ones((len(self.residuals), 1)), test=test, lags=lags, cross_terms=cross_terms, alpha=alpha)
+
+    def normality_test(self, *, alpha: float = 0.05):
+        from .diagnostics import histogram_normality
+        return histogram_normality(self.residuals, alpha=alpha)
+
+    def chow_breakpoint(self, breakpoint: int, *, alpha: float = 0.05):
+        if self.error_process.max_p or self.error_process.max_q or self.error_process.max_sar or self.error_process.max_sma:
+            raise ValueError("EViews Chow breakpoint stability view is restricted here to ordinary LS equations")
+        from .diagnostics import chow_breakpoint
+        y = np.asarray(self.result.model.endog, dtype=float).reshape(-1)
+        X = np.asarray(self.result.model.exog, dtype=float)
+        return chow_breakpoint(y, X, breakpoint, alpha=alpha)
     def covariance_matrix(self) -> pd.DataFrame:
         if self._opg_covariance is not None:
             return self._opg_covariance.copy()
