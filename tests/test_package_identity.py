@@ -26,3 +26,10 @@ def test_project_identity_is_stochx() -> None:
         "Legacy project identity remains in the repository: "
         + ", ".join(sorted(legacy_paths))
     )
+
+
+def test_public_package_boundary_is_time_series_only() -> None:
+    import stochx
+
+    assert hasattr(stochx, "timeseries")
+    assert not hasattr(stochx, "stochastic")
