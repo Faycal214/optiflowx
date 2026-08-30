@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "source": {
+    "software": "EViews",
+    "reference_type": "captured_reference_template",
+    "notes": "Populate numerical cells from an EViews equation View/Residual Diagnostics output. Do not commit proprietary .wf1 or executable files."
+  },
+  "equation": {
+    "name": "DIAG_OLS",
+    "specification": "Y C X1 X2",
+    "method": "Least Squares",
+    "sample": null,
+    "nobs": null,
+    "arma_terms": 0
+  },
+  "views": {
+    "residual_correlogram": {
+      "lags": 12,
+      "columns": ["AC", "PAC", "Q-Stat", "Prob."],
+      "rows": []
+    },
+    "squared_residual_correlogram": {
+      "lags": 12,
+      "columns": ["AC", "PAC", "Q-Stat", "Prob."],
+      "rows": []
+    },
+    "histogram_normality": {
+      "columns": ["Statistic", "Value"],
+      "rows": [],
+      "jarque_bera_df": 2
+    },
+    "serial_correlation_lm": {
+      "lags": 4,
+      "statistics": {
+        "F-statistic": null,
+        "F-p-value": null,
+        "Obs*R-squared": null,
+        "Obs*R-squared-p-value": null,
+        "df": 4
+      }
+    },
+    "heteroskedasticity": {
+      "BPG": {"statistics": {}},
+      "Harvey": {"statistics": {}},
+      "Glejser": {"statistics": {}},
+      "ARCH": {"lags": 4, "statistics": {}},
+      "White": {"cross_terms": false, "statistics": {}}
+    },
+    "stability": {
+      "available_for_equation": true,
+      "recursive": {
+        "periods": [],
+        "recursive_residuals": [],
+        "cusum": [],
+        "cusumsq": [],
+        "coefficients": []
+      },
+      "chow_breakpoint": {
+        "breakpoint": null,
+        "statistics": {}
+      },
+      "chow_forecast": {
+        "forecast_start": null,
+        "statistics": {}
+      }
+    }
+  },
+  "parity": {
+    "status": "numeric_capture_pending",
+    "notes": "EViews provides these diagnostics as Equation views. Structural labels/order are fixed by this fixture; numeric rows require an actual capture."
+  }
+}
