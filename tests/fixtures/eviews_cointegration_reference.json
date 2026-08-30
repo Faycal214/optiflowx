@@ -2,8 +2,8 @@
   "schema_version": 1,
   "source": {
     "software": "EViews",
-    "reference_type": "captured_reference_template",
-    "notes": "Populate from EViews Equation::coint/cointreg and Group/VAR Johansen outputs. Do not commit proprietary workfiles."
+    "reference_type": "public_EViews_output",
+    "notes": "Johansen numerical values are populated from published EViews User Guide output. The single-equation Hansen example statistic is also published; proprietary workfiles are not included."
   },
   "single_equation": {
     "equation": {
@@ -15,7 +15,7 @@
     "tests": {
       "hansen": {
         "method": "hansen",
-        "statistic": null,
+        "statistic": 0.5755,
         "critical_values": {},
         "p_value": null
       },
@@ -62,10 +62,20 @@
     "deterministic_specification": null,
     "lag_specification": "1 4",
     "rank_tests": {
-      "trace": [],
-      "max_eigen": []
+      "trace": [
+        {"hypothesis": "None", "eigenvalue": 0.433165, "statistic": 49.14436, "critical_5": 54.07904, "p_value": 0.1282},
+        {"hypothesis": "At most 1", "eigenvalue": 0.177584, "statistic": 19.05691, "critical_5": 35.19275, "p_value": 0.7836},
+        {"hypothesis": "At most 2", "eigenvalue": 0.112791, "statistic": 8.694964, "critical_5": 20.26184, "p_value": 0.7644},
+        {"hypothesis": "At most 3", "eigenvalue": 0.043411, "statistic": 2.352233, "critical_5": 9.164546, "p_value": 0.7071}
+      ],
+      "max_eigen": [
+        {"hypothesis": "None", "eigenvalue": 0.433165, "statistic": 30.08745, "critical_5": 28.58808, "p_value": 0.0319},
+        {"hypothesis": "At most 1", "eigenvalue": 0.177584, "statistic": 10.36195, "critical_5": 22.29962, "p_value": 0.8059},
+        {"hypothesis": "At most 2", "eigenvalue": 0.112791, "statistic": 6.342731, "critical_5": 15.89210, "p_value": 0.7486},
+        {"hypothesis": "At most 3", "eigenvalue": 0.043411, "statistic": 2.352233, "critical_5": 9.164546, "p_value": 0.7071}
+      ]
     },
-    "selected_rank": null,
+    "selected_rank": {"trace_5": 0, "max_eigen_5": 1},
     "normalization": {},
     "eigenvectors_beta": [],
     "adjustment_alpha": []
@@ -82,7 +92,7 @@
     "statistics": {}
   },
   "parity": {
-    "status": "numeric_capture_pending",
-    "notes": "Hansen and Park are represented in the fixture even though their implementations remain pending."
+    "status": "partially_populated",
+    "notes": "Johansen and Hansen public numerical values are populated. Engle-Granger/Phillips-Ouliaris/FMOLS/CCR/DOLS and Park remain pending direct numeric captures."
   }
 }
