@@ -152,19 +152,22 @@ class TimeSeries:
         return TimeSeries(result, index=self.index, name=f"{self.name}_lag{periods}", frequency=self.frequency)
 
     def diff(self, periods: int = 1) -> "TimeSeries":
-        """Difference the series ``periods`` times, dropping unavailable lags."""
+        """Return the EViews-style difference, preserving workfile length."""
         if not isinstance(periods, int) or periods < 1:
             raise ValueError("periods must be a positive integer")
         if self.nobs <= periods:
             raise ValueError("periods must be smaller than the number of observations")
-        if np.isnan(self.values).any():
-            raise ValueError("diff requires a series without missing observations")
         values = self.values.copy()
         for _ in range(periods):
-            values = np.diff(values)
-        index = self.index[periods:] if self.index is not None else None
-        return TimeSeries(values, index=index, name=f"D({self.name},{periods})", frequency=self.frequency)
-
+            differenced = np.full(values.size, np.nan, dtype=float)
+            differenced[1:] = values[1:] - values[:-1]
+            values = differenced
+        return TimeSeries(
+            values,
+            index=self.index,
+            name=f"D({self.name},{periods})",
+            frequency=self.frequency,
+        )
     def log(self) -> "TimeSeries":
         """Return the natural logarithm of a strictly positive series."""
         if np.isnan(self.values).any():
