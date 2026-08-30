@@ -337,3 +337,32 @@ def assert_reports_pass(reports: Mapping[str, ParityReport]) -> None:
     failures = [report.text() for report in reports.values() if not report.passed]
     if failures:
         raise AssertionError("\n\n".join(failures))
+
+
+def load_fixture(path: str | "os.PathLike[str]") -> dict[str, Any]:
+    """Load a JSON reference fixture produced from captured EViews output."""
+    import json
+    from pathlib import Path
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def reports_dataframe(reports: Mapping[str, ParityReport]) -> pd.DataFrame:
+    """Flatten parity reports into a machine-readable validation table."""
+    rows = []
+    for model, report in reports.items():
+        for item in report.comparisons:
+            rows.append({
+                "Model": model,
+                "Check": item.name,
+                "Passed": item.passed,
+                "Actual": item.actual,
+                "Expected": item.expected,
+                "Absolute Error": item.abs_error,
+                "Relative Error": item.rel_error,
+                "Tolerance": item.tolerance,
+                "Note": item.note,
+            })
+    return pd.DataFrame(rows, columns=[
+        "Model", "Check", "Passed", "Actual", "Expected",
+        "Absolute Error", "Relative Error", "Tolerance", "Note",
+    ])
