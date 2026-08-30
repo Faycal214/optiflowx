@@ -58,3 +58,14 @@ def test_non_ml_methods_are_not_silently_mapped_to_ml():
         fit_ar(y, 1, method="yule_walker")
     with pytest.raises(ValueError):
         fit_arma(y, 1, 1, method="cls")
+
+def test_direct_arma_api_preserves_sparse_lags():
+    y = _arma11(0.4, 0.2, 180, 47)
+    result = fit_arma(y, [1, 4], [2, 5])
+    names = set(result.params.index)
+    assert "AR(1)" in names
+    assert "AR(4)" in names
+    assert "MA(2)" in names
+    assert "MA(5)" in names
+    assert "AR(2)" not in names
+    assert "MA(1)" not in names
