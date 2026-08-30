@@ -3,14 +3,37 @@
   "source": {
     "software": "EViews",
     "reference_type": "public_EViews_output",
-    "notes": "Numerical values populated from a published EViews User Guide Breusch-Godfrey example. No proprietary workfile or executable is included."
+    "notes": "Numerical values populated from the supplied EViews User Guide output block. No proprietary workfile or executable is included."
   },
   "equation": {
     "name": "UROOT_BG_EXAMPLE",
     "specification": "published EViews consumption-function example",
     "method": "Least Squares",
-    "sample": "1949M02 2010M03",
-    "nobs": 734,
+    "sample": "1948Q3 1988Q4",
+    "nobs": 162,
+    "base_ols": {
+      "dependent": "CS",
+      "variables": ["C", "GDP", "CS(-1)"],
+      "coefficients": {
+        "C": {"coefficient": -9.227624, "std_error": 5.898177, "t_stat": -1.564487, "p_value": 0.1197},
+        "GDP": {"coefficient": 0.038732, "std_error": 0.005322, "t_stat": 7.277715, "p_value": 0.0},
+        "CS(-1)": {"coefficient": 0.961554, "std_error": 0.005510, "t_stat": 174.510711, "p_value": 0.0}
+      },
+      "statistics": {
+        "R-squared": 0.999710,
+        "Adjusted R-squared": 0.999706,
+        "Mean dependent var": 1148.096,
+        "S.D. dependent var": 624.9392,
+        "S.E. of regression": 10.70,
+        "Sum squared resid": 18197.0,
+        "Akaike info criterion": 7.5960,
+        "Schwarz criterion": 7.6531,
+        "Log likelihood": -612.28,
+        "F-statistic": 274291.2,
+        "Durbin-Watson stat": 2.164,
+        "Prob(F-statistic)": 0.0
+      }
+    },
     "arma_terms": 0
   },
   "views": {
@@ -32,12 +55,12 @@
     "serial_correlation_lm": {
       "lags": 2,
       "statistics": {
-        "F-statistic": 23.02572,
-        "F-p-value": 0.0,
-        "Obs*R-squared": 43.78175,
-        "Obs*R-squared-p-value": 0.0,
+        "F-statistic": 1.516104,
+        "F-p-value": 0.2227,
+        "Obs*R-squared": 3.064110,
+        "Obs*R-squared-p-value": 0.2161,
         "df": 2,
-        "denominator_df": 726
+        "denominator_df": 157
       },
       "test_equation": {
         "dependent": "RESID",
@@ -74,6 +97,6 @@
   },
   "parity": {
     "status": "partially_populated",
-    "notes": "Serial-correlation LM values are populated from a published EViews output. Other diagnostic views remain pending direct numerical captures."
+    "notes": "Base OLS and Breusch-Godfrey numerical values are populated from the supplied EViews output block. Other diagnostic views remain pending direct numerical captures."
   }
 }
