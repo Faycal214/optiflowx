@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Iterable
+import re
 
 import numpy as np
 import pandas as pd
@@ -81,9 +82,26 @@ class Workfile:
         if isinstance(values, TimeSeries):
             series = values.copy(name=name)
         else:
-            series = TimeSeries(values, index=None if index is None else tuple(index), name=name, frequency=self.frequency)
-        if self.series and series.nobs != self.nobs:
-            raise ValueError("all workfile series must have the same number of positions")
+            resolved_index = index
+            if resolved_index is None and self.series:
+                resolved_index = next(iter(self.series.values())).index
+            series = TimeSeries(
+                values,
+                index=None if resolved_index is None else tuple(resolved_index),
+                name=name,
+                frequency=self.frequency,
+            )
+        if self.series:
+            reference = next(iter(self.series.values()))
+            if series.nobs != self.nobs:
+                raise ValueError("all workfile series must have the same number of observations")
+            if reference.index is not None and series.index is not None and reference.index != series.index:
+                raise ValueError("all indexed workfile series must share the same index")
+            if reference.index is not None and series.index is None:
+                series = series.copy(name=name)
+                object.__setattr__(series, "index", reference.index)
+            if self.frequency is not None and series.frequency is not None and series.frequency != self.frequency:
+                raise ValueError("all workfile series must share the workfile frequency")
         self.series[name] = series
         if self.sample_end is None:
             self.sample_end = series.nobs - 1
@@ -120,16 +138,47 @@ class Workfile:
             if reference.index is None:
                 raise ValueError("string samples require an indexed workfile")
             labels = list(reference.index)
-            start_pos = next((i for i, value in enumerate(labels) if str(value) == start_label), -1)
-            end_pos = next((i for i, value in enumerate(labels) if str(value) == end_label), -1)
-            if start_pos < 0 or end_pos < 0:
+
+            def _resolve(label: str) -> int:
+                matches = [i for i, value in enumerate(labels) if str(value) == label]
+                if matches:
+                    return matches[0]
                 try:
                     parsed = pd.to_datetime(pd.Index(labels))
-                    start_pos = int(np.where(parsed == pd.Timestamp(start_label))[0][0])
-                    end_pos = int(np.where(parsed == pd.Timestamp(end_label))[0][0])
-                except Exception as exc:  # noqa: BLE001
-                    raise ValueError(f"could not resolve sample labels {start_label!r}, {end_label!r}") from exc
-            start, end = start_pos, end_pos
+                    stamp = pd.Timestamp(label)
+                    matches = np.where(parsed == stamp)[0]
+                    if matches.size:
+                        return int(matches[0])
+                except Exception:
+                    pass
+                # EViews-style period labels: YYYYQn and YYYYMm.
+                period_match = re.fullmatch(r"(\d{4})([QM])(\d{1,2})", label.upper())
+                if period_match:
+                    year = int(period_match.group(1))
+                    unit = period_match.group(2)
+                    period = int(period_match.group(3))
+                    if unit == "Q" and not 1 <= period <= 4:
+                        raise ValueError(f"invalid quarterly sample label {label!r}")
+                    if unit == "M" and not 1 <= period <= 12:
+                        raise ValueError(f"invalid monthly sample label {label!r}")
+                    try:
+                        target = pd.Period(
+                            f"{year}Q{period}" if unit == "Q" else f"{year}-{period:02d}",
+                            freq="Q" if unit == "Q" else "M",
+                        )
+                        for i, value in enumerate(labels):
+                            if isinstance(value, pd.Period) and value == target:
+                                return i
+                            try:
+                                if pd.Period(pd.Timestamp(value), freq=target.freq) == target:
+                                    return i
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+                raise ValueError(f"could not resolve sample label {label!r}")
+
+            start, end = _resolve(start_label), _resolve(end_label)
         if not isinstance(start, int):
             raise TypeError("sample start must be an integer position or label string")
         if start < 0 or start >= self.nobs:
