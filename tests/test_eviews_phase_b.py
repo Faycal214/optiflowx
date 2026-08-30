@@ -101,6 +101,8 @@ def test_phase_b_eq18_eq19_eq20_eq21_numerical_parity():
 
     for name, reference in expected.items():
         result = wf.ls(reference["specification"], name=name, start_params=_start_params(reference["coefficients"]))
+        parity = compare_equation_fixture(result, reference, model_name=name)
+        assert parity.passed, parity.text()
         table = result.table()
 
         for term, fields in reference["coefficients"].items():
