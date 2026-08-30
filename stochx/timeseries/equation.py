@@ -288,6 +288,24 @@ class EquationResult(UnifiedResult):
             "Observations": float(f.size),
         }
 
+    def coint(self, *, method: str = "eg", x=None, trend: str = "const", lag=None, maxlag=None):
+        """Run an EViews equation-level residual cointegration test."""
+        from .cointegration import engle_granger, phillips_ouliaris
+        if x is None: raise ValueError("x must be supplied")
+        if method.lower() == "eg": return engle_granger(self.observed, x, trend=trend, lag=lag, maxlag=maxlag)
+        if method.lower() == "po": return phillips_ouliaris(self.observed, x, trend=trend, lag=lag, maxlag=maxlag)
+        raise ValueError("method must be 'eg' or 'po'
+")
+
+    def cointreg(self, x, *, method: str = "fmols", trend: str = "const", leads: int = 0, lags: int = 0, kernel: str = "bartlett", bandwidth=None):
+        """Estimate an EViews single-equation cointegrating regression."""
+        from .cointegration import cointreg
+        return cointreg(self.observed, x, method=method, trend=trend, leads=leads, lags=lags, kernel=kernel, bandwidth=bandwidth)
+
+    def ecm(self, x, *, lags: int = 1, trend: str = "const"):
+        """Estimate a single-equation error-correction model."""
+        from .cointegration import ecm
+        return ecm(self.observed, x, lags=lags, trend=trend)
     def diagnostics(self, *, lags: int = 12, alpha: float = 0.05, het_test: str = "BPG", white_cross_terms: bool = False) -> dict[str, object]:
         """Return EViews-style residual diagnostics for this equation."""
         from .diagnostics import histogram_normality, residual_correlogram, residual_correlogram_squared, serial_correlation_lm, heteroskedasticity_test
