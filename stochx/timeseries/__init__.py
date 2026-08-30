@@ -77,4 +77,4 @@ __all__ = [
     "plot_series", "plot_correlogram", "plot_eviews_correlogram", "plot_forecast", "plot_decomposition",
 ]
 
-from .parity import ParityReport, Comparison, compare_number, compare_array, compare_dataframe, compare_equation_fixture, compare_forecast, validate_equations, assert_reports_pass, load_fixture, reports_dataframe
+from .parity import ParityReport, Comparison, compare_number, compare_array, compare_dataframe, compare_equation_fixture, compare_forecast, compare_autoarma_reference, validate_forecast_reference_metadata, validate_equations, assert_reports_pass, load_fixture, reports_dataframe, validate_fixture_schema
