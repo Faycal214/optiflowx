@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "cointegration": {
+    "dataset": "denmark",
+    "source_type": "public_dataset_same_as_published_example",
+    "provider": "CRAN ARDL / urca",
+    "repository": "https://github.com/cran/ARDL",
+    "file": "data/denmark.rda",
+    "period": "1974Q1-1987Q3",
+    "variables": ["LRM", "LRY", "LPY", "IBO", "IDE"],
+    "eviews_reference": {
+      "variables": ["LRM", "LRY", "IBO", "IDE"],
+      "sample": "1974Q3-1987Q3",
+      "included_observations": 53,
+      "lags_interval_first_differences": "1 1",
+      "exogenous": ["D1", "D2", "D3"],
+      "deterministic": "No deterministic trend in the data (restricted constant)"
+    },
+    "retrieval": {
+      "license_note": "ARDL package is GPL-3; do not copy its binary data file into the MIT StochX repository without a separate redistribution decision.",
+      "recommended": "Fetch the public dataset in the validation environment and convert it to CSV outside the repository."
+    }
+  },
+  "diagnostics": {
+    "dataset": "Uroot.WF1",
+    "source_type": "public_EViews_forum_attachment",
+    "source_page": "https://forums.eviews.com/viewtopic.php?p=71579",
+    "attachment": "uroot.wf1",
+    "size_kib": 64.13,
+    "status": "attachment_bytes_not_available_in_current_runtime",
+    "published_test": {
+      "name": "Breusch-Godfrey Serial Correlation LM Test",
+      "sample": "1949M02-2010M03",
+      "included_observations": 734,
+      "lags": 2,
+      "F_statistic": 23.02572,
+      "Obs_R_squared": 43.78175,
+      "F_df": [2, 726],
+      "LM_df": 2
+    }
+  }
+}
