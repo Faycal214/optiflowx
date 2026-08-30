@@ -2,13 +2,9 @@
 
 ## What these tools answer
 
-The autocorrelation function (ACF) describes linear dependence between $y_t$ and $y_{t-k}$.
+The correlogram is a central EViews time-series view: it displays the autocorrelation and partial autocorrelation functions together with the Ljung–Box Q-statistic and its probability. EViews also allows the correlogram to be computed for the level, first difference, or higher difference of a series. citeturn104974search2turn193586search5
 
-$$\rho_k=\frac{\operatorname{Cov}(y_t,y_{t-k})}{\sqrt{\operatorname{Var}(y_t)\operatorname{Var}(y_{t-k})}}.$$
-
-The partial autocorrelation function (PACF) measures the remaining lag-$k$ association after accounting for the intermediate lags.
-
-StochX exposes both directly:
+StochX exposes the same numerical components directly:
 
 ```python
 from stochx.timeseries import acf, pacf, correlogram
@@ -20,15 +16,109 @@ corr = correlogram(y, nlags=24)
 print(corr.table())
 ```
 
-## Why the correlogram is central
+For a workfile, the active sample is applied first:
 
-The `CorrelogramResult` combines the views an EViews user normally inspects together: lag, AC, PAC, Ljung–Box Q-statistic, p-value, degrees of freedom and confidence bands.
+```python
+wf.set_sample("2010M1 2020M12")
+corr = wf.correlogram("Y", nlags=24)
+corr_d1 = wf.correlogram("Y", nlags=24, d=1)
+```
 
-The report is intentionally table-oriented so it can be read in notebooks, tests and automated reports.
+## Autocorrelation
+
+EViews estimates the sample autocorrelation at lag (k) with one common overall sample mean:
+
+[
+	au_k =
+rac{
+sum_{t=k+1}^{T}
+(Y_t-ar Y)(Y_{t-k}-ar Y)
+}{
+sum_{t=1}^{T}(Y_t-ar Y)^2
+}.
+]
+
+EViews explicitly notes that this differs slightly from estimators using separate means for the shortened lagged sample. citeturn193586search3turn193586search5
+
+StochX implements this EViews convention rather than using a generic correlation coefficient.
+
+## Partial autocorrelation
+
+EViews computes PAC recursively from the estimated autocorrelations using the Box–Jenkins / Durbin–Levinson construction. For lag (k),
+
+[
+phi_{kk}
+=
+rac{
+	au_k-sum_{j=1}^{k-1}phi_{k-1,j}	au_{k-j}
+}{
+1-sum_{j=1}^{k-1}phi_{k-1,j}	au_j
+},
+]
+
+followed by
+
+[
+phi_{k,j}
+=
+phi_{k-1,j}
+-
+phi_{kk}phi_{k-1,k-j}.
+]
+
+EViews describes this as a consistent approximation to the partial autocorrelation and notes that a direct regression can provide a more precise estimate. citeturn104974search6turn193586search6
+
+## Confidence bands
+
+EViews displays approximate two-standard-error limits:
+
+[
+pm rac{2}{sqrt{T}}.
+]
+
+These bands are approximate and are based on the effective observation count (T). The band convention is independent of the requested significance setting in the StochX correlogram API; the explicit `alpha` parameter is used for result-level decision interpretation rather than changing these EViews-style bands. citeturn104974search6
+
+## Ljung–Box Q-statistic
+
+For lag (k), EViews computes:
+
+[
+Q_{LB}
+=
+T(T+2)
+sum_{j=1}^{k}
+rac{	au_j^2}{T-j}.
+]
+
+For an ordinary series, the asymptotic reference distribution uses (k) degrees of freedom. For residuals from an ARIMA model, EViews adjusts the degrees of freedom by the number of estimated AR and MA terms. citeturn104974search6
+
+StochX stores the adjusted degrees of freedom in `result.DF` and returns undefined probabilities when the adjusted degrees of freedom are non-positive.
+
+## Display contract
+
+The default `CorrelogramResult.table()` matches the EViews statistical table:
+
+```text
+Lag    AC    PAC    Q-Stat    Prob.
+```
+
+The adjusted degrees of freedom and confidence bands remain available from the result object and may be appended explicitly for auditing:
+
+```python
+corr.DF
+corr.ac_lower
+corr.ac_upper
+
+corr.table(include_df=True, include_bands=True)
+```
+
+## Missing observations
+
+StochX currently performs one common missing-value preprocessing pass for direct ACF/PACF/correlogram calculations: NaNs are removed before the numerical calculation and the resulting effective (T) is used consistently for the ACF, PACF, Q-statistic and confidence bands.
+
+This is an explicit StochX convention. When exact EViews missing-data behavior needs to be certified for a particular data layout, it must be frozen against an actual EViews output fixture rather than inferred.
 
 ## Interpretation patterns
-
-A practical identification guide is:
 
 | Pattern | Typical indication |
 |---|---|
@@ -38,24 +128,7 @@ A practical identification guide is:
 | Strong seasonal spikes | seasonal structure may be present |
 | Slow decay at low lags | possible non-stationarity |
 
-These are heuristics, not proofs. The selected model must still be estimated and validated.
-
-## Ljung–Box and Box–Pierce
-
-The correlogram also provides residual serial-correlation diagnostics. For a residual series $e_t$, the Ljung–Box statistic aggregates autocorrelation evidence over a set of lags.
-
-```python
-from stochx.timeseries import ljung_box
-
-result = ljung_box(residuals, lags=(1, 2, 4, 8))
-print(result)
-```
-
-Use residual diagnostics after fitting rather than relying only on the original series' correlogram.
-
-## Numerical conventions
-
-The StochX correlogram uses explicit finite-sample counts and confidence-band conventions. These conventions are frozen by regression fixtures because tiny changes in lag caps, effective sample sizes or standard-error formulas can change downstream identification decisions.
+These are identification heuristics, not proofs. The selected model must still be estimated and validated.
 
 ## Practical workflow
 
