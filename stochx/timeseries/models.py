@@ -22,6 +22,20 @@ class TSResult(UnifiedResult):
     seasonal_order: tuple[int, int, int, int] | None = None
 
     @property
+    def params_eviews(self) -> pd.Series:
+        """Return model parameters using EViews AR/MA naming."""
+        raw = super().params
+        mapping = {}
+        for name in raw.index:
+            text = str(name)
+            if text.startswith("ar.L"):
+                mapping[name] = f"AR({int(text[4:])})"
+            elif text.startswith("ma.L"):
+                mapping[name] = f"MA({int(text[4:])})"
+            elif text.lower() in {"sigma2", "sigmasq"}:
+                mapping[name] = "SIGMASQ"
+        return raw.rename(index=mapping)
+    @property
     def model_name(self) -> str:
         """Return the model family name."""
         return self.title
