@@ -430,7 +430,7 @@ class Equation:
             except Exception:
                 opg = None
         sample = f"{frame.index[0]} {frame.index[-1]}" if len(frame.index) else None
-        wrapped = EquationResult(result=result, title=f"Equation: {self.name}", dependent=dependent_name, method=method, sample=sample, specification=spec, error_process=error_process, _opg_covariance=opg)
+        wrapped = EquationResult(result=result, title=f"Equation: {self.name}", dependent=dependent_name, method=method, sample=sample, specification=spec, error_process=error_process, _opg_covariance=opg, observed=np.asarray(y, dtype=float), workfile=self.workfile)
         self.specification = spec
         self.result = wrapped
         return wrapped
