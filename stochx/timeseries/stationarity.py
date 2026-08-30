@@ -717,20 +717,42 @@ def dickey_fuller_sequential(
     return SequentialDFResult(tuple(models), model1, nature, "After Models 3 and 2 were not retained, the course completes the root test in Model 1 without constant or trend.", common_lag, lag_method, tuple(spec_tests))
 
 
-def kpss_test(y: TimeSeries | Iterable[float], *, regression: str = "c", nlags: str | int = "auto", alpha: float = 0.05) -> UnitRootResult:
-    """Run KPSS as a complementary stationarity diagnostic."""
+def kpss_test(
+    y: TimeSeries | Iterable[float],
+    *,
+    regression: str = "c",
+    nlags: str | int = "auto",
+    alpha: float = 0.05,
+    d: int = 0,
+) -> UnitRootResult:
+    """Run the EViews-style KPSS stationarity test."""
     x = _values(y)
-    statistic, pvalue, lags, critical = kpss(x, regression=regression, nlags=nlags)
+    if d not in {0, 1, 2}:
+        raise ValueError("d must be 0, 1, or 2")
+    if d:
+        x = np.diff(x, n=d)
+    if regression not in {"c", "ct"}:
+        raise ValueError("KPSS regression must be \'c\' or \'ct\'")
+    statistic, pvalue, used_lags, critical = kpss(x, regression=regression, nlags=nlags)
     critical_values = {str(k): float(v) for k, v in critical.items()}
     _validate_alpha(alpha)
     level = {0.01: "1%", 0.05: "5%", 0.10: "10%"}[alpha]
     decision: Decision = "reject" if statistic > critical_values[level] else "fail_to_reject"
-    conclusion = f"Reject stationarity at {int(alpha * 100)}%; evidence favors non-stationarity." if decision == "reject" else f"Do not reject stationarity at {int(alpha * 100)}%."
+    conclusion = (
+        f"Reject the stationarity null at {int(alpha * 100)}%; evidence favors non-stationarity."
+        if decision == "reject" else
+        f"Do not reject the stationarity null at {int(alpha * 100)}%."
+    )
     return UnitRootResult(
         "KPSS Test", float(statistic), float(pvalue), critical_values,
-        regression if regression in {"n", "c", "ct"} else "c", int(lags), int(x.size - lags),
-        "The series is stationary.", "The series is non-stationary.", decision, alpha, conclusion,
-        critical_value_source="KPSS critical values", specification_label=f"KPSS regression={regression}"
+        regression, int(used_lags), int(x.size),
+        "The series is stationary around the selected deterministic specification.",
+        "The series is not stationary around the selected deterministic specification.",
+        decision, alpha, conclusion,
+        critical_value_source="KPSS asymptotic critical values",
+        specification_label=f"KPSS ({regression})",
+        lag_selection_method=f"Backend long-run variance bandwidth ({nlags})",
+        deterministic_terms=DF_SPECIFICATIONS[regression]["deterministic_terms"],
     )
 
 
