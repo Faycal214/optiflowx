@@ -23,7 +23,20 @@ class AutoARIMAResult:
     @property
     def selected(self): return self.selected_result
     def table(self): return self.candidates.copy()
-    def forecast(self, steps: int, **kwargs): return self.selected_result.forecast(steps=steps, **kwargs)
+    def forecast(self, steps: int, **kwargs):
+        frame = self.selected_result.forecast(steps=steps, **kwargs).copy()
+        if self.transformation == "log":
+            point = np.exp(frame["Forecast"].to_numpy(dtype=float))
+            lower = np.exp(frame["Lower"].to_numpy(dtype=float))
+            upper = np.exp(frame["Upper"].to_numpy(dtype=float))
+            z = 1.959963984540054
+            se = (upper - lower) / (2.0 * z)
+            frame["Forecast"] = point
+            frame["Lower"] = lower
+            frame["Upper"] = upper
+            frame["Std. Error"] = se
+            frame.attrs["back_transform"] = "exp"
+        return frame
 
 def _series(y):
     return y if isinstance(y, TimeSeries) else TimeSeries(np.asarray(list(y.values if hasattr(y, "values") else y), dtype=float), name=getattr(y, "name", "Y"))
