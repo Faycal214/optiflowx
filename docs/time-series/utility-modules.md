@@ -38,12 +38,7 @@ print(impulse_response([0.5], 10))
 
 These functions are especially useful for teaching because they connect the fitted parameters back to the model's theoretical behavior.
 
-## Simulation
-
-`white_noise`, `ar`, `ma`, `arma`, `random_walk` and `sarma` generate synthetic series for exercises and regression testing.
-
-The stochastic namespace also provides simulation for process objects. See [Stochastic simulation](../stochastic/simulation.md) for the reproducibility rules shared by both layers.
-
+## Plotting
 ## Plotting
 
 The plotting helpers cover the standard workflow views:
