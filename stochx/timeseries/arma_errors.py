@@ -6,7 +6,7 @@ from dataclasses import dataclass
 import re
 
 
-_TERM_RE = re.compile(r"^(AR|MA)\((-?\d+)\)$", re.IGNORECASE)
+_TERM_RE = re.compile(r"^(AR|MA|SAR|SMA)\((-?\d+)\)$", re.IGNORECASE)
 _RANGE_RE = re.compile(r"^(AR|MA)\(\s*(-?\d+)\s+to\s+(-?\d+)\s*\)$", re.IGNORECASE)
 
 
