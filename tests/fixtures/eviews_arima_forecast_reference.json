@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "source": {
+    "software": "EViews",
+    "reference": "Automatic ARIMA Forecasting public example",
+    "series": "ELECDMD",
+    "workfile": "elecdmd.wf1",
+    "documented_reference": "https://www.eviews.com/help/content/series-Automatic_ARIMA_Forecasting.html",
+    "reference_type": "public_documented_behavior",
+    "numeric_forecast_capture": "pending"
+  },
+  "specification": {
+    "transformation": "log",
+    "d": 1,
+    "max_diff": 2,
+    "max_ar": 4,
+    "max_ma": 4,
+    "max_sar": 1,
+    "max_sma": 1,
+    "periods": 12,
+    "selection": "AIC",
+    "candidate_models_expected": 100,
+    "nonconverged_included": false,
+    "estimation_sample": "2005M01 2014M04",
+    "forecast_sample": "2014M05 2015M12"
+  },
+  "expected_selection": {
+    "transformation": "log",
+    "d": 1,
+    "p": 3,
+    "q": 3,
+    "P": 1,
+    "D": 0,
+    "Q": 1,
+    "periods": 12
+  },
+  "exogenous_regressors": [
+    "@expand(@month)",
+    "REALGDP",
+    "TEMPF"
+  ],
+  "model_output": {
+    "status": "reference_values_not_published_in_text",
+    "coefficients": {},
+    "statistics": {},
+    "roots": {
+      "ar": [],
+      "ma": [],
+      "sar": [],
+      "sma": []
+    }
+  },
+  "forecast": {
+    "status": "reference_values_not_published_in_text",
+    "sample": {
+      "start": "2014M05",
+      "end": "2015M12"
+    },
+    "dynamic": true,
+    "structural": false,
+    "coef_uncertainty": true,
+    "columns": {
+      "Forecast": [],
+      "Std. Error": [],
+      "Lower": [],
+      "Upper": [],
+      "Actual": [],
+      "Error": []
+    }
+  }
+}
