@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from itertools import product
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 from .models import fit_arima, fit_sarima
 from .stationarity import kpss_test
 from .series import TimeSeries
