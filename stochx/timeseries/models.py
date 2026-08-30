@@ -95,6 +95,8 @@ class TSResult(UnifiedResult):
                 "mean_se": "Std. Error",
                 "mean_ci_lower": "Lower",
                 "mean_ci_upper": "Upper",
+                "obs_ci_lower": "Lower",
+                "obs_ci_upper": "Upper",
             }
         )
         if "Std. Error" not in frame:
