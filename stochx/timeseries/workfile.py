@@ -151,6 +151,40 @@ class Workfile:
         """Return series names in insertion order."""
         return list(self.series)
 
+    def _resolve_sample_label(self, labels: list, label: str) -> int:
+        matches = [i for i, value in enumerate(labels) if str(value) == label]
+        if matches:
+            return matches[0]
+        try:
+            parsed = pd.to_datetime(pd.Index(labels))
+            stamp = pd.Timestamp(label)
+            matches = np.where(parsed == stamp)[0]
+            if matches.size:
+                return int(matches[0])
+        except Exception:
+            pass
+        period_match = re.fullmatch(r"(\d{4})([QM])(\d{1,2})", label.upper())
+        if period_match:
+            year = int(period_match.group(1))
+            unit = period_match.group(2)
+            number = int(period_match.group(3))
+            if unit == "Q" and not 1 <= number <= 4:
+                raise ValueError(f"invalid quarterly sample label {label!r}")
+            if unit == "M" and not 1 <= number <= 12:
+                raise ValueError(f"invalid monthly sample label {label!r}")
+            target = pd.Period(
+                f"{year}Q{number}" if unit == "Q" else f"{year}-{number:02d}",
+                freq="Q" if unit == "Q" else "M",
+            )
+            for i, value in enumerate(labels):
+                try:
+                    if isinstance(value, pd.Period) and value == target:
+                        return i
+                    if pd.Period(pd.Timestamp(value), freq=target.freq) == target:
+                        return i
+                except Exception:
+                    pass
+        raise ValueError(f"could not resolve sample label {label!r}")
     def set_sample(self, start: int | str = 0, end: int | str | None = None) -> "Workfile":
         """Set the current estimation sample by positions or matching index labels."""
         if self.nobs == 0:
