@@ -49,3 +49,18 @@ def test_arima_forecast_supports_dynamic_and_static_paths():
     assert len(static) == 6
     assert len(dynamic) == 6
     assert "Forecast" in static.columns
+
+
+def test_eviews_seasonal_terms_are_parsed_and_estimated_in_equations():
+    wf = Workfile(frequency="M")
+    wf.add("Y", _seasonal_series(n=180))
+    regressors, process = __import__("stochx.timeseries.arma_errors", fromlist=["parse_error_terms"]).parse_error_terms(
+        ["C", "SAR(1)", "SMA(1)"]
+    )
+    assert regressors == ["C"]
+    assert process.sar == (1,)
+    assert process.sma == (1,)
+    result = wf.ls("Y C SAR(1) SMA(1)", name="SARIMA1")
+    labels = set(result.params.index)
+    assert "SAR(1)" in labels
+    assert "SMA(1)" in labels
