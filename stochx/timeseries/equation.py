@@ -15,6 +15,7 @@ from statsmodels.tsa.statespace.sarimax import SARIMAX
 from .arma_errors import ErrorProcess, parse_error_terms
 from .expression import ExpressionError, evaluate
 from .results import UnifiedResult
+from .arma_estimation import fit_cls, fit_gls, make_starting_values
 
 _RANGE_RE = re.compile(r"^(?P<name>[A-Za-z_][A-Za-z0-9_]*)\(\s*(?P<start>-?\d+)\s+to\s+(?P<end>-?\d+)\s*\)$", re.IGNORECASE)
 
@@ -274,7 +275,7 @@ class Equation:
             names.append(token)
         return frame[names], error_process
 
-    def ls(self, specification: str | None = None, *, start_params: np.ndarray | list[float] | None = None) -> EquationResult:
+    def ls(self, specification: str | None = None, *, start_params: np.ndarray | list[float] | None = None, arma_method: str = "ml", arma_start: str = "automatic", backcast: bool = True, covariance: str = "opg", optimizer: str = "bfgs", maxiter: int = 1000, tol: float = 1e-8, random_seed: int | None = None) -> EquationResult:
         """Estimate an OLS or EViews-style ARMA-error equation using BFGS ML."""
         spec = (specification or self.specification).strip()
         if not spec:
@@ -294,26 +295,41 @@ class Equation:
         y = frame[dependent_name]
         exog = frame[X.columns]
         if error_process.max_p or error_process.max_q:
-            model = SARIMAX(
-                y,
-                exog=exog,
-                order=(error_process.p, 0, error_process.q),
-                trend="n",
-                enforce_stationarity=True,
-                enforce_invertibility=True,
+            method_key = arma_method.lower()
+            if method_key not in {"ml", "gls", "cls"}:
+                raise ValueError("arma_method must be ml, gls, or cls")
+            start_mode = "user-specified" if start_params is not None else arma_start
+            start = make_starting_values(
+                np.asarray(y, dtype=float), np.asarray(exog, dtype=float),
+                error_process.p, error_process.q, method=method_key,
+                mode=start_mode, user=start_params, random_seed=random_seed,
             )
-            kwargs = {"method": "bfgs", "disp": False, "maxiter": 1000, "cov_type": "opg"}
-            if start_params is not None:
-                start = np.asarray(start_params, dtype=float).reshape(-1)
-                expected = exog.shape[1] + len(error_process.p) + len(error_process.q) + 1
-                if start.size != expected:
-                    raise ValueError(
-                        f"start_params must contain {expected} values in EViews order "
-                        "(mean regressors, AR terms, MA terms, SIGMASQ)"
-                    )
-                kwargs["start_params"] = start
-            result = model.fit(**kwargs)
-            method = "ARMA Maximum Likelihood (BFGS)"
+            if method_key == "cls":
+                result = fit_cls(
+                    np.asarray(y, dtype=float), np.asarray(exog, dtype=float),
+                    list(exog.columns), error_process.p, error_process.q,
+                    start_values=start, backcast=backcast, maxiter=maxiter, tol=tol,
+                )
+                method = "ARMA Conditional Least Squares (BFGS)"
+            elif method_key == "gls":
+                result = fit_gls(
+                    np.asarray(y, dtype=float), np.asarray(exog, dtype=float),
+                    list(exog.columns), error_process.p, error_process.q,
+                    start_values=start, maxiter=maxiter, tol=tol,
+                )
+                method = "ARMA Generalized Least Squares (BFGS)"
+            else:
+                model = SARIMAX(
+                    y, exog=exog,
+                    order=(error_process.max_p, 0, error_process.max_q),
+                    trend="n", enforce_stationarity=True, enforce_invertibility=True,
+                )
+                kwargs = {"method": "bfgs", "disp": False, "maxiter": maxiter}
+                if covariance.lower() == "opg": kwargs["cov_type"] = "opg"
+                elif covariance.lower() != "hessian": raise ValueError("covariance must be opg or hessian")
+                if start_params is not None: kwargs["start_params"] = np.asarray(start_params, dtype=float)
+                result = model.fit(**kwargs)
+                method = "ARMA Maximum Likelihood (BFGS)"
         else:
             model = sm.OLS(y, exog)
             result = model.fit()
