@@ -12,6 +12,46 @@ from scipy import stats
 DateLike = date | datetime | str | int | float
 
 
+
+
+def descriptive_statistics(values: Iterable[float]) -> dict[str, float]:
+    """Compute EViews-style univariate descriptive statistics."""
+    array = np.asarray(list(values), dtype=float).reshape(-1)
+    if np.any(np.isinf(array)):
+        raise ValueError("values must not contain infinite observations")
+    valid = array[np.isfinite(array)]
+    n = valid.size
+    nan = float('nan')
+    if n == 0:
+        return {
+            "Observations": float(array.size), "Included observations": 0.0,
+            "Mean": nan, "Median": nan, "Std. Dev.": nan, "Variance": nan,
+            "Minimum": nan, "Maximum": nan, "Skewness": nan, "Kurtosis": nan,
+            "Jarque-Bera": nan, "Probability": nan,
+        }
+    mean = float(np.mean(valid))
+    centered = valid - mean
+    m2 = float(np.mean(centered ** 2))
+    m3 = float(np.mean(centered ** 3))
+    m4 = float(np.mean(centered ** 4))
+    std = float(np.sqrt(np.sum(centered ** 2) / (n - 1))) if n > 1 else nan
+    variance = float(np.sum(centered ** 2) / (n - 1)) if n > 1 else nan
+    moment_std = float(np.sqrt(m2)) if m2 > 0 else 0.0
+    skewness = float(m3 / moment_std**3) if n > 2 and moment_std > 0 else nan
+    kurtosis = float(m4 / m2**2) if n > 3 and m2 > 0 else nan
+    if np.isfinite(skewness) and np.isfinite(kurtosis):
+        jb = float(n / 6.0 * (skewness**2 + ((kurtosis - 3.0) ** 2) / 4.0))
+        jb_p = float(stats.chi2.sf(jb, 2))
+    else:
+        jb = jb_p = nan
+    return {
+        "Observations": float(array.size), "Included observations": float(n),
+        "Mean": mean, "Median": float(np.median(valid)),
+        "Std. Dev.": std, "Variance": variance,
+        "Minimum": float(np.min(valid)), "Maximum": float(np.max(valid)),
+        "Skewness": skewness, "Kurtosis": kurtosis,
+        "Jarque-Bera": jb, "Probability": jb_p,
+    }
 @dataclass(frozen=True)
 class TimeSeries:
     """One regularly spaced univariate time series.
@@ -144,28 +184,12 @@ class TimeSeries:
         return TimeSeries(values, index=index, name=f"DLOG({self.name})", frequency=self.frequency)
 
     def describe(self) -> dict[str, float]:
-        """Return EViews-style descriptive statistics used in course TPs."""
-        valid = self.values[~np.isnan(self.values)]
-        n = valid.size
-        if n:
-            mean = float(np.mean(valid))
-            std = float(np.std(valid, ddof=1)) if n > 1 else float("nan")
-            variance = float(np.var(valid, ddof=1)) if n > 1 else float("nan")
-            minimum = float(np.min(valid))
-            maximum = float(np.max(valid))
-            median = float(np.median(valid))
-            skewness = float(stats.skew(valid, bias=False)) if n > 2 else float("nan")
-            kurtosis = float(stats.kurtosis(valid, fisher=False, bias=False)) if n > 3 else float("nan")
-            jb, jb_p = stats.jarque_bera(valid) if n > 1 else (np.nan, np.nan)
-        else:
-            mean = std = variance = minimum = maximum = median = skewness = kurtosis = jb = jb_p = float("nan")
-        return {
-            "Observations": float(self.nobs), "Included observations": float(n),
-            "Mean": mean, "Median": median, "Std. Dev.": std, "Variance": variance,
-            "Minimum": minimum, "Maximum": maximum, "Skewness": skewness,
-            "Kurtosis": kurtosis, "Jarque-Bera": float(jb), "Probability": float(jb_p),
-        }
+        """Return EViews-compatible descriptive statistics for this series.
 
+        The statistics use all non-missing observations in the series.
+        Workfile-level reports apply the active sample before calculation.
+        """
+        return descriptive_statistics(self.values)
     def summary(self) -> str:
         """Return a compact EViews-style descriptive summary."""
         s = self.describe()
