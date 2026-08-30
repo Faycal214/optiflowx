@@ -169,8 +169,7 @@ class EquationResult(UnifiedResult):
         out = {}
         model_df = len(self.error_process.p) + len(self.error_process.q) + len(self.error_process.sar) + len(self.error_process.sma)
         out["Correlogram-Q statistics"] = residual_correlogram(self.residuals, lags=lags, model_df=model_df, alpha=alpha)
-        if self.method.lower().startswith(("least", "ols")) or not (self.error_process.max_p or self.error_process.max_q or self.error_process.max_sar or self.error_process.max_sma):
-            out["Squared residual correlogram"] = residual_correlogram_squared(self.residuals, lags=lags, model_df=model_df, alpha=alpha)
+        out["Squared residual correlogram"] = residual_correlogram_squared(self.residuals, lags=lags, model_df=model_df, alpha=alpha)
         out["Histogram-Normality"] = histogram_normality(self.residuals, alpha=alpha)
         if hasattr(self.result, "model") and getattr(self.result.model, "exog", None) is not None:
             X = np.asarray(self.result.model.exog, dtype=float)
