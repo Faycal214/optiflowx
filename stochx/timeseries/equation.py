@@ -136,6 +136,26 @@ class EquationResult(UnifiedResult):
             "degree_of_freedom_adjustment": False,
         }
 
+    def summary(self) -> str:
+        """Render the main EViews equation estimation table."""
+        from .reporting import render_eviews
+        return render_eviews(self)
+
+    def coefficient_output(self) -> pd.DataFrame:
+        """EViews coefficient table as a DataFrame."""
+        from .reporting import EViewsReport
+        return EViewsReport(self).coefficient_table()
+
+    def report(self, *, include_covariance: bool = False, include_diagnostics: bool = False, diagnostic_lags: int = 12) -> str:
+        """Render a combined EViews-style equation report."""
+        from .reporting import EViewsReport
+        renderer = EViewsReport(self)
+        sections = [renderer.text()]
+        if include_covariance:
+            sections.append("Coefficient Covariance Matrix\n" + self.covariance.to_string(float_format=lambda x: f"{x:.6f}"))
+        if include_diagnostics:
+            sections.append(renderer.diagnostic_text("Residual Diagnostics", self.diagnostics(lags=diagnostic_lags)))
+        return "\n\n".join(sections)
     @property
     def covariance_method(self) -> str:
         if self._opg_covariance is not None:
