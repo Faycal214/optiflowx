@@ -361,3 +361,12 @@ def test_eviews_trend_expression_starts_at_zero():
     assert np.array_equal(trend.values, np.arange(5.0))
     generated = wf.generate("T", "@TREND")
     assert np.array_equal(generated.values, np.arange(5.0))
+
+
+def test_workfile_series_names_are_case_insensitive_like_eviews():
+    wf = Workfile()
+    wf.add("GDP", np.arange(5.0))
+    assert "gdp" in wf
+    assert np.array_equal(wf["gDp"].values, np.arange(5.0))
+    with pytest.raises(ValueError, match="reserved"):
+        wf.add("c", np.ones(5))
