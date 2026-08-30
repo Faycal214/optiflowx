@@ -30,6 +30,18 @@ def _series(y):
 def _difference(x, d):
     return np.diff(x, n=d) if d else x.copy()
 
+def _auto_log_choice(values: np.ndarray) -> str:
+    """Apply EViews Auto(None/Log) heteroskedasticity rule."""
+    if np.any(values <= 0):
+        return "none"
+    dy = np.diff(values)
+    ly = np.log(values)
+    dly = np.diff(ly)
+    r1 = sm.OLS(dy**2, sm.add_constant(values[1:], has_constant='add')).fit()
+    r2 = sm.OLS(dly**2, sm.add_constant(ly[1:], has_constant='add')).fit()
+    t1 = float(np.asarray(r1.tvalues)[1])
+    t2 = float(np.asarray(r2.tvalues)[1])
+    return "log" if abs(t2) < abs(t1) else "none"
 def _choose_d(y, max_diff, alpha):
     x = y.copy(); hist=[]
     for d in range(max_diff + 1):
@@ -39,12 +51,14 @@ def _choose_d(y, max_diff, alpha):
         x=np.diff(x)
     raise RuntimeError("differencing selection failed")
 
-def autoarma(y, *, max_diff=2, max_ar=4, max_ma=4, max_sar=0, max_sma=0, periods=None, select="aic", kpss_sig=0.05, nonconv=False, tform="none", name=None):
+def autoarma(y, *, max_diff=2, max_ar=4, max_ma=4, max_sar=0, max_sma=0, periods=None, select="aic", kpss_sig=0.05, nonconv=False, tform="auto", name=None):
     s=_series(y); vals=np.asarray(s.values,dtype=float); vals=vals[np.isfinite(vals)]
     if vals.size < 12: raise ValueError("autoarma requires at least 12 finite observations")
-    if tform not in {"none","log"}: raise ValueError("tform must be none or log in the certified path")
-    if tform=="log":
-        if np.any(vals<=0): raise ValueError("log transformation requires strictly positive observations")
+    if tform not in {"auto", "none", "log"}:
+        raise ValueError("tform must be auto, none, or log in the certified path")
+    if tform == "auto":
+        tform = _auto_log_choice(vals)
+    if tform == "log":        if np.any(vals<=0): raise ValueError("log transformation requires strictly positive observations")
         vals=np.log(vals)
     if periods is None:
         key=str(s.frequency).upper() if s.frequency is not None else ""
