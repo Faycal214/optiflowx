@@ -464,3 +464,20 @@ def test_descriptive_expression_functions_honor_range_samples():
     wf.set_sample(0, 2)
     assert wf.eval("@mean(X)") == pytest.approx(2.0)
     assert wf.eval("@obs(X)") == pytest.approx(3.0)
+
+
+def test_workfile_correlogram_uses_active_sample_and_eviews_difference_option():
+    rng = np.random.default_rng(123)
+    values = np.cumsum(rng.normal(size=80))
+    wf = Workfile(frequency="M")
+    wf.add("Y", values)
+    wf.set_sample(10, 69)
+
+    level = wf.correlogram("Y", nlags=8)
+    differenced = wf.correlogram("Y", nlags=8, d=1)
+
+    assert level.nobs == 60
+    assert differenced.nobs == 59
+    assert level.series_name == "Y"
+    assert np.isfinite(level.AC).all()
+    assert np.isfinite(differenced.AC).all()
