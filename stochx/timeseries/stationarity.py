@@ -624,6 +624,39 @@ def adf(
         deterministic_terms=DF_SPECIFICATIONS[regression]["deterministic_terms"],
     )
 
+
+def _course_adf(
+    x: np.ndarray,
+    *,
+    regression: DFRegression,
+    lags: int,
+    alpha: float,
+) -> UnitRootResult:
+    """ADF variant used only by the USTHB sequential decision tree."""
+    result = adfuller(x, regression=regression, maxlag=lags, autolag=None)
+    statistic, pvalue, usedlag, nobs, _ = result[:5]
+    critical_values, source = _course_df_critical(regression, int(nobs))
+    decision = _decision(float(statistic), critical_values, alpha)
+    reg = _fit_df_regression(x, regression, int(usedlag))
+    gamma_index = reg["columns"].index("gamma")
+    return UnitRootResult(
+        test="Augmented Dickey-Fuller Test (Course)",
+        statistic=float(statistic), pvalue=float(pvalue), critical_values=critical_values,
+        regression=regression, lags=int(usedlag), nobs=int(nobs),
+        null_hypothesis="γ = 0 (unit root / non-stationarity).",
+        alternative_hypothesis="γ < 0 (stationarity).",
+        decision=decision, alpha=alpha,
+        conclusion="Reject the unit-root null." if decision == "reject" else "Do not reject the unit-root null.",
+        critical_value_source=source,
+        specification_label=DF_SPECIFICATIONS[regression]["label"],
+        coefficient=float(reg["params"][gamma_index]),
+        coefficient_tvalue=float(reg["tvalues"][gamma_index]),
+        coefficient_pvalue=float(reg["pvalues"][gamma_index]),
+        lag_selection_method="Fixed course lag order",
+        max_lag=int(lags),
+        deterministic_terms=DF_SPECIFICATIONS[regression]["deterministic_terms"],
+    )
+
 def dickey_fuller(y: TimeSeries | Iterable[float], *, regression: DFRegression = "c", alpha: float = 0.05) -> UnitRootResult:
     """Run the original Dickey-Fuller test with zero augmented lagged differences."""
     return replace(adf(y, regression=regression, lags=0, autolag=None, alpha=alpha), test="Dickey-Fuller Test")
@@ -650,7 +683,7 @@ def dickey_fuller_sequential(
     models: list[UnitRootResult] = []
     spec_tests: list[SpecificationTestResult] = []
 
-    model3 = adf(x, regression="ct", lags=common_lag, autolag=None, alpha=alpha)
+    model3 = _course_adf(x, regression="ct", lags=common_lag, alpha=alpha)
     models.append(model3)
     model3_df = _fit_df_regression(x, "ct", common_lag)
     if model3.rejects_null:
@@ -664,7 +697,7 @@ def dickey_fuller_sequential(
         if f3.rejects_null:
             return SequentialDFResult(tuple(models), model3, "I(1) with the Model 3 deterministic structure", "Model 3 did not reject the unit-root null and the joint H3,0 test rejected; the series is integrated under the Model 3 specification.", common_lag, lag_method, tuple(spec_tests))
 
-    model2 = adf(x, regression="c", lags=common_lag, autolag=None, alpha=alpha)
+    model2 = _course_adf(x, regression="c", lags=common_lag, alpha=alpha)
     models.append(model2)
     model2_df = _fit_df_regression(x, "c", common_lag)
     if model2.rejects_null:
@@ -678,7 +711,7 @@ def dickey_fuller_sequential(
         if f2.rejects_null:
             return SequentialDFResult(tuple(models), model2, "I(1) with a constant (DS candidate)", "Model 2 did not reject the unit-root null and the joint H2,0 test rejected; the series is integrated with a constant.", common_lag, lag_method, tuple(spec_tests))
 
-    model1 = adf(x, regression="n", lags=common_lag, autolag=None, alpha=alpha)
+    model1 = _course_adf(x, regression="n", lags=common_lag, alpha=alpha)
     models.append(model1)
     nature = "stationary around zero (TS)" if model1.rejects_null else "difference-stationary / integrated candidate (DS)"
     return SequentialDFResult(tuple(models), model1, nature, "After Models 3 and 2 were not retained, the course completes the root test in Model 1 without constant or trend.", common_lag, lag_method, tuple(spec_tests))
