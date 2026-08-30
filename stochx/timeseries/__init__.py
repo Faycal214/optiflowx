@@ -7,6 +7,7 @@ and equation interface.
 """
 
 from .arma_errors import ErrorProcess, parse_error_terms
+from .cointegration import CointegrationTestResult, CointegratingRegressionResult, ECMResult, JohansenResult, VECMResult, cointreg, engle_granger, phillips_ouliaris, johansen, vecm, ecm
 from .correlation import ACFResult, PACFResult, acf, pacf
 from .correlogram import CorrelogramResult, LjungBoxResult, correlogram, ljung_box as correlogram_ljung_box
 from .decomposition import DecompositionResult, decompose, exponential_smoothing, fisher_seasonality_test, holt, holt_winters, moving_average, seasonal_difference, seasonal_indices, weighted_moving_average
@@ -71,7 +72,7 @@ __all__ = [
     "StateSpaceWorkflowResult", "run_local_level_workflow",
     "TestResult", "durbin_watson_test", "breusch_godfrey", "breusch_godfrey_raw", "box_pierce", "ljung_box", "jarque_bera", "mean_zero_test", "normality_ks", "variance_ratio_test", "breusch_pagan", "arch_test", "residual_correlogram", "residual_diagnostics_correlogram", "residual_diagnostics", "roots_report", "redundancy_check",
     "ForecastMetrics", "metrics", "prediction_interval", "restore_differences", "naive_forecast", "drift_forecast",
-    "RegressionResult", "ols", "trend_terms",
+    "RegressionResult", "ols", "trend_terms", "CointegrationTestResult", "CointegratingRegressionResult", "ECMResult", "JohansenResult", "VECMResult", "cointreg", "engle_granger", "phillips_ouliaris", "johansen", "vecm", "ecm",
     "polynomial_roots", "is_stationary_ar", "is_invertible_ma", "process_mean", "impulse_response", "inverse_ar_coefficients", "theoretical_ar_acf", "theoretical_ma_acf",
     "plot_series", "plot_correlogram", "plot_eviews_correlogram", "plot_forecast", "plot_decomposition",
 ]
