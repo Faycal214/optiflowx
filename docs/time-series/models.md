@@ -75,3 +75,32 @@ A useful model report should make the following visible:
 ## Don't stop at the fit
 
 A model is not selected because its estimation converged. The StochX workflow continues through residual validation and deterministic selection. See [Diagnostics](diagnostics.md) and [Box–Jenkins](box-jenkins.md).
+
+## ARIMA and SARIMA
+
+EViews specifies integer differencing separately from the ARMA disturbance structure. A direct ARIMA workflow therefore uses an ARIMA(p,d,q) state-space likelihood after applying the integer integration order, while seasonal AR and MA terms are multiplicative seasonal polynomials. EViews supports AR, SAR, MA and SMA terms and allows the user to explicitly list the desired lags. citeturn506442search4turn825961search0
+
+StochX exposes:
+
+```python
+fit_arima(y, 1, 1, 1)
+fit_sarima(y, (1, 1, 1), (1, 1, 1, 12))
+wf.sarima("Y", (1, 1, 1), (1, 1, 1, 12))
+```
+
+The seasonal period can be inferred from a dated monthly/quarterly workfile or supplied explicitly. EViews defaults seasonal periodicity to the number of observations per year for a dated workfile. citeturn506442search1
+
+The direct ARIMA/SARIMA estimation path uses state-space maximum likelihood with explicit BFGS and OPG covariance, matching the EViews ML contract established in Step 5. EViews documents ARIMA ML as evaluation through the Kalman filter prediction-error decomposition. citeturn506442search6turn875983search23
+
+Forecasting exposes both recursive/dynamic and one-step/static modes through the result object:
+
+```python
+result.forecast(12, dynamic=False)
+result.forecast(12, dynamic=True)
+```
+
+The EViews forecasting tutorial explicitly distinguishes static and dynamic forecasting and covers ARMA-equation forecasting. citeturn875983search0
+
+### Step 6 numerical-parity boundary
+
+The ARIMA/SARIMA architecture and EViews defaults are implemented. Exact equality of finite-sample likelihood values, coefficients, roots and forecast intervals still requires captured EViews ARIMA/SARIMA output fixtures, because Kalman initialization and likelihood initialization are part of the numerical contract. EViews documents the Kalman prediction-error likelihood but the exact EViews state initialization must still be benchmarked against actual EViews output before claiming bit-level parity. citeturn506442search6
