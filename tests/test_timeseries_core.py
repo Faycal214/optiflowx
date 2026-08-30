@@ -149,13 +149,13 @@ def test_sequential_df_adf_runs_model_3_model_2_model_1_and_common_lag(monkeypat
 
     stationary = TimeSeries(np.random.default_rng(7).normal(size=300), name="Y")
     calls = []
-    original_adf = stationarity.adf
+    original_adf = stationarity._course_adf
 
     def recording_adf(*args, **kwargs):
         calls.append((kwargs.get("regression"), kwargs.get("lags"), kwargs.get("autolag")))
         return original_adf(*args, **kwargs)
 
-    monkeypatch.setattr(stationarity, "adf", recording_adf)
+    monkeypatch.setattr(stationarity, "_course_adf", recording_adf)
     result = stationarity.dickey_fuller_sequential(stationary, max_lags=2, autolag=None, alpha=0.05)
     assert isinstance(result, SequentialDFResult)
 
@@ -189,7 +189,7 @@ def test_sequential_branch_model3_rejects_then_beta_retained(monkeypatch):
             base["tvalues"] = np.array([0.0, 3.0, -5.0])
         return base
 
-    monkeypatch.setattr(stationarity, "adf", fake_adf)
+    monkeypatch.setattr(stationarity, "_course_adf", fake_adf)
     monkeypatch.setattr(stationarity, "_fit_df_regression", fake_fit)
     result = stationarity.dickey_fuller_sequential(np.arange(1.0, 80.0), max_lags=0, autolag=None)
     assert result.selected.regression == "ct"
@@ -504,3 +504,15 @@ def test_workfile_adf_uses_active_sample_and_supports_differences():
 
     assert level.nobs == 98
     assert diff.nobs == 97
+
+
+def test_workfile_uroot_matches_eviews_style_dispatcher():
+    values = np.cumsum(np.random.default_rng(5).normal(size=100))
+    wf = Workfile(frequency="M")
+    wf.add("Y", values)
+
+    adf_result = wf.uroot("Y", test="adf", exog="const", lags=1, autolag=None)
+    assert adf_result.test == "Augmented Dickey-Fuller Test"
+
+    with pytest.raises(ValueError):
+        wf.uroot("Y", test="kpss", exog="none")
