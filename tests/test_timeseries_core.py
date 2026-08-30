@@ -1,3 +1,6 @@
+import pytest
+import pandas as pd
+
 import numpy as np
 
 from stochx.timeseries import (
@@ -328,3 +331,24 @@ def test_seasonality_and_residual_test():
     assert fisher["reject_seasonality_null"]
     lb = ljung_box(TimeSeries(np.random.default_rng(0).normal(size=200), name="WN"), lags=12)
     assert np.isfinite(lb.statistic)
+
+
+def test_workfile_infers_and_validates_shared_index():
+    index = list(pd.date_range("2020-01-01", periods=12, freq="MS"))
+    wf = Workfile(frequency="M")
+    wf.add("X", np.arange(12.0), index=index)
+    wf.add("Y", np.arange(12.0) + 1.0)
+    assert wf["Y"].index == wf["X"].index
+    with pytest.raises(ValueError, match="same index"):
+        wf.add("Z", np.arange(12.0), index=list(pd.date_range("2020-02-01", periods=12, freq="MS")))
+
+
+def test_workfile_accepts_eviews_period_sample_labels():
+    index = list(pd.date_range("2010-01-01", periods=24, freq="MS"))
+    wf = Workfile.from_dataframe(
+        pd.DataFrame({"X": np.arange(24.0)}),
+        index=index,
+        frequency="M",
+    )
+    wf.set_sample("2011M1 2011M12")
+    assert wf.sample == slice(12, 24)
