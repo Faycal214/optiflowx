@@ -2,15 +2,15 @@
   "schema_version": 1,
   "source": {
     "software": "EViews",
-    "reference_type": "captured_reference_template",
-    "notes": "Populate numerical cells from an EViews equation View/Residual Diagnostics output. Do not commit proprietary .wf1 or executable files."
+    "reference_type": "public_EViews_output",
+    "notes": "Numerical values populated from a published EViews User Guide Breusch-Godfrey example. No proprietary workfile or executable is included."
   },
   "equation": {
-    "name": "DIAG_OLS",
-    "specification": "Y C X1 X2",
+    "name": "UROOT_BG_EXAMPLE",
+    "specification": "published EViews consumption-function example",
     "method": "Least Squares",
-    "sample": null,
-    "nobs": null,
+    "sample": "1949M02 2010M03",
+    "nobs": 734,
     "arma_terms": 0
   },
   "views": {
@@ -30,13 +30,20 @@
       "jarque_bera_df": 2
     },
     "serial_correlation_lm": {
-      "lags": 4,
+      "lags": 2,
       "statistics": {
-        "F-statistic": null,
-        "F-p-value": null,
-        "Obs*R-squared": null,
-        "Obs*R-squared-p-value": null,
-        "df": 4
+        "F-statistic": 23.02572,
+        "F-p-value": 0.0,
+        "Obs*R-squared": 43.78175,
+        "Obs*R-squared-p-value": 0.0,
+        "df": 2,
+        "denominator_df": 726
+      },
+      "test_equation": {
+        "dependent": "RESID",
+        "method": "Least Squares",
+        "covariance": "observed Hessian",
+        "presample_lagged_residuals": "zero"
       }
     },
     "heteroskedasticity": {
@@ -66,7 +73,7 @@
     }
   },
   "parity": {
-    "status": "numeric_capture_pending",
-    "notes": "EViews provides these diagnostics as Equation views. Structural labels/order are fixed by this fixture; numeric rows require an actual capture."
+    "status": "partially_populated",
+    "notes": "Serial-correlation LM values are populated from a published EViews output. Other diagnostic views remain pending direct numerical captures."
   }
 }
