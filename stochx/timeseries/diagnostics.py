@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 from scipy import stats
+import statsmodels.api as sm
 from statsmodels.stats.stattools import durbin_watson
 from statsmodels.stats.diagnostic import acorr_breusch_godfrey, acorr_ljungbox, het_breuschpagan, het_arch
 
@@ -222,6 +223,149 @@ def residual_diagnostics(residuals, *, lags: int = 12, p: int = 0, q: int = 0, a
     return pd.DataFrame(
         [{"Test": t.name, "Statistic": t.statistic, "p-value": t.pvalue, "Reject H0": t.reject, "Conclusion": t.conclusion} for t in tests]
     )
+
+
+
+def residual_correlogram_squared(residuals, *, lags: int = 12, model_df: int = 0, alpha: float = 0.05) -> CorrelogramResult:
+    """EViews Residual Diagnostics / Correlogram Squared Residuals."""
+    x = _clean(residuals)
+    if lags < 1 or lags <= model_df:
+        raise ValueError("lags must be positive and exceed model_df")
+    return correlogram(x ** 2, nlags=lags, model_df=model_df, alpha=alpha)
+
+
+def histogram_normality(residuals, *, alpha: float = 0.05) -> dict[str, object]:
+    """EViews Histogram-Normality diagnostic statistics."""
+    x = _clean(residuals)
+    jb, pvalue = stats.jarque_bera(x)
+    return {
+        "Observations": int(x.size),
+        "Mean": float(np.mean(x)),
+        "Median": float(np.median(x)),
+        "Std. Dev.": float(np.std(x, ddof=1)),
+        "Skewness": float(stats.skew(x, bias=True)),
+        "Kurtosis": float(stats.kurtosis(x, fisher=False, bias=True)),
+        "Jarque-Bera": float(jb),
+        "Probability": float(pvalue),
+        "alpha": float(alpha),
+        "Reject normality": bool(pvalue < alpha),
+    }
+
+
+def serial_correlation_lm(resid, exog, lags: int = 1, *, alpha: float = 0.05, model_df: int = 0) -> dict[str, float | int]:
+    """EViews Serial Correlation LM test (Breusch-Godfrey)."""
+    if not isinstance(lags, int) or isinstance(lags, bool) or lags < 1:
+        raise ValueError("lags must be a positive integer")
+    e = _clean(resid)
+    X = np.asarray(exog, dtype=float)
+    if X.ndim == 1:
+        X = X[:, None]
+    n = min(e.size, X.shape[0])
+    e, X = e[-n:], X[-n:]
+    rows = []
+    target = e[lags:]
+    design = [X[lags:]]
+    for j in range(1, lags + 1):
+        design.append(e[lags - j:-j])
+    Z = np.column_stack(design)
+    aux = sm.OLS(target, sm.add_constant(Z, has_constant="add")).fit()
+    lm = float(target.size * aux.rsquared)
+    df = max(lags - int(model_df), 1)
+    pvalue = float(stats.chi2.sf(lm, df))
+    return {
+        "LM statistic": lm,
+        "Obs*R-squared": lm,
+        "p-value": pvalue,
+        "df": int(df),
+        "F-statistic": float(aux.fvalue) if np.isfinite(aux.fvalue) else np.nan,
+        "F p-value": float(aux.f_pvalue) if np.isfinite(aux.f_pvalue) else np.nan,
+    }
+
+
+def heteroskedasticity_test(residuals, exog, *, test: str = "BPG", lags: int = 12, cross_terms: bool = False, alpha: float = 0.05) -> dict[str, float | int | str]:
+    """EViews equation heteroskedasticity test family."""
+    kind = test.upper()
+    e = _clean(residuals)
+    X = np.asarray(exog, dtype=float)
+    if X.ndim == 1:
+        X = X[:, None]
+    X = X[np.isfinite(X).all(axis=1)]
+    n = min(e.size, X.shape[0])
+    e, X = e[-n:], X[-n:]
+    if kind in {"BPG", "BREUSCH-PAGAN", "BREUSCH-PAGAN-GODFREY"}:
+        lm, pvalue, fstat, fp = het_breuschpagan(e, sm.add_constant(X, has_constant="add"))
+        return {"Test": "Breusch-Pagan-Godfrey", "LM statistic": float(lm), "p-value": float(pvalue), "F-statistic": float(fstat), "F p-value": float(fp), "df": int(X.shape[1])}
+    if kind == "GLEJSER":
+        aux = sm.OLS(np.abs(e), sm.add_constant(X, has_constant="add")).fit()
+        lm = float(n * aux.rsquared)
+        return {"Test": "Glejser", "LM statistic": lm, "p-value": float(stats.chi2.sf(lm, X.shape[1])), "F-statistic": float(aux.fvalue), "F p-value": float(aux.f_pvalue), "df": int(X.shape[1])}
+    if kind == "HARVEY":
+        y = np.log(np.maximum(e ** 2, np.finfo(float).tiny))
+        aux = sm.OLS(y, sm.add_constant(X, has_constant="add")).fit()
+        lm = float(n * aux.rsquared)
+        return {"Test": "Harvey", "LM statistic": lm, "p-value": float(stats.chi2.sf(lm, X.shape[1])), "F-statistic": float(aux.fvalue), "F p-value": float(aux.f_pvalue), "df": int(X.shape[1])}
+    if kind == "ARCH":
+        if not isinstance(lags, int) or lags < 1:
+            raise ValueError("lags must be a positive integer")
+        y2 = e[lags:] ** 2
+        Z = np.column_stack([e[lags - j:-j] ** 2 for j in range(1, lags + 1)])
+        aux = sm.OLS(y2, sm.add_constant(Z, has_constant="add")).fit()
+        lm = float(y2.size * aux.rsquared)
+        return {"Test": "ARCH LM", "LM statistic": lm, "Obs*R-squared": lm, "p-value": float(stats.chi2.sf(lm, lags)), "F-statistic": float(aux.fvalue), "F p-value": float(aux.f_pvalue), "df": int(lags)}
+    if kind == "WHITE":
+        Z = [X, X ** 2]
+        if cross_terms and X.shape[1] > 1:
+            crosses = []
+            for i in range(X.shape[1]):
+                for j in range(i + 1, X.shape[1]):
+                    crosses.append((X[:, i] * X[:, j])[:, None])
+            if crosses:
+                Z.append(np.hstack(crosses))
+        design = np.column_stack(Z)
+        aux = sm.OLS(e ** 2, sm.add_constant(design, has_constant="add")).fit()
+        lm = float(n * aux.rsquared)
+        df = max(int(aux.df_model), 1)
+        return {"Test": "White", "LM statistic": lm, "Obs*R-squared": lm, "p-value": float(stats.chi2.sf(lm, df)), "F-statistic": float(aux.fvalue), "F p-value": float(aux.f_pvalue), "df": df}
+    raise ValueError("test must be BPG, Harvey, Glejser, ARCH, or White")
+
+
+def chow_breakpoint(y, X, breakpoint: int, *, alpha: float = 0.05) -> dict[str, float | int]:
+    """EViews Chow breakpoint test for an OLS equation."""
+    y = np.asarray(y, dtype=float).reshape(-1)
+    X = sm.add_constant(np.asarray(X, dtype=float), has_constant="add")
+    n, k = X.shape
+    b = int(breakpoint)
+    if b <= k or n - b <= k:
+        raise ValueError("each Chow subsample must contain more observations than coefficients")
+    pooled = sm.OLS(y, X).fit()
+    left = sm.OLS(y[:b], X[:b]).fit()
+    right = sm.OLS(y[b:], X[b:]).fit()
+    ur_ssr = float(left.ssr + right.ssr)
+    r_ssr = float(pooled.ssr)
+    q = 2
+    fstat = ((r_ssr - ur_ssr) / k) / (ur_ssr / (n - 2 * k))
+    pvalue = float(stats.f.sf(fstat, k, n - 2 * k))
+    return {"F-statistic": float(fstat), "F p-value": pvalue, "LR statistic": float(n * np.log(max(r_ssr, np.finfo(float).tiny) / max(ur_ssr, np.finfo(float).tiny))), "LR df": int(k), "breakpoint": b}
+
+
+def recursive_ols_diagnostics(y, X) -> dict[str, np.ndarray]:
+    """Compute EViews-style recursive OLS residuals for stability diagnostics."""
+    y = np.asarray(y, dtype=float).reshape(-1)
+    X = sm.add_constant(np.asarray(X, dtype=float), has_constant="add")
+    n, k = X.shape
+    if n <= k:
+        raise ValueError("insufficient observations for recursive OLS")
+    rr = np.full(n, np.nan)
+    se = np.full(n, np.nan)
+    for t in range(k, n):
+        fit = sm.OLS(y[:t], X[:t]).fit()
+        x_next = X[t]
+        h = float(x_next @ np.linalg.pinv(X[:t].T @ X[:t]) @ x_next)
+        variance = float(fit.mse_resid)
+        denom = np.sqrt(max(variance * (1.0 + h), np.finfo(float).tiny))
+        rr[t] = float((y[t] - x_next @ fit.params) / denom)
+        se[t] = 1.0
+    return {"recursive_residuals": rr, "recursive_se": se}
 
 
 def _clean(values) -> np.ndarray:
