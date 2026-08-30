@@ -384,3 +384,55 @@ def validate_fixture_schema(fixture):
             if side not in model.get("roots", {}):
                 errors.append(f"models.{name}.roots: missing {side}")
     return errors
+
+
+def compare_autoarma_reference(
+    result,
+    reference: Mapping[str, Any],
+    *,
+    model_name: str = "autoarma",
+) -> ParityReport:
+    """Validate the structural decisions documented by an EViews autoarma example."""
+    report = ParityReport(model_name)
+    spec = reference.get("specification", {})
+    expected = reference.get("expected_selection", {})
+    checks = [
+        ("transformation", getattr(result, "transformation", None), expected.get("transformation")),
+        ("differencing_order", getattr(result, "differencing_order", None), expected.get("d")),
+        ("selection_criterion", getattr(result, "criterion", None), spec.get("selection")),
+        ("seasonal_period", getattr(result, "seasonal_period", None), expected.get("periods")),
+        ("candidate_count", len(result.table()), spec.get("candidate_models_expected")),
+    ]
+    for name, actual, exp in checks:
+        if exp is None:
+            continue
+        report.comparisons.append(Comparison(name, actual == exp, actual, exp))
+    selected = getattr(result, "selected_order", ())
+    expected_order = tuple(
+        expected.get(k)
+        for k in ("p", "d", "q", "P", "D", "Q")
+    )
+    if all(v is not None for v in expected_order):
+        report.comparisons.append(Comparison(
+            "selected_order",
+            tuple(selected) == expected_order,
+            tuple(selected),
+            expected_order,
+        ))
+    return report
+
+
+def validate_forecast_reference_metadata(forecast_frame, reference: Mapping[str, Any]) -> ParityReport:
+    """Validate forecast configuration before comparing numeric forecast values."""
+    report = ParityReport("forecast-metadata")
+    expected = reference.get("forecast", {})
+    attrs = getattr(forecast_frame, "attrs", {})
+    checks = [
+        ("dynamic", attrs.get("dynamic"), expected.get("dynamic")),
+        ("structural", attrs.get("structural"), expected.get("structural")),
+        ("coef_uncertainty", attrs.get("coef_uncertainty"), expected.get("coef_uncertainty")),
+    ]
+    for name, actual, exp in checks:
+        if exp is not None:
+            report.comparisons.append(Comparison(name, actual == exp, actual, exp))
+    return report
