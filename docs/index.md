@@ -1,72 +1,70 @@
 # StochX
 
-## A practical time-series library for Python
+## EViews-inspired time-series analysis in Python
 
-StochX is a lightweight scientific Python library with two clear layers:
+StochX is a focused Python library for time-series analysis, econometrics and forecasting, designed around the workflow taught in the USTHB time-series courses and the conventions familiar to EViews users.
 
-- **Time Series** — the main applied layer for econometrics, forecasting and EViews-style analysis.
-- **Stochastic Processes** — a separate mathematical layer for probability and stochastic-process coursework.
+The project is deliberately narrow: time series only. It does not provide a general stochastic-process, probability, or simulation framework.
 
-The time-series documentation is the best place to start for analysts who are moving an existing EViews workflow into Python.
+## Workflow
 
-## What makes the time-series layer different?
+    workfile / data
+    -> sample and series expressions
+    -> transformations / smoothing / decomposition
+    -> stationarity and unit-root analysis
+    -> ACF / PACF / correlogram
+    -> model identification
+    -> estimation
+    -> residual validation
+    -> model selection
+    -> forecasting
+    -> reports
 
-StochX keeps the workflow familiar:
+## Main interfaces
 
-```text
-workfile → sample → series expressions → stationarity
-        → ACF/PACF → model estimation → diagnostics
-        → model selection → forecast → report
-```
+The public API is centered on stochx.timeseries:
 
-The implementation uses Python-native objects, but the vocabulary is intentionally recognizable: `Workfile`, `C`, `@TREND`, `D(Y)`, `DLOG(Y)`, `Y(-1)`, `wf.ls(...)`, ADF, AR/MA terms, correlograms, result tables and interpretation helpers.
+- Workfile and TimeSeries for data/workfile management
+- EViews-style expressions such as Y(-1), D(Y), DLOG(Y), LOG(Y), C and @TREND
+- ACF, PACF and correlograms
+- DF/ADF, KPSS and Phillips-Perron stationarity procedures
+- OLS and EViews-style equation specifications
+- AR, MA, ARMA, ARIMA and SARIMA models
+- residual and specification diagnostics
+- Box-Jenkins identification, estimation, validation, selection and forecasting
+- smoothing/decomposition and forecast utilities
+- linear-Gaussian state-space and Kalman workflows
+- report-oriented result objects and tables
 
-The project does not claim to be a universal EViews clone. Instead, it makes the **same statistical workflow easy to reproduce in Python**, and it records exact numerical conventions in regression tests where parity has been benchmarked.
+## EViews compatibility
 
-## Start with the guides
+StochX is implemented natively in Python. The compatibility target is the analysis workflow and numerical conventions, not a graphical clone. Where an EViews result is available as a benchmark, the repository records it as an explicit regression fixture.
 
-### Time Series
+See EViews numerical parity and the Time Series User Guide.
 
-Read the [Time Series User Guide](time-series/index.md) first. It covers the complete applied workflow from data preparation to forecasting, plus the state-space/Kalman extension.
+## Course material
 
-### Stochastic Processes
-
-Use the [Stochastic Processes User Guide](stochastic/index.md) for discrete-time Markov chains, Poisson processes, CTMCs, birth-death processes, probability objects, martingales and simulation.
-
-### Course Material
-
-The [Course Material](course_material.md) section separates mathematical explanations, notation and assumptions from the software API.
-
-### Package / API
-
-The [Time-series API map](api/time-series.md) and [Stochastic-process API map](api/stochastic-processes.md) explain the public Python surface. The individual API pages contain the exact object-level reference.
+The course material documents the mathematical and methodological foundations separately from the API. The supplied USTHB material covers stationary and non-stationary processes, ARMA identification, estimation, validation, forecasting and the associated regression/time-series methodology.
 
 ## Installation
 
-```bash
-python -m pip install stochx
-```
+    python -m pip install stochx
 
-## Minimal time-series example
+## Minimal example
 
-```python
-from stochx.timeseries import Workfile, adf
+    from stochx.timeseries import Workfile, adf
 
-wf = Workfile.from_csv("macro.csv", date_column="DATE", frequency="M")
-wf.set_sample("2010-01-01 2024-12-01")
+    wf = Workfile.from_csv("macro.csv", date_column="DATE", frequency="M")
+    wf.set_sample("2010-01-01 2024-12-01")
 
-print(wf.info())
-print(wf.eval("GDP(-1)"))
-print(wf.generate("DGDP", "D(GDP)").summary())
+    print(wf.info())
+    print(wf.eval("GDP(-1)"))
+    print(wf.generate("DGDP", "D(GDP)").summary())
 
-eq = wf.ls("GDP C CONS CONS(-1)", name="EQ01")
-print(eq.summary())
-
-print(adf(wf["GDP"], regression="c", lags=1, autolag=None).summary())
-```
+    model = wf.ls("GDP C CONS CONS(-1)", name="EQ01")
+    print(model.summary())
+    print(adf(wf["GDP"], regression="c", lags=1, autolag=None).summary())
 
 ## Quality
 
-The package is tested across Python 3.10, 3.11 and 3.12. The repository also runs all examples and validates documentation builds and distribution artifacts.
-
-The current stable package version is **0.3.0**.
+Numerical behavior is tested through ordinary unit tests and explicit EViews-parity fixtures. The release workflow also validates distributions, documentation and executable examples.
