@@ -756,9 +756,20 @@ def kpss_test(
     )
 
 
-def phillips_perron(y: TimeSeries | Iterable[float], *, trend: str = "c", lags: int | None = None) -> UnitRootResult:
-    """Run Phillips-Perron when the optional ``arch`` backend is installed."""
+def phillips_perron(
+    y: TimeSeries | Iterable[float],
+    *,
+    trend: str = "c",
+    lags: int | None = None,
+    d: int = 0,
+    alpha: float = 0.05,
+) -> UnitRootResult:
+    """Run the Phillips-Perron test with EViews-compatible defaults."""
     x = _values(y)
+    if d not in {0, 1, 2}:
+        raise ValueError("d must be 0, 1, or 2")
+    if d:
+        x = np.diff(x, n=d)
     if trend not in {"n", "c", "ct"}:
         raise ValueError("trend must be 'n', 'c', or 'ct'")
     try:
@@ -767,13 +778,16 @@ def phillips_perron(y: TimeSeries | Iterable[float], *, trend: str = "c", lags: 
         raise ImportError("Phillips-Perron requires the optional 'arch' dependency. Install with: pip install arch") from exc
     test = PhillipsPerron(x, trend=trend, lags=lags)
     critical = {str(k): float(v) for k, v in test.critical_values.items()}
-    decision = _decision(float(test.stat), critical, 0.05)
+    _validate_alpha(alpha)
+    decision = _decision(float(test.stat), critical, alpha)
     return UnitRootResult(
         "Phillips-Perron Test", float(test.stat), float(test.pvalue), critical, trend,
         int(test.lags), int(test.nobs), "The series contains a unit root.", "The series is stationary.",
-        decision, 0.05,
-        "Reject the unit-root null at 5%; evidence favors stationarity." if decision == "reject" else "Do not reject the unit-root null at 5%; evidence favors non-stationarity.",
-        critical_value_source="Phillips-Perron critical values", specification_label=f"Phillips-Perron regression={trend}"
+        decision, alpha,
+        f"Reject the unit-root null at {int(alpha * 100)}%; evidence favors stationarity." if decision == "reject" else f"Do not reject the unit-root null at {int(alpha * 100)}%; evidence favors non-stationarity.",
+        critical_value_source="Phillips-Perron critical values", specification_label=f"Phillips-Perron regression={trend}",
+        deterministic_terms=DF_SPECIFICATIONS[trend]["deterministic_terms"],
+    
     )
 
 
