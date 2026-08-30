@@ -341,33 +341,34 @@ class Workfile:
         """Estimate an equation using the supported EViews-style estimator."""
         return self.equation(name, specification).estimate(method=method)
 
-    def describe(self) -> pd.DataFrame:
-        """Return descriptive statistics for all series in the active sample."""
-        rows = []
-        for name, series in self.series.items():
-            sampled = series[self.sample_indexer]
-            stats = descriptive_statistics(sampled.values)
-            stats["Series"] = name
-            rows.append(stats)
-        if not rows:
-            return pd.DataFrame()
-        frame = pd.DataFrame(rows).set_index("Series")
-        return frame[
-            [
-                "Observations",
-                "Included observations",
-                "Mean",
-                "Std. Dev.",
-                "Variance",
-                "Minimum",
-                "Maximum",
-                "Skewness",
-                "Kurtosis",
-                "Jarque-Bera",
-                "Probability",
-            ]
-        ]
+    def describe(self, *, individual: bool = False) -> pd.DataFrame:
+        """Return EViews-style descriptive statistics for workfile series.
 
+        By default, all series use a common sample after removing rows with
+        any missing value. Set individual=True for per-series samples.
+        """
+        active = self.sample_indexer
+        if not self.series:
+            return pd.DataFrame()
+        if individual:
+            samples = {name: series[active].values for name, series in self.series.items()}
+        else:
+            arrays = [series[active].values for series in self.series.values()]
+            common = np.ones(len(arrays[0]), dtype=bool)
+            for values in arrays:
+                common &= np.isfinite(values)
+            samples = {name: series[active].values[common] for name, series in self.series.items()}
+        rows = []
+        for name, values in samples.items():
+            row = descriptive_statistics(values)
+            row["Series"] = name
+            rows.append(row)
+        frame = pd.DataFrame(rows).set_index("Series")
+        return frame[[
+            "Observations", "Included observations", "Mean", "Std. Dev.",
+            "Variance", "Minimum", "Maximum", "Skewness", "Kurtosis",
+            "Jarque-Bera", "Probability",
+        ]]
     def stats(self, *, individual: bool = False) -> pd.DataFrame:
         """Alias for the EViews-style workfile descriptive-statistics view."""
         return self.describe(individual=individual)
