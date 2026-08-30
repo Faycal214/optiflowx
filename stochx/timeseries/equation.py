@@ -280,10 +280,24 @@ class Equation:
         y = frame[dependent_name]
         exog = frame[X.columns]
         if error_process.max_p or error_process.max_q:
-            model = SARIMAX(y, exog=exog, order=(error_process.p, 0, error_process.q), trend="n", enforce_stationarity=True, enforce_invertibility=True)
+            model = SARIMAX(
+                y,
+                exog=exog,
+                order=(error_process.p, 0, error_process.q),
+                trend="n",
+                enforce_stationarity=True,
+                enforce_invertibility=True,
+            )
             kwargs = {"method": "bfgs", "disp": False, "maxiter": 1000, "cov_type": "opg"}
             if start_params is not None:
-                kwargs["start_params"] = np.asarray(start_params, dtype=float)
+                start = np.asarray(start_params, dtype=float).reshape(-1)
+                expected = exog.shape[1] + len(error_process.p) + len(error_process.q) + 1
+                if start.size != expected:
+                    raise ValueError(
+                        f"start_params must contain {expected} values in EViews order "
+                        "(mean regressors, AR terms, MA terms, SIGMASQ)"
+                    )
+                kwargs["start_params"] = start
             result = model.fit(**kwargs)
             method = "ARMA Maximum Likelihood (BFGS)"
         else:
