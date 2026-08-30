@@ -172,7 +172,7 @@ def fit_ar(y: TimeSeries | Iterable[float], p: int, *, trend: str = "c", method:
     if trend not in {"n", "c", "ct"}:
         raise ValueError("trend must be 'n', 'c', or 'ct'")
     model = SARIMAX(series, order=(p, 0, 0), trend=trend, enforce_stationarity=True, enforce_invertibility=True)
-    result = model.fit(method="bfgs", maxiter=1000, disp=False)
+    result = model.fit(method="bfgs", maxiter=1000, disp=False, cov_type="opg")
     return _result("AR", model, result, y, (p, 0, 0))
 def fit_ma(y: TimeSeries | Iterable[float], q: int, *, trend: str = "c", method: str = "ml") -> TSResult:
     """Estimate MA(q) using the EViews default ML method."""
