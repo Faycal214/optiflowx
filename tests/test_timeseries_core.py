@@ -5,7 +5,7 @@ from stochx.timeseries import (
     SequentialDFResult,
     TimeSeries,
     adf,
-    ar,
+    fit_ar,
     correlogram,
     difference,
     dickey_fuller,
@@ -15,10 +15,8 @@ from stochx.timeseries import (
     identify,
     ljung_box,
     moving_average,
-    random_walk,
-    seasonal_difference,
-    white_noise,
-)
+        seasonal_difference,
+    )
 from stochx.timeseries.forecasting import metrics
 from stochx.timeseries.workfile import Workfile
 
@@ -86,8 +84,14 @@ def test_eviews_style_equation_and_unified_results():
     assert "X(-1)" in lagged.table().index
 
 
-def test_simulation_and_identification_pipeline():
-    y = ar(1, [0.6], 250, rng=0)
+def test_identification_and_estimation_pipeline():
+    rng = np.random.default_rng(0)
+    y = np.empty(250)
+    eps = rng.normal(size=250)
+    y[0] = eps[0]
+    for t in range(1, 250):
+        y[t] = 0.6 * y[t - 1] + eps[t]
+    y = TimeSeries(y, name="Y")
     ident = identify(y, nlags=12)
     assert ident["ACF"].nobs == 250
     result = estimate(y, p=1, d=0, q=0)
@@ -99,7 +103,10 @@ def test_simulation_and_identification_pipeline():
 
 
 def test_dickey_fuller_is_unaugmented():
-    y = TimeSeries(random_walk(180, rng=3), name="Y")
+    rng = np.random.default_rng(3)
+    eps = rng.normal(size=180)
+    values = np.cumsum(eps)
+    y = TimeSeries(values, name="Y")
     result = dickey_fuller(y, regression="c", alpha=0.05)
     assert result.test == "Dickey-Fuller Test"
     assert result.lags == 0
@@ -108,7 +115,9 @@ def test_dickey_fuller_is_unaugmented():
 
 
 def test_adf_uses_regression_specific_nonstandard_critical_values():
-    y = TimeSeries(random_walk(200, rng=11), name="Y")
+    rng = np.random.default_rng(11)
+    values = np.cumsum(rng.normal(size=200))
+    y = TimeSeries(values, name="Y")
     for regression in ("ct", "c", "n"):
         result = adf(y, regression=regression, lags=1, autolag=None, alpha=0.05)
         assert result.regression == regression
@@ -298,7 +307,8 @@ def test_sequential_interpretation_is_course_faithful(monkeypatch):
 
 
 def test_stationarity_and_forecast_metrics():
-    y = random_walk(120, rng=0)
+    rng = np.random.default_rng(0)
+    y = TimeSeries(np.cumsum(rng.normal(size=120)), name="Y")
     result = adf(y, regression="c", lags=1, autolag=None)
     assert np.isfinite(result.statistic)
     assert result.pvalue is not None
@@ -317,5 +327,5 @@ def test_seasonality_and_residual_test():
     assert seasonal_d.nobs == 76
     fisher = fisher_seasonality_test(seasonal, 4)
     assert fisher["reject_seasonality_null"]
-    lb = ljung_box(white_noise(200, rng=0), lags=12)
+    lb = ljung_box(TimeSeries(np.random.default_rng(0).normal(size=200), name="WN"), lags=12)
     assert np.isfinite(lb.statistic)
