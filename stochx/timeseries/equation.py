@@ -80,6 +80,8 @@ class EquationResult(UnifiedResult):
     specification: str = ""
     error_process: ErrorProcess = ErrorProcess()
     _opg_covariance: pd.DataFrame | None = None
+    observed: np.ndarray | None = None
+    workfile: Any = None
 
     def _parameter_series(self, attribute: str) -> pd.Series:
         if attribute == "bse" and self._opg_covariance is not None:
