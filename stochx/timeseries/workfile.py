@@ -21,6 +21,7 @@ class Workfile:
     frequency: str | None = None
     sample_start: int | None = None
     sample_end: int | None = None
+    sample_mask: np.ndarray | None = None
 
     @classmethod
     def from_dataframe(
@@ -217,6 +218,7 @@ class Workfile:
             raise ValueError("sample end is outside the workfile")
         self.sample_start = start
         self.sample_end = end
+        self.sample_mask = None
         return self
 
     def reset_sample(self) -> "Workfile":
@@ -224,11 +226,56 @@ class Workfile:
         if self.nobs:
             self.sample_start = 0
             self.sample_end = self.nobs - 1
+            self.sample_mask = None
         return self
+
+    @property
+    def sample_indexer(self):
+        """Return the active sample as a slice or boolean mask."""
+        if self.sample_mask is not None:
+            return self.sample_mask
+        return self.sample
 
     def sample_series(self, name: str) -> TimeSeries:
         """Return the named series restricted to the current sample."""
-        return self.get(name)[self.sample]
+        return self.get(name)[self.sample_indexer]
+
+    def smpl(self, specification: str) -> "Workfile":
+        """Set the current workfile sample using EViews-style syntax."""
+        if not isinstance(specification, str) or not specification.strip():
+            raise ValueError("sample specification must be a non-empty string")
+        text = specification.strip()
+        if text.lower().startswith("smpl "):
+            text = text[5:].strip()
+
+        match = re.search(r"\s+if\s+", text, flags=re.IGNORECASE)
+        condition = None
+        base = text
+        if match:
+            base = text[:match.start()].strip()
+            condition = text[match.end():].strip()
+            if not condition:
+                raise ValueError("sample condition after 'if' must not be empty")
+
+        if not base or base.lower() == "@all":
+            self.reset_sample()
+        else:
+            self.set_sample(base)
+
+        if condition is not None:
+            from .expression import ExpressionError, evaluate
+            try:
+                result = evaluate(condition, self)
+            except ExpressionError as exc:
+                raise ValueError(f"invalid sample condition: {exc}") from exc
+            if not isinstance(result, TimeSeries):
+                raise ValueError("sample condition must evaluate to a series")
+            values = np.asarray(result.values, dtype=float)
+            mask = np.isfinite(values) & (values != 0)
+            base_mask = np.zeros(self.nobs, dtype=bool)
+            base_mask[self.sample] = True
+            self.sample_mask = base_mask & mask
+        return self
 
     def eval(self, expression: str):
         """Evaluate an EViews-inspired time-series expression."""
