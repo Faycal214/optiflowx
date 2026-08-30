@@ -304,3 +304,35 @@ def compare_dataframe(
             except (TypeError, ValueError):
                 report.comparisons.append(compare_text(str(a), str(e), name=f"{row}.{column}"))
     return report
+
+
+def validate_equations(
+    results: Mapping[str, Any],
+    references: Mapping[str, Mapping[str, Any]],
+    *,
+    rtol: float = 2e-8,
+    root_rtol: float = 2e-2,
+) -> dict[str, ParityReport]:
+    """Validate multiple named equation results against fixture references."""
+    reports = {}
+    for name, reference in references.items():
+        if name not in results:
+            report = ParityReport(name)
+            report.comparisons.append(Comparison("equation", False, None, reference.get("specification"), note="missing result"))
+            reports[name] = report
+            continue
+        reports[name] = compare_equation_fixture(
+            results[name],
+            reference,
+            model_name=name,
+            rtol=rtol,
+            root_rtol=root_rtol,
+        )
+    return reports
+
+
+def assert_reports_pass(reports: Mapping[str, ParityReport]) -> None:
+    """Raise one compact assertion error containing every parity failure."""
+    failures = [report.text() for report in reports.values() if not report.passed]
+    if failures:
+        raise AssertionError("\n\n".join(failures))
