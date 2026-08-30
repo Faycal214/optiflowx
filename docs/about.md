@@ -1,31 +1,19 @@
 # About StochX
 
-StochX is an independent academic and software project developed around two connected goals:
+StochX is an independent academic and software project focused on **time-series analysis, econometrics and forecasting in Python**.
 
-1. make stochastic-process mathematics executable and testable;
-2. provide a lightweight, reproducible Python workflow for practical time-series analysis and forecasting.
+The project is designed around two complementary requirements:
 
-## Main applied focus
+1. follow the mathematical and methodological structure of the supplied USTHB time-series course material;
+2. provide an EViews-inspired workflow whose calculations and reports can be inspected, tested and reproduced in Python.
 
-The time-series layer is designed for students, researchers and analysts who are comfortable with the EViews methodology and want to move the same style of analysis into Python.
-
-The project therefore keeps familiar concepts such as workfiles, samples, lags, differences, equations, ADF, correlograms, ARMA errors, model diagnostics and forecasting while exposing them as scriptable Python objects.
-
-## Academic foundation
-
-The stochastic-process layer grew out of graduate-level coursework in stochastic modeling and forecasting and covers Markov chains, Poisson processes, continuous-time Markov chains, birth-death processes, conditional expectation and martingale concepts.
+The public API therefore centers on workfiles, samples, time-series objects, EViews-style expressions, transformations, stationarity tests, correlation analysis, regression, ARMA-family models, diagnostics, Box–Jenkins workflows, forecasting and report-oriented results.
 
 ## Design philosophy
 
-StochX prefers:
-
-- explicit mathematical assumptions;
-- small composable objects;
-- deterministic numerical conventions;
-- reproducible examples;
-- report-oriented results;
-- clear separation between theory, user workflow and API reference.
-
-## Reference
-
-Mazliak, L., Priouret, P., & Baldi, P. *Martingales et chaînes de Markov*. 1998.
+- Course-faithful mathematical terminology.
+- EViews-familiar syntax where the operation is supported.
+- Explicit numerical conventions.
+- Regression fixtures for verified behavior.
+- Small composable Python objects.
+- Clear separation between mathematical references, workflow documentation and API reference.
