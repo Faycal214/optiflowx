@@ -32,6 +32,10 @@ class TSResult(UnifiedResult):
                 mapping[name] = f"AR({int(text[4:])})"
             elif text.startswith("ma.L"):
                 mapping[name] = f"MA({int(text[4:])})"
+            elif text.startswith("ar.S.L"):
+                mapping[name] = f"SAR({int(text[6:])})"
+            elif text.startswith("ma.S.L"):
+                mapping[name] = f"SMA({int(text[6:])})"
             elif text.lower() in {"sigma2", "sigmasq"}:
                 mapping[name] = "SIGMASQ"
         return raw.rename(index=mapping)
