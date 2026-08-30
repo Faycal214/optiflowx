@@ -1,0 +1,43 @@
+{
+  "workfile": {
+    "filename": "uroot.wf1",
+    "sha256": "e2970cbcab557b562c4b82bb2aa0a6063a7d176f7f941eaa12146e6b15f24503",
+    "format": "legacy EViews WF1",
+    "benchmark_equation": "CS C GDP CS(-1)",
+    "sample": "1948Q3 1988Q4",
+    "included_observations": 162
+  },
+  "extracted_data": {
+    "filename": "uroot_CS_GDP_extracted.csv",
+    "sha256": "3889c98c3b012ada23b4efe8d6305abe325971e3836fbd81ae2ecee706c75396",
+    "series": ["CS", "GDP"]
+  },
+  "verified_eviews_output": {
+    "source": "EViews User's Guide II public example",
+    "dependent": "CS",
+    "coefficients": {
+      "C": [-9.227624, 5.898177, -1.564487, 0.1197],
+      "GDP": [0.038732, 0.017205, 2.251193, 0.0257],
+      "CS(-1)": [0.952049, 0.024484, 38.88516, 0.0]
+    },
+    "statistics": {
+      "R-squared": 0.999625,
+      "Adjusted R-squared": 0.999621,
+      "S.E. of regression": 13.53003,
+      "Sum squared resid": 29106.82,
+      "Log likelihood": -650.3497,
+      "Akaike info criterion": 8.066046,
+      "Schwarz criterion": 8.123223,
+      "Hannan-Quinn criter.": 8.089261,
+      "F-statistic": 212047.1,
+      "Durbin-Watson stat": 1.672255,
+      "Prob(F-statistic)": 0.0
+    }
+  },
+  "diagnostics": {
+    "breusch_godfrey_lm2": {
+      "status": "capture_required",
+      "note": "Do not use the previously supplied 1.516104 / 3.064110 values; those were not verified as the Uroot consumption-equation result."
+    }
+  }
+}
