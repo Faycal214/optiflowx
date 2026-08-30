@@ -414,6 +414,20 @@ class Workfile:
             series = series.diff(d)
         return pacf(series, nlags=nlags, alpha=alpha)
 
+    def ar(self, name: str, p: int, *, trend: str = "c", method: str = "ml"):
+        """Estimate an AR(p) model on the active sample."""
+        from .models import fit_ar
+        return fit_ar(self.sample_series(name), p, trend=trend, method=method)
+
+    def ma(self, name: str, q: int, *, trend: str = "c", method: str = "ml"):
+        """Estimate an MA(q) model on the active sample."""
+        from .models import fit_ma
+        return fit_ma(self.sample_series(name), q, trend=trend, method=method)
+
+    def arma(self, name: str, p: int, q: int, *, trend: str = "c", method: str = "ml"):
+        """Estimate an ARMA(p,q) model on the active sample."""
+        from .models import fit_arma
+        return fit_arma(self.sample_series(name), p, q, trend=trend, method=method)
     def equation(self, name: str = "EQ01", specification: str = ""):
         """Create an equation object attached to this workfile."""
         from .equation import Equation
