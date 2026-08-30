@@ -391,11 +391,25 @@ class Equation:
                     order=(error_process.max_p, 0, error_process.max_q),
                     trend="n", enforce_stationarity=True, enforce_invertibility=True,
                 )
+                if covariance.lower() not in {"opg", "hessian"}:
+                    raise ValueError("covariance must be opg or hessian")
                 kwargs = {"method": "bfgs", "disp": False, "maxiter": maxiter}
-                if covariance.lower() == "opg": kwargs["cov_type"] = "opg"
-                elif covariance.lower() != "hessian": raise ValueError("covariance must be opg or hessian")
-                if start_params is not None: kwargs["start_params"] = np.asarray(start_params, dtype=float)
-                result = model.fit(**kwargs)
+                if covariance.lower() == "opg":
+                    kwargs["cov_type"] = "opg"
+                full_start = np.asarray(start, dtype=float)
+                if full_start.size == len(model.param_names):
+                    kwargs["start_params"] = full_start
+                constraints = {}
+                for lag in range(1, error_process.max_p + 1):
+                    if lag not in error_process.p:
+                        constraints[f"ar.L{lag}"] = 0.0
+                for lag in range(1, error_process.max_q + 1):
+                    if lag not in error_process.q:
+                        constraints[f"ma.L{lag}"] = 0.0
+                if constraints:
+                    result = model.fit_constrained(constraints, **kwargs)
+                else:
+                    result = model.fit(**kwargs)
                 method = "ARMA Maximum Likelihood (BFGS)"
         else:
             model = sm.OLS(y, exog)
