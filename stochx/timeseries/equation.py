@@ -253,7 +253,7 @@ class Equation:
                 raise ValueError(f"regressor {token!r} did not produce a time series")
             if value.nobs != self.workfile.nobs:
                 value = self.workfile._pad_to_workfile(value, name=token)
-            series = value[self.workfile.sample]
+            series = value[self.workfile.sample_indexer]
             if series.nobs != dependent.nobs:
                 raise ValueError(f"regressor {token!r} has incompatible length")
             frame[token] = series.values
