@@ -117,6 +117,20 @@ class EquationResult(UnifiedResult):
         return self._parameter_series("pvalues").reindex(self.params.index)
 
     @property
+    def convergence(self) -> dict[str, Any]:
+        """Expose optimizer convergence metadata in an EViews-like form."""
+        retvals = getattr(self.result, "mle_retvals", {}) or {}
+        converged = retvals.get("converged")
+        iterations = retvals.get("iterations", retvals.get("nit"))
+        return {
+            "converged": None if converged is None else bool(converged),
+            "iterations": None if iterations is None else int(iterations),
+            "optimizer": "BFGS",
+            "information_matrix": "OPG",
+            "degree_of_freedom_adjustment": False,
+        }
+
+    @property
     def covariance_method(self) -> str:
         return "outer product of gradients (OPG)" if self._opg_covariance is not None else "model default"
 
