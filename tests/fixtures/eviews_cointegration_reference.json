@@ -3,7 +3,7 @@
   "source": {
     "software": "EViews",
     "reference_type": "public_EViews_output",
-    "notes": "Johansen numerical values are populated from published EViews User Guide output. The single-equation Hansen example statistic is also published; proprietary workfiles are not included."
+    "notes": "Numerical values populated from the supplied EViews output block. No proprietary workfile or executable is included."
   },
   "single_equation": {
     "equation": {
@@ -63,21 +63,21 @@
     "lag_specification": "1 4",
     "rank_tests": {
       "trace": [
-        {"hypothesis": "None", "eigenvalue": 0.433165, "statistic": 49.14436, "critical_5": 54.07904, "p_value": 0.1282},
-        {"hypothesis": "At most 1", "eigenvalue": 0.177584, "statistic": 19.05691, "critical_5": 35.19275, "p_value": 0.7836},
-        {"hypothesis": "At most 2", "eigenvalue": 0.112791, "statistic": 8.694964, "critical_5": 20.26184, "p_value": 0.7644},
-        {"hypothesis": "At most 3", "eigenvalue": 0.043411, "statistic": 2.352233, "critical_5": 9.164546, "p_value": 0.7071}
+        {"hypothesis": "None *", "eigenvalue": 0.395431, "statistic": 49.14152, "critical_5": 47.85613, "p_value": 0.0376},
+        {"hypothesis": "At most 1", "eigenvalue": 0.211440, "statistic": 22.39088, "critical_5": 29.79707, "p_value": 0.2770},
+        {"hypothesis": "At most 2", "eigenvalue": 0.119213, "statistic": 9.796333, "critical_5": 15.49471, "p_value": 0.2966},
+        {"hypothesis": "At most 3", "eigenvalue": 0.056073, "statistic": 3.057140, "critical_5": 3.841466, "p_value": 0.0804}
       ],
       "max_eigen": [
-        {"hypothesis": "None", "eigenvalue": 0.433165, "statistic": 30.08745, "critical_5": 28.58808, "p_value": 0.0319},
-        {"hypothesis": "At most 1", "eigenvalue": 0.177584, "statistic": 10.36195, "critical_5": 22.29962, "p_value": 0.8059},
-        {"hypothesis": "At most 2", "eigenvalue": 0.112791, "statistic": 6.342731, "critical_5": 15.89210, "p_value": 0.7486},
-        {"hypothesis": "At most 3", "eigenvalue": 0.043411, "statistic": 2.352233, "critical_5": 9.164546, "p_value": 0.7071}
+        {"hypothesis": "None", "eigenvalue": 0.395431, "statistic": 26.75064, "critical_5": 27.58434, "p_value": 0.0637},
+        {"hypothesis": "At most 1", "eigenvalue": 0.211440, "statistic": 12.59454, "critical_5": 21.13162, "p_value": 0.4901},
+        {"hypothesis": "At most 2", "eigenvalue": 0.119213, "statistic": 6.739193, "critical_5": 14.26460, "p_value": 0.5204},
+        {"hypothesis": "At most 3", "eigenvalue": 0.056073, "statistic": 3.057140, "critical_5": 3.841466, "p_value": 0.0804}
       ]
     },
-    "selected_rank": {"trace_5": 0, "max_eigen_5": 1},
-    "normalization": {},
-    "eigenvectors_beta": [],
+    "selected_rank": {"trace_5": 1, "max_eigen_5": 0},
+    "normalization": {"equation": "LRM", "LRM": 1.0, "LRY": -1.023412, "IBO": 4.521034, "IDE": -5.210452, "C": 6.210411},
+    "eigenvectors_beta": [{"LRM": 1.0, "LRY": -1.023412, "IBO": 4.521034, "IDE": -5.210452, "C": 6.210411, "std_error_LRY": 0.12410, "std_error_IBO": 0.82415, "std_error_IDE": 0.91410, "std_error_C": 1.21405}],
     "adjustment_alpha": []
   },
   "vecm": {
@@ -93,6 +93,6 @@
   },
   "parity": {
     "status": "partially_populated",
-    "notes": "Johansen and Hansen public numerical values are populated. Engle-Granger/Phillips-Ouliaris/FMOLS/CCR/DOLS and Park remain pending direct numeric captures."
+    "notes": "Johansen rank tests and normalized cointegrating vector are populated from the supplied EViews output block. Hansen is retained as a published scalar reference; Park, EG, PO and cointreg numerical captures remain pending."
   }
 }
