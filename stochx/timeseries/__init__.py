@@ -16,6 +16,7 @@ from .expression import Expression, ExpressionError, evaluate
 from .forecasting import ForecastMetrics, drift_forecast, metrics, naive_forecast, prediction_interval, restore_differences
 from .identification import BoxJenkinsIdentificationResult, grid_search, identify, identify_box_jenkins
 from .interpretation import interpret_correlogram
+from .auto_arima import AutoARIMAResult, autoarma
 from .models import TSResult, estimate, fit_ar, fit_arima, fit_arma, fit_ma, fit_sarima
 from .plotting import plot_correlogram, plot_decomposition, plot_eviews_correlogram, plot_forecast, plot_series
 from .regression import RegressionResult, ols, trend_terms
@@ -60,7 +61,7 @@ __all__ = [
     "adf", "dickey_fuller", "kpss_test", "phillips_perron", "dickey_fuller_sequential", "classify_ts_ds", "difference", "trend_regression",
     "DecompositionResult", "moving_average", "weighted_moving_average", "exponential_smoothing", "holt", "holt_winters", "decompose", "seasonal_difference", "seasonal_indices", "fisher_seasonality_test",
     "TSResult", "fit_ar", "fit_ma", "fit_arma", "fit_arima", "fit_sarima", "estimate",
-    "BoxJenkinsIdentificationResult", "identify_box_jenkins", "identify", "grid_search",
+    "BoxJenkinsIdentificationResult", "identify_box_jenkins", "identify", "grid_search", "AutoARIMAResult", "autoarma",
     "EstimatedCandidate", "BoxJenkinsEstimationResult", "estimate_box_jenkins_candidates",
     "CandidateValidation", "BoxJenkinsValidationResult", "validate_box_jenkins_candidates",
     "BoxJenkinsSelectionResult", "select_box_jenkins_model",
