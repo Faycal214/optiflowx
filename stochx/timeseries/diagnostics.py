@@ -368,6 +368,51 @@ def recursive_ols_diagnostics(y, X) -> dict[str, np.ndarray]:
     return {"recursive_residuals": rr, "recursive_se": se}
 
 
+def cusum_tests(y, X, *, alpha: float = 0.05) -> dict[str, object]:
+    """Return EViews-style recursive residuals, CUSUM and CUSUMSQ series."""
+    rec = recursive_ols_diagnostics(y, X)
+    rr = rec["recursive_residuals"]
+    valid = rr[np.isfinite(rr)]
+    if valid.size < 3:
+        raise ValueError("insufficient recursive residuals for CUSUM")
+    cusum = np.cumsum(valid) / np.sqrt(np.sum(valid**2))
+    cusumsq = np.cumsum(valid**2) / np.sum(valid**2)
+    t = np.arange(1, valid.size + 1)
+    # EViews' CUSUM plots are assessed against 5% boundary lines. We expose
+    # the normalized paths here; exact graphical critical lines are stored
+    # separately from the statistical series.
+    return {
+        "recursive_residuals": rr,
+        "recursive_se": rec["recursive_se"],
+        "CUSUM": cusum,
+        "CUSUMSQ": cusumsq,
+        "period": t,
+        "alpha": float(alpha),
+    }
+
+def chow_forecast(y, X, forecast_start: int, *, alpha: float = 0.05) -> dict[str, float | int]:
+    """EViews-style Chow forecast stability test."""
+    y = np.asarray(y, dtype=float).reshape(-1)
+    X = sm.add_constant(np.asarray(X, dtype=float), has_constant="add")
+    n, k = X.shape
+    start = int(forecast_start)
+    if start <= k or start >= n:
+        raise ValueError("forecast_start must leave enough estimation and forecast observations")
+    restricted = sm.OLS(y[:start], X[:start]).fit()
+    forecast_errors = y[start:] - X[start:] @ restricted.params
+    rss_forecast = float(np.sum(forecast_errors ** 2))
+    rss_full = float(sm.OLS(y, X).fit().ssr)
+    m = n - start
+    fstat = ((rss_full - rss_forecast) / max(m, 1)) / (rss_forecast / max(start - k, 1))
+    pvalue = float(stats.f.sf(fstat, m, start - k))
+    return {
+        "F-statistic": float(fstat),
+        "F p-value": pvalue,
+        "forecast_start": start,
+        "forecast_observations": int(m),
+        "restricted_SSR": rss_forecast,
+        "full_SSR": rss_full,
+    }
 def _clean(values) -> np.ndarray:
     x = np.asarray(values, dtype=float).reshape(-1)
     x = x[~np.isnan(x)]
