@@ -346,6 +346,15 @@ class Workfile:
             alpha=alpha,
         )
 
+    def kpss(self, name: str, *, regression: str = "c", nlags: str | int = "auto", alpha: float = 0.05, d: int = 0):
+        """Run an EViews-style KPSS test on the active sample."""
+        from .stationarity import kpss_test
+        return kpss_test(self.sample_series(name), regression=regression, nlags=nlags, alpha=alpha, d=d)
+
+    def phillips_perron(self, name: str, *, trend: str = "c", lags: int | None = None, alpha: float = 0.05, d: int = 0):
+        """Run an EViews-style Phillips-Perron test on the active sample."""
+        from .stationarity import phillips_perron
+        return phillips_perron(self.sample_series(name), trend=trend, lags=lags, alpha=alpha, d=d)
     def adf(
         self,
         name: str,
