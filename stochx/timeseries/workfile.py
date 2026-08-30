@@ -327,6 +327,41 @@ class Workfile:
         """Return an ordinary difference of a workfile series."""
         return self.get(name).diff(periods)
 
+    def correlogram(
+        self,
+        name: str,
+        *,
+        nlags: int,
+        d: int = 0,
+        model_df: int = 0,
+        alpha: float = 0.05,
+    ):
+        """Compute an EViews-style correlogram on the active sample."""
+        from .correlogram import correlogram
+        return correlogram(
+            self.sample_series(name),
+            nlags=nlags,
+            d=d,
+            model_df=model_df,
+            alpha=alpha,
+        )
+
+    def acf(self, name: str, *, nlags: int | None = None, d: int = 0, alpha: float = 0.05):
+        """Compute the ACF of a workfile series on the active sample."""
+        from .correlation import acf
+        series = self.sample_series(name)
+        if d:
+            series = series.diff(d)
+        return acf(series, nlags=nlags, alpha=alpha)
+
+    def pacf(self, name: str, *, nlags: int | None = None, d: int = 0, alpha: float = 0.05):
+        """Compute the PACF of a workfile series on the active sample."""
+        from .correlation import pacf
+        series = self.sample_series(name)
+        if d:
+            series = series.diff(d)
+        return pacf(series, nlags=nlags, alpha=alpha)
+
     def equation(self, name: str = "EQ01", specification: str = ""):
         """Create an equation object attached to this workfile."""
         from .equation import Equation
