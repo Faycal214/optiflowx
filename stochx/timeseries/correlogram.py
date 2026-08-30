@@ -303,7 +303,7 @@ def ljung_box(ac_values: np.ndarray, *, nobs: int, model_df: int = 0, nlags: int
     return LjungBoxResult(lags, q_stats, pvalues, df, nobs, model_df)
 
 
-def correlogram(series, *, nlags: int = 36, model_df: int = 0, alpha: float = 0.05, d: int = 0) -> CorrelogramResult:
+def correlogram(series, *, nlags: int = 16, model_df: int = 0, alpha: float = 0.05, d: int = 0) -> CorrelogramResult:
     """Return a unified EViews-style correlogram result.
 
     ``d`` mirrors the EViews ``series.correl(n,d=integer)`` option.
