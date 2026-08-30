@@ -3,9 +3,33 @@ import pandas as pd
 import pytest
 from scipy.stats import chi2
 
-from stochx.timeseries import CorrelogramResult, ar, arma, correlogram, white_noise
+from stochx.timeseries import CorrelogramResult, TimeSeries, correlogram
 from stochx.timeseries.correlogram import ljung_box
 from stochx.timeseries.correlation import acf
+
+
+def _ar1(phi: float, n: int, seed: int) -> TimeSeries:
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(size=n)
+    values = np.empty(n)
+    values[0] = eps[0]
+    for t in range(1, n):
+        values[t] = phi * values[t - 1] + eps[t]
+    return TimeSeries(values, name="AR1")
+
+
+def _arma11(phi: float, theta: float, n: int, seed: int) -> TimeSeries:
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(size=n)
+    values = np.empty(n)
+    values[0] = eps[0]
+    for t in range(1, n):
+        values[t] = phi * values[t - 1] + eps[t] + theta * eps[t - 1]
+    return TimeSeries(values, name="ARMA11")
+
+
+def _white_noise(n: int, seed: int) -> TimeSeries:
+    return TimeSeries(np.random.default_rng(seed).normal(size=n), name="WN")
 
 
 def _reference_q(ac_values, nobs, nlags):
@@ -27,7 +51,7 @@ def _reference_q(ac_values, nobs, nlags):
 
 
 def test_ljung_box_matches_independent_formula_for_white_noise():
-    y = white_noise(250, rng=123)
+    y = _white_noise(250, 123)
     ac = acf(y, nlags=12)
     result = ljung_box(ac.values, nobs=ac.nobs, nlags=12)
     expected_q = _reference_q(ac.values, ac.nobs, 12)
@@ -41,7 +65,7 @@ def test_ljung_box_matches_independent_formula_for_white_noise():
 
 
 def test_correlogram_unified_result_exposes_auditable_fields_for_ordinary_series():
-    y = white_noise(150, rng=7)
+    y = _white_noise(150, 7)
     result = correlogram(y, nlags=10, model_df=0, alpha=0.05)
 
     assert isinstance(result, CorrelogramResult)
@@ -63,7 +87,7 @@ def test_correlogram_unified_result_exposes_auditable_fields_for_ordinary_series
 
 
 def test_residual_correlogram_exposes_adjusted_df_and_probabilities():
-    y = arma(p=1, q=1, phi=[0.45], theta=[0.25], n=300, rng=42)
+    y = _arma11(0.45, 0.25, 300, 42)
     result = correlogram(y, nlags=8, model_df=2, alpha=0.05)
 
     assert result.nobs == 300
@@ -81,7 +105,7 @@ def test_residual_correlogram_exposes_adjusted_df_and_probabilities():
 
 
 def test_result_table_is_the_display_projection_of_auditable_arrays():
-    result = correlogram(white_noise(100, rng=11), nlags=6, model_df=1, alpha=0.10)
+    result = correlogram(_white_noise(100, 11), nlags=6, model_df=1, alpha=0.10)
     table = result.table()
 
     assert np.array_equal(table["Lag"].to_numpy(), result.lags)
@@ -93,7 +117,7 @@ def test_result_table_is_the_display_projection_of_auditable_arrays():
 
 
 def test_correlogram_metadata_and_q_arrays_are_consistent():
-    result = correlogram(ar(p=1, phi=[0.65], n=220, rng=19), nlags=12, model_df=0)
+    result = correlogram(_ar1(0.65, 220, 19), nlags=12, model_df=0)
     assert result.lags.shape == (result.nlags,)
     assert result.ac.shape == result.lags.shape
     assert result.pac.shape == result.lags.shape
@@ -133,7 +157,7 @@ def test_stage8_5_residual_correlogram_bands_use_shared_effective_nobs_and_ignor
 
 
 def test_model_df_must_be_nonnegative_and_lags_valid():
-    ac = acf(white_noise(50, rng=1), nlags=6)
+    ac = acf(_white_noise(50, 1), nlags=6)
     with pytest.raises(ValueError):
         ljung_box(ac.values, nobs=ac.nobs, model_df=-1, nlags=6)
     with pytest.raises(ValueError):
