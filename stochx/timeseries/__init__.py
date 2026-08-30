@@ -1,4 +1,4 @@
-"""Time-series analysis, simulation and forecasting tools.
+"""Time-series analysis and forecasting tools.
 
 The public namespace is organized around the USTHB course workflow:
 data preparation, smoothing/decomposition, stationarity, identification,
@@ -21,7 +21,6 @@ from .plotting import plot_correlogram, plot_decomposition, plot_eviews_correlog
 from .regression import RegressionResult, ols, trend_terms
 from .results import ResultTable, UnifiedResult
 from .series import TimeSeries
-from .simulation import ar, arma, ma, random_walk, sarma, simulate_process, white_noise
 from .stationarity import (
     DF_CRITICAL_VALUES,
     DF_F_CRITICAL_VALUES,
@@ -72,7 +71,6 @@ __all__ = [
     "TestResult", "durbin_watson_test", "breusch_godfrey", "breusch_godfrey_raw", "box_pierce", "ljung_box", "jarque_bera", "mean_zero_test", "normality_ks", "variance_ratio_test", "breusch_pagan", "arch_test", "residual_correlogram", "residual_diagnostics_correlogram", "residual_diagnostics", "roots_report", "redundancy_check",
     "ForecastMetrics", "metrics", "prediction_interval", "restore_differences", "naive_forecast", "drift_forecast",
     "RegressionResult", "ols", "trend_terms",
-    "white_noise", "ar", "ma", "arma", "random_walk", "sarma", "simulate_process",
     "polynomial_roots", "is_stationary_ar", "is_invertible_ma", "process_mean", "impulse_response", "inverse_ar_coefficients", "theoretical_ar_acf", "theoretical_ma_acf",
     "plot_series", "plot_correlogram", "plot_eviews_correlogram", "plot_forecast", "plot_decomposition",
 ]
