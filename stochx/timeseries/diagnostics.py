@@ -252,26 +252,53 @@ def histogram_normality(residuals, *, alpha: float = 0.05) -> dict[str, object]:
     }
 
 
-def serial_correlation_lm(resid, exog, lags: int = 1, *, alpha: float = 0.05, model_df: int = 0) -> dict[str, float | int]:
-    """EViews Serial Correlation LM test (Breusch-Godfrey)."""
+def serial_correlation_lm(
+    resid,
+    exog,
+    lags: int = 1,
+    *,
+    alpha: float = 0.05,
+    model_df: int = 0,
+) -> dict[str, float | int]:
+    """EViews-style Breusch-Godfrey serial-correlation LM test.
+
+    The auxiliary regression preserves the full estimation sample. Lagged
+    residuals before the first available observation are set to zero, which
+    matches the EViews documented Uroot convention.
+    """
     if not isinstance(lags, int) or isinstance(lags, bool) or lags < 1:
         raise ValueError("lags must be a positive integer")
-    e = _clean(resid)
+
+    e = np.asarray(resid, dtype=float).reshape(-1)
     X = np.asarray(exog, dtype=float)
     if X.ndim == 1:
         X = X[:, None]
-    n = min(e.size, X.shape[0])
-    e, X = e[-n:], X[-n:]
-    rows = []
-    target = e[lags:]
-    design = [X[lags:]]
+    if X.shape[0] != e.size:
+        n = min(e.size, X.shape[0])
+        e, X = e[-n:], X[-n:]
+
+    if not np.isfinite(e).all() or not np.isfinite(X).all():
+        mask = np.isfinite(e) & np.isfinite(X).all(axis=1)
+        e, X = e[mask], X[mask]
+
+    n = e.size
+    if n <= X.shape[1] + lags:
+        raise ValueError("insufficient observations for Breusch-Godfrey test")
+
+    lagged = []
     for j in range(1, lags + 1):
-        design.append(e[lags - j:-j])
-    Z = np.column_stack(design)
-    aux = sm.OLS(target, sm.add_constant(Z, has_constant="add")).fit()
-    lm = float(target.size * aux.rsquared)
-    df = max(lags - int(model_df), 1)
+        lag = np.zeros(n, dtype=float)
+        lag[j:] = e[:-j]
+        lagged.append(lag)
+
+    Z = np.column_stack([X, *lagged])
+    aux = sm.OLS(e, sm.add_constant(Z, has_constant="add")).fit()
+
+    lm = float(n * aux.rsquared)
+    df = max(int(lags - model_df), 1)
     pvalue = float(stats.chi2.sf(lm, df))
+    f_df_denom = int(aux.df_resid)
+
     return {
         "LM statistic": lm,
         "Obs*R-squared": lm,
@@ -279,6 +306,9 @@ def serial_correlation_lm(resid, exog, lags: int = 1, *, alpha: float = 0.05, mo
         "df": int(df),
         "F-statistic": float(aux.fvalue) if np.isfinite(aux.fvalue) else np.nan,
         "F p-value": float(aux.f_pvalue) if np.isfinite(aux.f_pvalue) else np.nan,
+        "F df numerator": int(lags),
+        "F df denominator": f_df_denom,
+        "nobs": int(n),
     }
 
 
