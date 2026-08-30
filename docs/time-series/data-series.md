@@ -35,7 +35,7 @@ print(series.index)
 print(series.describe())
 ```
 
-The descriptive report is intended to answer the first EViews-style questions: how many observations are available, how many are included, what is the mean and dispersion, and what are the minimum and maximum values.
+The descriptive report follows the EViews series-statistics view: observations, included non-missing observations, mean, median, maximum, minimum, sample standard deviation, sample variance, skewness, kurtosis, Jarque-Bera, and its probability. Statistics are evaluated on the active sample.
 
 ## Missing values
 
@@ -52,10 +52,12 @@ wf.set_sample(20, 120)
 y_sample = wf.sample_series("GDP")
 ```
 
-Date-like labels can also be used when the workfile is indexed:
+Date-like labels and EViews-style period labels can be used when the workfile is indexed:
 
 ```python
-wf.set_sample("2010-01-01 2020-12-01")
+wf.set_sample("2010M1 2020M12")
+wf.set_sample("2015Q1 2020Q4")
+wf.smpl("smpl @all if GDP>0")
 ```
 
 The sample is part of the workflow state, so generated series and equation estimation use the same observation window unless a method specifies otherwise.
