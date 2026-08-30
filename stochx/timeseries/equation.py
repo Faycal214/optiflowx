@@ -144,6 +144,25 @@ class EquationResult(UnifiedResult):
             return "ordinary"
         return "model default"
 
+    def forecast_evaluation(self, forecast, actual) -> dict[str, float]:
+        """Evaluate a forecast using EViews-style standard measures."""
+        f = np.asarray(list(forecast), dtype=float)
+        y = np.asarray(list(actual), dtype=float)
+        if f.shape != y.shape:
+            raise ValueError("forecast and actual must have the same shape")
+        mask = np.isfinite(f) & np.isfinite(y)
+        f = f[mask]
+        y = y[mask]
+        if f.size == 0:
+            raise ValueError("no finite forecast/actual observations")
+        e = y - f
+        rmse = float(np.sqrt(np.mean(e ** 2)))
+        mae = float(np.mean(np.abs(e)))
+        nz = np.abs(y) > np.finfo(float).eps
+        mape = float(np.mean(np.abs(e[nz] / y[nz])) * 100) if np.any(nz) else float("nan")
+        theil = rmse / (float(np.sqrt(np.mean(y ** 2))) + float(np.sqrt(np.mean(f ** 2))))
+        return {"RMSE": rmse, "MAE": mae, "MAPE": mape, "Mean Error": float(np.mean(e)), "Theil U": theil}
+
     def covariance_matrix(self) -> pd.DataFrame:
         if self._opg_covariance is not None:
             return self._opg_covariance.copy()
