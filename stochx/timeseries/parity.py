@@ -486,3 +486,32 @@ def validate_cointegration_reference(reference: Mapping[str, Any]) -> ParityRepo
         Comparison("system.method", system.get("method") == "Johansen", system.get("method"), "Johansen")
     )
     return report
+
+def compare_johansen_reference(result, reference: Mapping[str, Any], *, model_name: str = "johansen", rtol: float = 1e-5) -> ParityReport:
+    """Compare Johansen trace/max-eigen statistics and selected rank."""
+    report = ParityReport(model_name)
+    system = reference.get("system", {})
+    trace_ref = system.get("rank_tests", {}).get("trace", [])
+    max_ref = system.get("rank_tests", {}).get("max_eigen", [])
+    trace_actual = np.asarray(getattr(result, "trace_stat", []), dtype=float)
+    max_actual = np.asarray(getattr(result, "maxeig_stat", []), dtype=float)
+    if trace_actual.size != len(trace_ref):
+        report.comparisons.append(Comparison("trace.count", False, trace_actual.size, len(trace_ref)))
+    else:
+        for i, row in enumerate(trace_ref):
+            report.comparisons.append(compare_number(trace_actual[i], row["statistic"], name=f"trace[{i}]", rtol=rtol))
+    if max_actual.size != len(max_ref):
+        report.comparisons.append(Comparison("max_eigen.count", False, max_actual.size, len(max_ref)))
+    else:
+        for i, row in enumerate(max_ref):
+            report.comparisons.append(compare_number(max_actual[i], row["statistic"], name=f"max_eigen[{i}]", rtol=rtol))
+    selected = system.get("selected_rank", {})
+    trace_rank = selected.get("trace_5")
+    max_rank = selected.get("max_eigen_5")
+    if trace_rank is not None:
+        actual_trace_rank = int(np.sum(trace_actual > np.asarray([r["critical_5"] for r in trace_ref], dtype=float)))
+        report.comparisons.append(Comparison("selected_rank.trace_5", actual_trace_rank == trace_rank, actual_trace_rank, trace_rank))
+    if max_rank is not None:
+        actual_max_rank = int(np.sum(max_actual > np.asarray([r["critical_5"] for r in max_ref], dtype=float)))
+        report.comparisons.append(Comparison("selected_rank.max_eigen_5", actual_max_rank == max_rank, actual_max_rank, max_rank))
+    return report
