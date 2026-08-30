@@ -131,6 +131,9 @@ class UnitRootResult:
     coefficient_name: str = "γ"
     coefficient_tvalue: float | None = None
     coefficient_pvalue: float | None = None
+    lag_selection_method: str = "fixed"
+    max_lag: int | None = None
+    deterministic_terms: str = ""
 
     @property
     def rejects_null(self) -> bool:
@@ -319,6 +322,14 @@ def _validate_alpha(alpha: float) -> None:
         raise ValueError("alpha must be one of the DF levels: 0.01, 0.05, or 0.10")
 
 
+def _eviews_max_lag(nobs: int) -> int:
+    """Return EViews' default maximum ADF lag using Schwert's rule."""
+    if nobs < 1:
+        return 0
+    candidates = (2, 4, 6, 8, 10, 12)
+    values = [int(np.floor(k * (nobs / 100.0) ** 0.25)) for k in candidates]
+    valid = [value for value in values if value < nobs]
+    return max(valid, default=0)
 def _decision(statistic: float, critical_values: dict[str, float], alpha: float) -> Decision:
     _validate_alpha(alpha)
     level = {0.01: "1%", 0.05: "5%", 0.10: "10%"}[alpha]
@@ -539,9 +550,9 @@ def _deterministic_term_test(df_result: dict[str, object], regression: Literal["
 def adf(
     y: TimeSeries | Iterable[float],
     *,
-    regression: DFRegression = "ct",
+    regression: DFRegression = "c",
     lags: int | None = None,
-    autolag: str | None = "AIC",
+    autolag: str | None = "SIC",
     alpha: float = 0.05,
 ) -> UnitRootResult:
     """Run an ADF test under one of the course's three deterministic models."""
