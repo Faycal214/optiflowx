@@ -1,5 +1,5 @@
 site_name: StochX
-site_description: A lightweight Python library for time-series analysis, forecasting, econometrics, and stochastic processes.
+site_description: EViews-inspired Python library for time-series analysis, econometrics, and forecasting.
 repo_url: https://github.com/Faycal214/stochx
 repo_name: Faycal214/stochx
 
@@ -20,42 +20,12 @@ nav:
       - Forecasting: time-series/forecasting.md
       - State-space and Kalman: time-series/state-space.md
       - Reports and interpretation: time-series/reports.md
-      - Supporting modules: time-series/utility-modules.md
-  - Stochastic Processes:
-      - User Guide: stochastic/index.md
-      - Markov chains: stochastic/markov-chains.md
-      - Poisson processes: stochastic/poisson-processes.md
-      - CTMC and birth-death: stochastic/ctmc-birth-death.md
-      - Probability objects: stochastic/probability-objects.md
-      - Martingales and stopping times: stochastic/martingales.md
-      - Simulation: stochastic/simulation.md
   - Course Material:
       - Overview: course_material.md
       - Time-series methodology: time_series.md
-      - Chapter 1 — Discrete-Time Markov Chains: course_chapitre1.md
-      - Chapter 2 — Poisson Processes: course_chapitre2.md
-      - Chapter 3 — Continuous-Time Markov Chains: course_chapitre3.md
-      - Chapter 4 — Conditional Expectation: course_chapitre4.md
-      - Chapter 5 — Discrete-Time Martingales: course_chapitre5.md
   - Package / API:
       - Time-series API map: api/time-series.md
-      - Stochastic-process API map: api/stochastic-processes.md
       - API Reference overview: api/index.md
-      - MarkovChain: api/markov_chain.md
-      - PoissonProcess: api/poisson_process.md
-      - NonHomogeneousPoissonProcess: api/non_homogeneous_poisson_process.md
-      - ContinuousTimeMarkovChain: api/continuous_time_markov_chain.md
-      - CTMCPath: api/ctmc_path.md
-      - BirthDeathProcess: api/birth_death_process.md
-      - FiniteProbabilitySpace: api/finite_probability_space.md
-      - RandomVariable: api/random_variable.md
-      - Partition: api/partition.md
-      - Filtration: api/filtration.md
-      - Martingale: api/martingale.md
-      - StoppingTime: api/stopping_time.md
-      - StoppedProcess: api/stopped_process.md
-      - Analysis Utilities: api/analysis.md
-      - Exceptions: api/exceptions.md
   - Examples:
       - Worked Examples: examples.md
   - About: about.md
