@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from stochx.timeseries import TimeSeries, fit_ar, fit_ma, fit_arma
+from stochx.timeseries import TimeSeries, Workfile, fit_ar, fit_ma, fit_arma
 
 
 def _arma11(phi: float, theta: float, n: int, seed: int) -> TimeSeries:
