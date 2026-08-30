@@ -127,10 +127,10 @@ class TSResult(UnifiedResult):
         }
 
     def stability(self) -> dict[str, bool]:
-        """Check the course stationarity and invertibility root conditions."""
+        """Check EViews inverse-root stationarity and invertibility conditions."""
         roots = self.roots()
-        ar_ok = bool(np.all(np.abs(roots["AR roots"]) > 1.0)) if roots["AR roots"].size else True
-        ma_ok = bool(np.all(np.abs(roots["MA roots"]) > 1.0)) if roots["MA roots"].size else True
+        ar_ok = bool(np.all(np.abs(roots["AR roots"]) < 1.0)) if roots["AR roots"].size else True
+        ma_ok = bool(np.all(np.abs(roots["MA roots"]) < 1.0)) if roots["MA roots"].size else True
         return {"stationary": ar_ok, "invertible": ma_ok}
 
     def interpret(self, alpha: float = 0.05) -> str:
