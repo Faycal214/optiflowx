@@ -359,12 +359,19 @@ class Workfile:
               lags: int | None = None, autolag: str | None = "SIC",
               alpha: float = 0.05, max_lag: int | None = None):
         """EViews-style unit-root dispatcher for ADF, PP and KPSS."""
+        exog_key = str(exog).lower()
+        exog_map = {"const": "c", "c": "c", "trend": "ct", "t": "ct", "none": "n", "n": "n"}
+        if exog_key not in exog_map:
+            raise ValueError("exog must be const/c, trend/t, or none/n")
+        regression = exog_map[exog_key]
         if test.lower() == "adf":
-            return self.adf(name, regression=exog, lags=lags, autolag=autolag, alpha=alpha, max_lag=max_lag, d=dif)
+            return self.adf(name, regression=regression, lags=lags, autolag=autolag, alpha=alpha, max_lag=max_lag, d=dif)
         if test.lower() == "pp":
-            return self.phillips_perron(name, trend=exog, lags=lags, alpha=alpha, d=dif)
+            return self.phillips_perron(name, trend=regression, lags=lags, alpha=alpha, d=dif)
         if test.lower() == "kpss":
-            return self.kpss(name, regression=exog, nlags="auto" if lags is None else lags, alpha=alpha, d=dif)
+            if regression == "n":
+                raise ValueError("KPSS requires a constant or trend specification")
+            return self.kpss(name, regression=regression, nlags="auto" if lags is None else lags, alpha=alpha, d=dif)
         raise ValueError("test must be 'adf', 'pp', or 'kpss'")
     def adf(
         self,
