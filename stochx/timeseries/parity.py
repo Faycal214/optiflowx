@@ -515,3 +515,22 @@ def compare_johansen_reference(result, reference: Mapping[str, Any], *, model_na
         actual_max_rank = int(np.sum(max_actual > np.asarray([r["critical_5"] for r in max_ref], dtype=float)))
         report.comparisons.append(Comparison("selected_rank.max_eigen_5", actual_max_rank == max_rank, actual_max_rank, max_rank))
     return report
+
+
+def compare_breusch_godfrey_reference(result: Mapping[str, Any], reference: Mapping[str, Any], *, model_name: str = "breusch-godfrey", rtol: float = 1e-5) -> ParityReport:
+    """Compare a captured EViews Breusch-Godfrey LM report."""
+    report = ParityReport(model_name)
+    expected = reference["views"]["serial_correlation_lm"]["statistics"]
+    actual = result
+    for key, aliases in {
+        "F-statistic": ("F-statistic", "fvalue"),
+        "F-p-value": ("F-p-value", "fpvalue"),
+        "Obs*R-squared": ("Obs*R-squared", "lm", "LM statistic"),
+        "Obs*R-squared-p-value": ("Obs*R-squared-p-value", "lmpval", "p-value"),
+    }.items():
+        value = next((actual[a] for a in aliases if a in actual), None)
+        if value is None:
+            report.comparisons.append(Comparison(key, False, None, expected[key], note="missing statistic"))
+        else:
+            report.comparisons.append(compare_number(float(value), expected[key], name=key, rtol=rtol))
+    return report
