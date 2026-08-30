@@ -555,9 +555,14 @@ def adf(
     autolag: str | None = "SIC",
     alpha: float = 0.05,
     max_lag: int | None = None,
+    d: int = 0,
 ) -> UnitRootResult:
     """Run the EViews-style Augmented Dickey-Fuller test."""
     x = _values(y)
+    if d not in {0, 1, 2}:
+        raise ValueError("d must be 0, 1, or 2")
+    if d:
+        x = np.diff(x, n=d)
     if regression not in DF_SPECIFICATIONS:
         raise ValueError("regression must be 'n', 'c', or 'ct'")
     _validate_alpha(alpha)
