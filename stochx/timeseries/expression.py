@@ -82,22 +82,34 @@ def _function(name: str, args: list[Any], workfile) -> TimeSeries | float:
         if len(args) != 1 or not isinstance(args[0], TimeSeries):
             raise ExpressionError("LOG() expects one series")
         return args[0].log()
-    if upper in {"MEAN", "@MEAN"}:
+    if upper in {
+        "MEAN", "@MEAN", "MEDIAN", "@MEDIAN", "MAX", "@MAX", "MIN", "@MIN",
+        "STDEV", "@STDEV", "STDEVP", "@STDEVP", "VAR", "@VAR", "VARP", "@VARP",
+        "OBS", "@OBS",
+    }:
         if len(args) != 1 or not isinstance(args[0], TimeSeries):
-            raise ExpressionError("@mean() expects one series")
-        return float(np.nanmean(args[0].values))
-    if upper in {"VAR", "@VAR"}:
-        if len(args) != 1 or not isinstance(args[0], TimeSeries):
-            raise ExpressionError("@var() expects one series")
-        return float(np.nanvar(args[0].values, ddof=1))
-    if upper in {"STDEV", "@STDEV"}:
-        if len(args) != 1 or not isinstance(args[0], TimeSeries):
-            raise ExpressionError("@stdev() expects one series")
-        return float(np.nanstd(args[0].values, ddof=1))
-    if upper in {"OBS", "@OBS"}:
-        if len(args) != 1 or not isinstance(args[0], TimeSeries):
-            raise ExpressionError("@obs() expects one series")
-        return float(args[0].nobs - args[0].nmissing)
+            raise ExpressionError(f"@{upper.lower()}() expects one series")
+        values = args[0].values
+        if getattr(workfile, "sample_mask", None) is not None:
+            values = values[workfile.sample_indexer]
+        values = values[np.isfinite(values)]
+        if values.size == 0:
+            return float("nan")
+        if upper in {"MEAN", "@MEAN"}:
+            return float(np.mean(values))
+        if upper in {"MEDIAN", "@MEDIAN"}:
+            return float(np.median(values))
+        if upper in {"MAX", "@MAX"}:
+            return float(np.max(values))
+        if upper in {"MIN", "@MIN"}:
+            return float(np.min(values))
+        if upper in {"STDEV", "@STDEV"}:
+            return float(np.std(values, ddof=1)) if values.size > 1 else float("nan")
+        if upper in {"STDEVP", "@STDEVP"}:
+            return float(np.std(values, ddof=0))
+        if upper in {"VAR", "@VAR", "VARP", "@VARP"}:
+            return float(np.var(values, ddof=0))
+        return float(values.size)
     raise ExpressionError(f"unsupported function {name!r}")
 
 
@@ -217,7 +229,7 @@ def evaluate(source: str, workfile) -> TimeSeries | float:
     text = source.strip()
     # Python's AST cannot parse EViews identifiers beginning with "@".
     text = re.sub(r"@TREND\b", "TREND", text, flags=re.IGNORECASE)
-    text = re.sub(r"@(?=mean|var|stdev|obs)\b", "", text, flags=re.IGNORECASE)
+    text = re.sub(r"@(?=mean|median|max|min|var|stdev|stdevp|varp|obs)\b", "", text, flags=re.IGNORECASE)
     try:
         tree = ast.parse(text, mode="eval")
     except SyntaxError as exc:
