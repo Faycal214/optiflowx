@@ -105,11 +105,17 @@ def _eval_node(node: ast.AST, workfile) -> TimeSeries | float:
     if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
         return float(node.value)
     if isinstance(node, ast.Name):
-        if node.id.upper() == "C":
+        upper_name = node.id.upper()
+        if upper_name == "C":
             if not workfile.series:
                 raise ExpressionError("C requires at least one series in the workfile")
             base = next(iter(workfile.series.values()))
             return _constant_like(base, 1.0)
+        if upper_name == "TREND":
+            if not workfile.series:
+                raise ExpressionError("@TREND requires at least one series in the workfile")
+            base = next(iter(workfile.series.values()))
+            return TimeSeries(np.arange(base.nobs, dtype=float), index=base.index, name="@TREND", frequency=base.frequency)
         return _series(workfile, node.id)
     if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
         operand = _eval_node(node.operand, workfile)
@@ -151,12 +157,14 @@ def evaluate(source: str, workfile) -> TimeSeries | float:
     """Evaluate an EViews-inspired expression against a Workfile.
 
     Supported examples include ``GDP``, ``GDP(-1)``, ``GDP(1)``, ``D(GDP)``,
-    ``DLOG(GDP)``, ``LOG(GDP)``, ``GDP(-1) + 0.5*CONS`` and basic statistics
+    ``DLOG(GDP)``, ``LOG(GDP)``, ``@TREND``, ``GDP(-1) + 0.5*CONS`` and basic statistics
     such as ``@mean(GDP)``.
     """
     if not isinstance(source, str) or not source.strip():
         raise ExpressionError("expression must be a non-empty string")
     text = source.strip()
+    # Python's AST cannot parse EViews identifiers beginning with "@".
+    text = re.sub(r"@TREND\b", "TREND", text, flags=re.IGNORECASE)
     text = re.sub(r"@(?=mean|var|stdev|obs)\b", "", text, flags=re.IGNORECASE)
     try:
         tree = ast.parse(text, mode="eval")
