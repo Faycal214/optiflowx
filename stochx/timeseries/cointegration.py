@@ -280,15 +280,22 @@ class JohansenResult:
         })
 
 
-def johansen(data, *, k_ar_diff=1, det_order=0, variables=None):
+def johansen(data, *, k_ar_diff=1, det_order=0, variables=None, exog=None, exog_coint=None, deterministic=None):
+    """Johansen test with optional unrestricted exogenous regressors."""
     frame = data if isinstance(data, pd.DataFrame) else pd.DataFrame(data)
-    result = coint_johansen(frame.to_numpy(dtype=float), det_order, k_ar_diff)
+    arr = frame.to_numpy(dtype=float)
+    if exog is not None:
+        z = np.asarray(exog, dtype=float)
+        if z.ndim == 1:
+            z = z[:, None]
+        if z.shape[0] != arr.shape[0]:
+            raise ValueError("exog and data must have the same number of observations")
+        beta = np.linalg.lstsq(z, arr, rcond=None)[0]
+        arr = arr - z @ beta
+    result = coint_johansen(arr, det_order, k_ar_diff)
     rank = int(np.sum(result.lr1 > result.cvt[:, 1]))
-    names = tuple(str(c) for c in frame.columns) if variables is None else tuple(variables)
-    return JohansenResult(
-        result.eig, result.lr1, result.cvt, result.lr2, result.cvm,
-        rank, det_order, k_ar_diff, names
-    )
+    names = tuple(str(col) for col in frame.columns) if variables is None else tuple(variables)
+    return JohansenResult(result.eig, result.lr1, result.cvt, result.lr2, result.cvm, rank, det_order, k_ar_diff, names)
 
 
 @dataclass
