@@ -224,3 +224,83 @@ def compare_equation_fixture(
                 )
             )
     return report
+
+
+def compare_array(
+    actual: Iterable[float],
+    expected: Iterable[float | str],
+    *,
+    report: ParityReport,
+    name: str,
+    atol: float = 1e-8,
+    rtol: float = 1e-8,
+) -> None:
+    lhs = np.asarray(list(actual), dtype=float).reshape(-1)
+    rhs = np.asarray([float(v) for v in expected], dtype=float).reshape(-1)
+    if lhs.size != rhs.size:
+        report.comparisons.append(Comparison(name, False, lhs.size, rhs.size, note="length mismatch"))
+        return
+    for i, (a, e) in enumerate(zip(lhs, rhs)):
+        report.comparisons.append(compare_number(a, e, name=f"{name}[{i}]", atol=atol, rtol=rtol))
+
+
+def compare_forecast(
+    actual,
+    expected,
+    *,
+    model_name: str = "forecast",
+    columns: tuple[str, ...] = ("Forecast", "Std. Error", "Lower", "Upper"),
+    atol: float = 1e-8,
+    rtol: float = 1e-8,
+) -> ParityReport:
+    """Compare forecast DataFrame columns against a captured reference."""
+    report = ParityReport(model_name)
+    for column in columns:
+        if column not in actual or column not in expected:
+            report.comparisons.append(
+                Comparison(column, False, None if column not in actual else "present",
+                           None if column not in expected else "present", note="missing column")
+            )
+            continue
+        compare_array(
+            actual[column].to_numpy(dtype=float),
+            expected[column],
+            report=report,
+            name=column,
+            atol=atol,
+            rtol=rtol,
+        )
+    return report
+
+
+def compare_dataframe(
+    actual,
+    expected,
+    *,
+    model_name: str,
+    atol: float = 1e-8,
+    rtol: float = 1e-8,
+) -> ParityReport:
+    """Compare two numeric DataFrames after requiring identical shape/labels."""
+    report = ParityReport(model_name)
+    if list(actual.columns) != list(expected.columns):
+        report.comparisons.append(Comparison("columns", False, list(actual.columns), list(expected.columns)))
+        return report
+    if list(actual.index) != list(expected.index):
+        report.comparisons.append(Comparison("index", False, list(actual.index), list(expected.index)))
+        return report
+    if actual.shape != expected.shape:
+        report.comparisons.append(Comparison("shape", False, actual.shape, expected.shape))
+        return report
+    for row in actual.index:
+        for column in actual.columns:
+            a, e = actual.loc[row, column], expected.loc[row, column]
+            if pd.isna(a) and pd.isna(e):
+                continue
+            try:
+                report.comparisons.append(
+                    compare_number(a, e, name=f"{row}.{column}", atol=atol, rtol=rtol)
+                )
+            except (TypeError, ValueError):
+                report.comparisons.append(compare_text(str(a), str(e), name=f"{row}.{column}"))
+    return report
