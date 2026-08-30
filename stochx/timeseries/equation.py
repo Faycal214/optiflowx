@@ -294,8 +294,7 @@ class EquationResult(UnifiedResult):
         if x is None: raise ValueError("x must be supplied")
         if method.lower() == "eg": return engle_granger(self.observed, x, trend=trend, lag=lag, maxlag=maxlag)
         if method.lower() == "po": return phillips_ouliaris(self.observed, x, trend=trend, lag=lag, maxlag=maxlag)
-        raise ValueError("method must be 'eg' or 'po'
-")
+        raise ValueError("method must be 'eg' or 'po'")
 
     def cointreg(self, x, *, method: str = "fmols", trend: str = "const", leads: int = 0, lags: int = 0, kernel: str = "bartlett", bandwidth=None):
         """Estimate an EViews single-equation cointegrating regression."""
