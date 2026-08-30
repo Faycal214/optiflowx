@@ -73,9 +73,10 @@ class TSResult(UnifiedResult):
         if steps < 1:
             raise ValueError("steps must be positive")
 
-        if hasattr(self.result, "get_forecast"):
-            prediction = self.result.get_forecast(steps=steps)
-        elif hasattr(self.result, "get_prediction"):
+        if hasattr(self.result, "get_prediction"):
+            nobs = int(getattr(self.result, "nobs", len(self.original) if self.original is not None else 0))
+            prediction = self.result.get_prediction(start=nobs, end=nobs + steps - 1, dynamic=dynamic)
+        elif hasattr(self.result, "get_forecast"):
             nobs = int(
                 getattr(
                     self.result,
