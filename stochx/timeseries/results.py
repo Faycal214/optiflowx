@@ -158,7 +158,7 @@ class UnifiedResult:
         bic = stats.get("Schwarz criterion", np.nan)
         if np.isfinite(aic) or np.isfinite(bic):
             statements.append("For model selection, compare AIC and Schwarz/BIC across competing specifications; smaller values are preferred.")
-        dw = stats.get("Durbin-Watson", np.nan)
+        dw = stats.get("Durbin-Watson stat", np.nan)
         if np.isfinite(dw):
             if dw < 1.5:
                 statements.append(f"Durbin-Watson={dw:.3f} indicates potential positive residual autocorrelation and requires diagnostic checking.")
