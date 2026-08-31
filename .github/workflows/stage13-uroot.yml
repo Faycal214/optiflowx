@@ -1,0 +1,57 @@
+name: Step 13 Uroot EViews parity
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  uroot-bg2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install package and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: Download public Uroot WF1
+        run: |
+          mkdir -p validation_data
+          python - <<'PY'
+          import re
+          import urllib.request
+          from pathlib import Path
+          url = "https://forums.eviews.com/viewtopic.php?p=71579"
+          html = urllib.request.urlopen(url, timeout=30).read().decode("utf-8", "ignore")
+          links = re.findall(r'href=["\']([^"\']+)["\'][^>]*>[^<]*uroot\.wf1', html, re.I)
+          if not links:
+              links = re.findall(r'href=["\']([^"\']*uroot[^"\']*)["\']', html, re.I)
+          if not links:
+              raise SystemExit("Could not locate uroot.wf1 attachment on the EViews forum page")
+          href = links[0]
+          if href.startswith("/"):
+              href = "https://forums.eviews.com" + href
+          elif not href.startswith("http"):
+              from urllib.parse import urljoin
+              href = urljoin(url, href)
+          data = urllib.request.urlopen(href, timeout=30).read()
+          Path("validation_data/uroot.wf1").write_bytes(data)
+          print(href, len(data))
+          PY
+
+      - name: Extract Uroot CS and GDP
+        run: |
+          python scripts/extract_wf1_series.py             validation_data/uroot.wf1             --series CS GDP             --output validation_data/uroot_CS_GDP_extracted_with_presample.csv
+
+      - name: Run Uroot BG(2) parity test
+        env:
+          STOCHX_UROOT_CSV: validation_data/uroot_CS_GDP_extracted_with_presample.csv
+        run: |
+          python -m pytest tests/test_stage13_uroot_bg2.py -vv
