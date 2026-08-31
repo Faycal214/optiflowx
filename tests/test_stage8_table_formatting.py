@@ -43,7 +43,7 @@ def test_stage8_7_fixed_width_text_has_stable_header_and_missing_rendering():
 
 
 def test_stage8_7_formatters_validate_inputs():
-    result = correlogram(white_noise(50, rng=1), nlags=4)
+    result = correlogram(_white_noise(50, 1), nlags=4)
     with pytest.raises(TypeError):
         format_correlogram_table(object())
     with pytest.raises(ValueError):
@@ -53,6 +53,6 @@ def test_stage8_7_formatters_validate_inputs():
 
 
 def test_stage8_7_result_remains_the_frozen_public_type():
-    result = correlogram(white_noise(50, rng=9), nlags=4)
+    result = correlogram(_white_noise(50, 9), nlags=4)
     assert isinstance(result, CorrelogramResult)
     assert result.lags.tolist() == [1, 2, 3, 4]
