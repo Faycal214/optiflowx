@@ -29,7 +29,7 @@ def main() -> None:
 
     eq = wf.ls("Y C X", name="EQ1")
     print(eq.summary())
-    print(eq.forecast())
+    print(eq.forecast(start=0, end=9))
     print(correlogram(y, nlags=12).table())
     print(acf(y, nlags=12).values)
 
