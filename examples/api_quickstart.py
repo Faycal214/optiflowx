@@ -1,16 +1,20 @@
-"""Minimal public API syntax example.
-
-Run from the repository root after installing StochX with `pip install -e .`.
-"""
+"""Minimal StochX time-series quickstart."""
 
 import numpy as np
 
-from stochx.stochastic import MarkovChain, PoissonProcess
+from stochx.timeseries import Workfile, correlogram, fit_arima
 
 
-P = np.array([[0.8, 0.2], [0.1, 0.9]])
-chain = MarkovChain(P, states=["A", "B"])
-print(chain.stationary_distribution())
+rng = np.random.default_rng(42)
+y = np.cumsum(rng.normal(size=120))
 
-poisson = PoissonProcess(rate=2.0)
-print(poisson.count_probability(3, 1.0))
+wf = Workfile(frequency="Q")
+wf.add("Y", y)
+
+equation = wf.ls("Y C")
+print(equation.summary())
+
+model = fit_arima(y, order=(1, 1, 1))
+print(model.summary())
+
+print(correlogram(y, nlags=12).table())
