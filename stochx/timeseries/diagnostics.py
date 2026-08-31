@@ -297,17 +297,26 @@ def serial_correlation_lm(
     lm = float(n * aux.rsquared)
     df = max(int(lags - model_df), 1)
     pvalue = float(stats.chi2.sf(lm, df))
-    f_df_denom = int(aux.df_resid)
+
+    # EViews reports the F test for the joint null that the added
+    # lagged-residual coefficients are zero. statsmodels' aux.fvalue
+    # instead tests all non-constant auxiliary regressors.
+    r2 = float(aux.rsquared)
+    denominator_df = int(n - X.shape[1] - lags)
+    if denominator_df <= 0:
+        raise ValueError("insufficient denominator degrees of freedom")
+    f_stat = (r2 / lags) / ((1.0 - r2) / denominator_df)
+    f_pvalue = float(stats.f.sf(f_stat, lags, denominator_df))
 
     return {
         "LM statistic": lm,
         "Obs*R-squared": lm,
         "p-value": pvalue,
         "df": int(df),
-        "F-statistic": float(aux.fvalue) if np.isfinite(aux.fvalue) else np.nan,
-        "F p-value": float(aux.f_pvalue) if np.isfinite(aux.f_pvalue) else np.nan,
+        "F-statistic": float(f_stat),
+        "F p-value": f_pvalue,
         "F df numerator": int(lags),
-        "F df denominator": f_df_denom,
+        "F df denominator": denominator_df,
         "nobs": int(n),
     }
 
