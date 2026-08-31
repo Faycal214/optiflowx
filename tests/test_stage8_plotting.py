@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from stochx.timeseries import arma, correlogram, plot_eviews_correlogram, white_noise
+from stochx.timeseries import correlogram, fit_arma, plot_eviews_correlogram
 
 
 def _assert_band_lines(axis, lower, upper):
@@ -19,7 +19,7 @@ def _assert_band_lines(axis, lower, upper):
 
 
 def test_stage8_9_ordinary_plot_uses_frozen_ac_pac_and_bands():
-    result = correlogram(white_noise(120, rng=21), nlags=8, model_df=0)
+    result = correlogram(np.random.default_rng(21).normal(size=120), nlags=8, model_df=0)
     before = {
         "ac": result.ac.copy(),
         "pac": result.pac.copy(),
@@ -46,7 +46,7 @@ def test_stage8_9_ordinary_plot_uses_frozen_ac_pac_and_bands():
 
 
 def test_stage8_9_residual_plot_preserves_model_df_and_band_contract():
-    result = correlogram(arma(p=1, q=1, phi=[0.45], theta=[0.25], n=160, rng=7), nlags=6, model_df=2)
+    result = correlogram(fit_arma(np.random.default_rng(7).normal(size=160), p=1, q=1).fitted_values, nlags=6, model_df=2)
     fig, axes = plot_eviews_correlogram(result, title="Residual Correlogram", show=False)
 
     assert result.model_df == 2
@@ -61,7 +61,7 @@ def test_stage8_9_residual_plot_preserves_model_df_and_band_contract():
 
 
 def test_stage8_9_custom_axes_are_supported_without_recomputation():
-    result = correlogram(white_noise(80, rng=9), nlags=5)
+    result = correlogram(np.random.default_rng(9).normal(size=80), nlags=5)
     fig, axes_array = plt.subplots(2, 1)
     returned_fig, returned_axes = plot_eviews_correlogram(result, axes=axes_array, show=False)
 
@@ -76,7 +76,7 @@ def test_stage8_9_plot_validates_result_and_axes():
     with pytest.raises(TypeError, match="CorrelogramResult"):
         plot_eviews_correlogram(object(), show=False)
 
-    result = correlogram(white_noise(60, rng=1), nlags=4)
+    result = correlogram(np.random.default_rng(1).normal(size=60), nlags=4)
     with pytest.raises(ValueError, match="exactly two"):
         plot_eviews_correlogram(result, axes=[plt.subplots()[1]], show=False)
     plt.close("all")
