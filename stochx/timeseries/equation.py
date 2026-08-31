@@ -364,7 +364,7 @@ class EquationResult(UnifiedResult):
         y = np.asarray(self.result.model.endog, dtype=float).reshape(-1)
         X = np.asarray(self.result.model.exog, dtype=float)
         out = {"Recursive Estimates": cusum_tests(y, X, alpha=alpha)}
-out["Recursive Estimates"]["coefficients"] = recursive_coefficient_estimates(y, X)
+        out["Recursive Estimates"]["coefficients"] = recursive_coefficient_estimates(y, X)
         if breakpoint is not None:
             out["Chow Breakpoint"] = chow_breakpoint(y, X, breakpoint, alpha=alpha)
         if forecast_start is not None:
