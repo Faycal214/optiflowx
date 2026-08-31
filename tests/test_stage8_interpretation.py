@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from stochx.timeseries import CorrelogramResult, arma, correlogram, interpret_correlogram, white_noise
+from stochx.timeseries import CorrelogramResult, correlogram, fit_arma, interpret_correlogram, white_noise
 
 
 def _result_with_spikes() -> CorrelogramResult:
@@ -44,7 +44,7 @@ def test_stage8_8_ordinary_interpretation_lists_significant_ac_pac_spikes_and_qt
 
 
 def test_stage8_8_residual_interpretation_reports_model_df_and_ignores_nonpositive_probabilities():
-    y = arma(p=1, q=1, phi=[0.45], theta=[0.25], n=160, rng=7)
+    y = fit_arma(white_noise(160, rng=7), p=1, q=1).fitted_values
     result = correlogram(y, nlags=6, model_df=2)
     text = interpret_correlogram(result)
 
