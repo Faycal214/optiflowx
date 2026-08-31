@@ -15,7 +15,7 @@ from stochx.timeseries import (
     fit_arma,
     fit_ma,
     johansen,
-    ls,
+    ols,
 )
 
 
@@ -41,7 +41,7 @@ def main() -> None:
     print(autoarma(y).summary())
 
     # Public functional OLS/Equation entry points are both available.
-    print(ls(y, np.column_stack([np.ones(len(y)), x])).summary())
+    print(ols(y, np.column_stack([np.ones(len(y)), x])).summary())
 
 
 if __name__ == "__main__":
