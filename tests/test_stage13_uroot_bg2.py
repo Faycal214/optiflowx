@@ -27,9 +27,12 @@ def test_breusch_godfrey_preserves_full_sample_and_reports_f_df(lags):
 
 
 def test_eviews_uroot_bg2_same_data_reference():
-    csv_path = os.environ.get("STOCHX_UROOT_CSV")
-    if not csv_path:
-        pytest.skip("set STOCHX_UROOT_CSV to the extracted Uroot CS/GDP CSV")
+    csv_path = os.environ.get(
+        "STOCHX_UROOT_CSV",
+        "validation_data/uroot_CS_GDP_extracted_with_presample.csv",
+    )
+    if not Path(csv_path).exists():
+        pytest.skip(f"Uroot validation data not available: {csv_path}")
 
     frame = pd.read_csv(Path(csv_path))
     required = {"date", "CS", "GDP"}
