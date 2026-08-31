@@ -2,14 +2,23 @@ import pytest
 
 from stochx.timeseries import (
     BoxJenkinsValidationResult,
-    ar,
     estimate_box_jenkins_candidates,
     validate_box_jenkins_candidates,
 )
 
 
+def _ar1(phi: float, n: int, seed: int) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(size=n)
+    values = np.empty(n)
+    values[0] = eps[0]
+    for t in range(1, n):
+        values[t] = phi * values[t - 1] + eps[t]
+    return values
+
+
 def test_stage9_4_validation_records_frozen_residual_correlogram_and_adequacy():
-    y = ar(1, [0.0], 220, rng=3)
+    y = _ar1(0.0, 220, 3)
     estimation = estimate_box_jenkins_candidates(y, ((0, 0, 0), (1, 0, 0)))
     result = validate_box_jenkins_candidates(estimation, lags=8)
 
@@ -25,7 +34,7 @@ def test_stage9_4_validation_records_frozen_residual_correlogram_and_adequacy():
 
 
 def test_stage9_4_serial_correlation_is_mandatory_and_rejects_correlated_residuals():
-    y = ar(1, [0.92], 250, rng=7)
+    y = _ar1(0.92, 250, 7)
     estimation = estimate_box_jenkins_candidates(y, ((0, 0, 0),))
     result = validate_box_jenkins_candidates(estimation, lags=8)
 
@@ -37,7 +46,7 @@ def test_stage9_4_serial_correlation_is_mandatory_and_rejects_correlated_residua
 
 
 def test_stage9_4_optional_checks_only_make_eligibility_stricter():
-    y = ar(1, [0.0], 250, rng=11)
+    y = _ar1(0.0, 250, 11)
     estimation = estimate_box_jenkins_candidates(y, ((0, 0, 0),))
 
     base = validate_box_jenkins_candidates(estimation, lags=6)
@@ -67,7 +76,7 @@ def test_stage9_4_failed_estimation_is_not_revalidated(monkeypatch):
         return real_estimate(y, p=p, d=d, q=q)
 
     monkeypatch.setattr(estimation_module, "estimate", fake_estimate)
-    y = ar(1, [0.35], 150, rng=4)
+    y = _ar1(0.35, 150, 4)
     estimation = estimation_module.estimate_box_jenkins_candidates(y, ((9, 0, 9),))
     result = validate_box_jenkins_candidates(estimation, lags=6)
     candidate = result.candidates[0]
@@ -80,7 +89,7 @@ def test_stage9_4_failed_estimation_is_not_revalidated(monkeypatch):
 
 
 def test_stage9_4_no_adequate_candidate_is_explicit():
-    y = ar(1, [0.99], 120, rng=8)
+    y = _ar1(0.99, 120, 8)
     estimation = estimate_box_jenkins_candidates(y, ((0, 0, 0),))
     result = validate_box_jenkins_candidates(estimation, lags=8)
 
@@ -90,7 +99,7 @@ def test_stage9_4_no_adequate_candidate_is_explicit():
 
 
 def test_stage9_4_rejects_invalid_validation_settings():
-    y = ar(1, [0.2], 100, rng=1)
+    y = _ar1(0.2, 100, 1)
     estimation = estimate_box_jenkins_candidates(y, ((1, 0, 0),))
 
     with pytest.raises(ValueError, match="positive integer"):
