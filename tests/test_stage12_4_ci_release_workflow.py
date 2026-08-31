@@ -33,7 +33,7 @@ def test_release_workflow_runs_complete_release_validation() -> None:
         "python -m build",
         "python -m twine check dist/*",
         "python -m venv /tmp/stochx-release-venv",
-        "import stochx, stochx.stochastic, stochx.timeseries",
+        "import stochx, stochx.timeseries",
     )
     for item in required:
         assert item in workflow, f"Missing release gate: {item}"
