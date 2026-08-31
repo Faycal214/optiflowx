@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from stochx.timeseries import CorrelogramResult, correlogram, fit_arma, interpret_correlogram, white_noise
+from stochx.timeseries import CorrelogramResult, correlogram, fit_arma, interpret_correlogram
 
 
 def _result_with_spikes() -> CorrelogramResult:
@@ -44,7 +44,7 @@ def test_stage8_8_ordinary_interpretation_lists_significant_ac_pac_spikes_and_qt
 
 
 def test_stage8_8_residual_interpretation_reports_model_df_and_ignores_nonpositive_probabilities():
-    y = fit_arma(white_noise(160, rng=7), p=1, q=1).fitted_values
+    y = fit_arma(np.random.default_rng(7).normal(size=160), p=1, q=1).fitted_values
     result = correlogram(y, nlags=6, model_df=2)
     text = interpret_correlogram(result)
 
@@ -89,7 +89,7 @@ def test_stage8_8_max_spikes_and_alpha_are_deterministic():
 
 
 def test_stage8_8_interpretation_does_not_mutate_frozen_result_or_table():
-    result = correlogram(white_noise(90, rng=4), nlags=5)
+    result = correlogram(np.random.default_rng(4).normal(size=90), nlags=5)
     before = result.table().copy()
     _ = interpret_correlogram(result)
 
@@ -99,7 +99,7 @@ def test_stage8_8_interpretation_does_not_mutate_frozen_result_or_table():
 
 
 def test_stage8_8_validates_inputs():
-    result = correlogram(white_noise(50, rng=1), nlags=4)
+    result = correlogram(np.random.default_rng(1).normal(size=50), nlags=4)
     with pytest.raises(TypeError):
         interpret_correlogram(object())
     with pytest.raises(ValueError):
