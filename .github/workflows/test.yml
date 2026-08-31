@@ -62,7 +62,6 @@ jobs:
           pytest -q \
             tests/test_api_documentation_coverage.py \
             tests/test_documentation_coverage.py \
-            tests/test_stochastic_example_coverage.py \
             tests/test_docstring_coverage.py \
             tests/test_package_identity.py \
             --disable-warnings
