@@ -12,21 +12,6 @@ The examples are executable documentation. Each script is small enough to run in
 
 These examples correspond directly to the [Time Series User Guide](time-series/index.md).
 
-## Stochastic Processes
-
-| Example | What it demonstrates |
-|---|---|
-| `examples/01_discrete_markov_chain.py` | Markov-chain construction, transition probabilities and stationarity |
-| `examples/02_poisson_process.py` | Homogeneous Poisson-process construction |
-| `examples/02_poisson_complete.py` | Extended Poisson and non-homogeneous operations |
-| `examples/03_continuous_markov_chain.py` | Core CTMC workflow |
-| `examples/03_cmtc_complete.py` | CTMC transitions, paths and holding/jump operations |
-| `examples/04_birth_death_process.py` | Birth-death construction and formulas |
-| `examples/05_conditional_expectation.py` | Finite conditional expectation |
-| `examples/05_conditional_expectation_complete.py` | Extended probability-space operations |
-| `examples/06_martingale.py` | Discrete-time martingale workflow |
-| `examples/07_api_operations.py` | Cross-namespace public API operations |
-| `examples/api_quickstart.py` | Minimal package entry point |
 
 ## How to use an example
 
