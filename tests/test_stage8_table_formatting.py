@@ -1,12 +1,26 @@
 import numpy as np
 import pytest
 
-from stochx.timeseries import CorrelogramResult, arma, correlogram, white_noise
+from stochx.timeseries import CorrelogramResult, TimeSeries, correlogram
 from stochx.timeseries.table_formatting import format_correlogram, format_correlogram_table
 
 
+def _arma11(phi: float, theta: float, n: int, seed: int) -> TimeSeries:
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(size=n)
+    values = np.empty(n)
+    values[0] = eps[0]
+    for t in range(1, n):
+        values[t] = phi * values[t - 1] + eps[t] + theta * eps[t - 1]
+    return TimeSeries(values, name="ARMA11")
+
+
+def _white_noise(n: int, seed: int) -> TimeSeries:
+    return TimeSeries(np.random.default_rng(seed).normal(size=n), name="WN")
+
+
 def test_stage8_7_custom_precision_and_missing_token_are_exact():
-    result = correlogram(arma(p=1, q=1, phi=[0.45], theta=[0.25], n=120, rng=12), nlags=4, model_df=1)
+    result = correlogram(_arma11(0.45, 0.25, 120, 12), nlags=4, model_df=1)
     formatted = format_correlogram_table(result, precision=2, missing=".")
 
     assert all(len(value.split(".")[1]) == 2 for value in formatted["AC"])
@@ -15,7 +29,7 @@ def test_stage8_7_custom_precision_and_missing_token_are_exact():
 
 
 def test_stage8_7_fixed_width_text_has_stable_header_and_missing_rendering():
-    result = correlogram(arma(p=1, q=1, phi=[0.45], theta=[0.25], n=80, rng=3), nlags=3, model_df=2)
+    result = correlogram(_arma11(0.45, 0.25, 80, 3), nlags=3, model_df=2)
     text = format_correlogram(result)
     lines = text.splitlines()
 
