@@ -1,4 +1,4 @@
-name: Stochastic Test Suite
+name: StochX Time-Series Test Suite
 
 # CI trigger: validate the current Stage 8 tree after the regression-test fixes.
 on:
@@ -35,8 +35,6 @@ jobs:
         run: |
           pytest -q \
             tests/test_docstring_coverage.py \
-            tests/test_stochastic_example_coverage.py \
-            tests/test_api_documentation_coverage.py \
             tests/test_documentation_coverage.py \
             tests/test_package_identity.py \
             --disable-warnings
@@ -106,12 +104,12 @@ jobs:
           /tmp/stochx-release-venv/bin/python - <<'PY'
           from importlib.metadata import version
           import stochx
-          import stochx.stochastic
           import stochx.timeseries
 
           installed = version("stochx")
           assert installed == stochx.__version__
           assert installed
+          assert not hasattr(stochx, "stochastic")
           print(f"stochx {installed} clean-wheel-install: OK")
           PY
       - name: Verify source distribution is present
