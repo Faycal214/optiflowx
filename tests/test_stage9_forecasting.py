@@ -3,8 +3,6 @@ import pandas as pd
 import pytest
 
 from stochx.timeseries import (
-    ar,
-    arma,
     estimate_box_jenkins_candidates,
     forecast_box_jenkins,
     select_box_jenkins_model,
@@ -38,8 +36,28 @@ def _selected(y, order=(1, 0, 0)):
     return select_box_jenkins_model(validation, criterion="aic")
 
 
+def _ar1(phi: float, n: int, seed: int) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(size=n)
+    values = np.empty(n)
+    values[0] = eps[0]
+    for t in range(1, n):
+        values[t] = phi * values[t - 1] + eps[t]
+    return values
+
+
+def _arma11(phi: float, theta: float, n: int, seed: int) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(size=n)
+    values = np.empty(n)
+    values[0] = eps[0]
+    for t in range(1, n):
+        values[t] = phi * values[t - 1] + eps[t] + theta * eps[t - 1]
+    return values
+
+
 def test_stage9_6_forecast_has_horizon_intervals_and_metadata():
-    selection = _selected(ar(1, [0.55], 220, rng=7))
+    selection = _selected(_ar1(0.55, 220, 7))
     result = forecast_box_jenkins(selection, steps=5, alpha=0.10)
 
     assert result.order == (1, 0, 0)
@@ -59,7 +77,7 @@ def test_stage9_6_forecast_has_horizon_intervals_and_metadata():
 
 def test_stage9_6_uses_datetime_index_when_model_has_datetime_index():
     dates = pd.date_range("2020-01-01", periods=80, freq="D")
-    series = pd.Series(ar(1, [0.4], 80, rng=2).values, index=dates)
+    series = pd.Series(_ar1(0.4, 80, 2), index=dates)
     selection = _selected(series)
     result = forecast_box_jenkins(selection, steps=3)
 
@@ -69,7 +87,7 @@ def test_stage9_6_uses_datetime_index_when_model_has_datetime_index():
 
 
 def test_stage9_6_explicit_forecast_index_must_match_horizon():
-    selection = _selected(arma(p=1, q=1, phi=[0.3], theta=[0.2], n=120, rng=4), order=(1, 0, 1))
+    selection = _selected(_arma11(0.3, 0.2, 120, 4), order=(1, 0, 1))
     with pytest.raises(ValueError, match="forecast_index length"):
         forecast_box_jenkins(selection, steps=3, forecast_index=[1, 2])
 
@@ -82,7 +100,7 @@ def test_stage9_6_requires_selected_adequate_model():
 
 
 def test_stage9_6_restores_explicit_differenced_scale():
-    selection = _selected(ar(1, [0.5], 180, rng=9))
+    selection = _selected(_ar1(0.5, 180, 9))
     result = forecast_box_jenkins(
         selection,
         steps=3,
@@ -100,6 +118,6 @@ def test_stage9_6_restores_explicit_differenced_scale():
 
 
 def test_stage9_6_differenced_restore_requires_history():
-    selection = _selected(ar(1, [0.5], 100, rng=5))
+    selection = _selected(_ar1(0.5, 100, 5))
     with pytest.raises(ValueError, match="last_levels"):
         forecast_box_jenkins(selection, steps=2, forecast_on_differenced_scale=True)
