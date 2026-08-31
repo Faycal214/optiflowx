@@ -4,13 +4,22 @@ import pytest
 from stochx.timeseries import (
     BoxJenkinsEstimationResult,
     EstimatedCandidate,
-    ar,
     estimate_box_jenkins_candidates,
 )
 
 
+def _ar1(phi: float, n: int, seed: int) -> np.ndarray:
+    rng = np.random.default_rng(seed)
+    eps = rng.normal(size=n)
+    values = np.empty(n)
+    values[0] = eps[0]
+    for t in range(1, n):
+        values[t] = phi * values[t - 1] + eps[t]
+    return values
+
+
 def test_stage9_3_estimates_deterministic_candidate_sequence():
-    y = ar(1, [0.55], 220, rng=7)
+    y = _ar1(0.55, 220, 7)
     orders = ((0, 0, 0), (0, 0, 1), (1, 0, 0), (1, 0, 1))
 
     result = estimate_box_jenkins_candidates(y, orders)
@@ -53,7 +62,7 @@ def test_stage9_3_estimates_deterministic_candidate_sequence():
 
 
 def test_stage9_3_table_is_stable_and_contains_required_model_statistics():
-    y = ar(1, [0.4], 180, rng=11)
+    y = _ar1(0.4, 180, 11)
     result = estimate_box_jenkins_candidates(y, ((1, 0, 0), (1, 0, 1)))
 
     table = result.table()
@@ -82,7 +91,7 @@ def test_stage9_3_one_failed_candidate_does_not_abort_remaining_candidates(monke
 
     monkeypatch.setattr(estimation, "estimate", fake_estimate)
 
-    y = ar(1, [0.35], 150, rng=4)
+    y = _ar1(0.35, 150, 4)
     result = estimate_box_jenkins_candidates(y, ((9, 0, 9), (1, 0, 0)))
 
     assert result.candidates[0].success is False
@@ -93,7 +102,7 @@ def test_stage9_3_one_failed_candidate_does_not_abort_remaining_candidates(monke
 
 
 def test_stage9_3_rejects_duplicate_or_invalid_candidate_orders():
-    y = ar(1, [0.25], 80, rng=2)
+    y = _ar1(0.25, 80, 2)
 
     with pytest.raises(ValueError, match="must not contain duplicates"):
         estimate_box_jenkins_candidates(y, ((1, 0, 0), (1, 0, 0)))
