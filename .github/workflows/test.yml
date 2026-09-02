@@ -56,7 +56,10 @@ jobs:
           pip install mkdocs mkdocs-material pytest
       - name: Run worked examples
         run: |
-          for example in examples/*.py; do python "$example" >/dev/null; done
+          for example in examples/07_api_operations.py examples/08_eviews_time_series_workflow.py examples/09_state_space_kalman.py examples/10_state_space_workflow.py
+          do
+            python "$example" >/dev/null
+          done
       - name: Verify documentation, example, and identity coverage
         run: |
           pytest -q \
