@@ -92,6 +92,11 @@ class _NamesDescriptor:
 Workfile.names = _NamesDescriptor()
 
 
+# EquationResult stores the equation identifier as ``title`` internally.
+# Expose the canonical ``name`` attribute without changing the result model.
+EquationResult.name = property(lambda self: self.title)
+
+
 _original_equation_forecast = EquationResult.forecast
 
 
@@ -114,8 +119,6 @@ def _compat_equation_forecast(self, *args, **kwargs):
     end = kwargs.get("end")
     future_exog = kwargs.get("future_exog")
     if args:
-        # Preserve the existing keyword-only contract rather than guessing
-        # positional arguments from the legacy implementation.
         return _original_equation_forecast(self, *args, **kwargs)
     if steps is not None and (start is not None or end is not None):
         return _original_equation_forecast(self, *args, **kwargs)
@@ -130,8 +133,6 @@ def _compat_equation_forecast(self, *args, **kwargs):
     if horizon < 1:
         return _original_equation_forecast(self, *args, **kwargs)
 
-    # Statsmodels OLS RegressionResults.get_prediction accepts exog, not the
-    # start/end/dynamic arguments supported by ARMA/state-space results.
     class _OLSForecastProxy:
         def __init__(self, wrapped):
             self._wrapped = wrapped
