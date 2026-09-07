@@ -81,7 +81,10 @@ class _NamesDescriptor:
 
 
 Workfile.names = _NamesDescriptor()
-EquationResult.name = property(lambda self: self.title)
+EquationResult.name = property(
+    lambda self: self.title.removeprefix("Equation: ").strip()
+    if isinstance(self.title, str) else self.title
+)
 
 
 _original_equation_forecast = EquationResult.forecast
