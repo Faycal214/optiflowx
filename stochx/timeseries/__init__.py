@@ -54,6 +54,125 @@ from .statespace_diagnostics import KalmanInnovationDiagnosticsResult, kalman_in
 from .statespace_adequacy import StateSpaceAdequacyResult, state_space_adequacy
 from .statespace_workflow import StateSpaceWorkflowResult, run_local_level_workflow
 
+
+class _CallableNamesView:
+    """Live, iterable view that preserves the historical ``wf.names()`` call."""
+
+    def __init__(self, workfile: Workfile) -> None:
+        self._workfile = workfile
+
+    def __iter__(self):
+        return iter(self._workfile.series)
+
+    def __len__(self) -> int:
+        return len(self._workfile.series)
+
+    def __contains__(self, item: object) -> bool:
+        return item in self._workfile.series
+
+    def __getitem__(self, index):
+        return list(self._workfile.series)[index]
+
+    def __call__(self) -> list[str]:
+        return list(self._workfile.series)
+
+    def __repr__(self) -> str:
+        return repr(list(self._workfile.series))
+
+
+class _NamesDescriptor:
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        return _CallableNamesView(instance)
+
+
+# Workfile historically exposed ``names()`` while the canonical public API
+# expects ``names`` to be iterable. This descriptor supports both forms.
+Workfile.names = _NamesDescriptor()
+
+
+_original_equation_forecast = EquationResult.forecast
+
+
+def _compat_equation_forecast(self, *args, **kwargs):
+    """Bridge statsmodels OLS prediction to the EViews-style forecast API."""
+    structural = bool(kwargs.get("structural", False))
+    process = self.error_process
+    has_arma = bool(process.p or process.q or process.sar or process.sma)
+    if structural or has_arma:
+        return _original_equation_forecast(self, *args, **kwargs)
+
+    model = self.result
+    try:
+        nobs = int(getattr(model, "nobs"))
+    except Exception:
+        return _original_equation_forecast(self, *args, **kwargs)
+
+    steps = kwargs.get("steps")
+    start = kwargs.get("start")
+    end = kwargs.get("end")
+    future_exog = kwargs.get("future_exog")
+    if args:
+        # Preserve the existing keyword-only contract rather than guessing
+        # positional arguments from the legacy implementation.
+        return _original_equation_forecast(self, *args, **kwargs)
+    if steps is not None and (start is not None or end is not None):
+        return _original_equation_forecast(self, *args, **kwargs)
+    if steps is not None:
+        start_i, end_i = nobs, nobs + int(steps) - 1
+    else:
+        if start is None:
+            return _original_equation_forecast(self, *args, **kwargs)
+        start_i = int(start)
+        end_i = int(end if end is not None else start)
+    horizon = end_i - start_i + 1
+    if horizon < 1:
+        return _original_equation_forecast(self, *args, **kwargs)
+
+    # Statsmodels OLS RegressionResults.get_prediction accepts exog, not the
+    # start/end/dynamic arguments supported by ARMA/state-space results.
+    class _OLSForecastProxy:
+        def __init__(self, wrapped):
+            self._wrapped = wrapped
+
+        def __getattr__(self, name):
+            return getattr(self._wrapped, name)
+
+        def get_prediction(self, start=None, end=None, dynamic=False, **prediction_kwargs):
+            model_exog = __import__("numpy").asarray(
+                getattr(getattr(self._wrapped, "model", None), "exog", __import__("numpy").empty((0, 0))),
+                dtype=float,
+            )
+            if "exog" in prediction_kwargs:
+                exog = __import__("numpy").asarray(prediction_kwargs["exog"], dtype=float)
+                if exog.ndim == 1:
+                    exog = exog.reshape(1, -1)
+            elif start is not None and int(start) < model_exog.shape[0]:
+                stop = int(end) + 1 if end is not None else int(start) + 1
+                exog = model_exog[int(start):stop]
+            else:
+                params = getattr(self._wrapped, "params", None)
+                names = list(getattr(params, "index", []))
+                if names == ["C"]:
+                    exog = __import__("numpy").ones((int(end) - int(start) + 1, 1))
+                else:
+                    raise ValueError("future_exog is required for out-of-sample forecasts")
+            if exog.shape[0] != int(end) - int(start) + 1:
+                raise ValueError("forecast exog length must equal forecast horizon")
+            return self._wrapped.get_prediction(exog=exog)
+
+    original_result = self.result
+    self.result = _OLSForecastProxy(model)
+    try:
+        return _original_equation_forecast(self, *args, **kwargs)
+    finally:
+        self.result = original_result
+
+
+EquationResult.forecast = _compat_equation_forecast
+
+
 __all__ = [
     "TimeSeries", "Workfile", "Expression", "ExpressionError", "evaluate", "Equation", "EquationResult", "UnifiedResult", "ResultTable",
     "ErrorProcess", "parse_error_terms",
