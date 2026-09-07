@@ -18,7 +18,7 @@ from .forecasting import ForecastMetrics, drift_forecast, metrics, naive_forecas
 from .identification import BoxJenkinsIdentificationResult, grid_search, identify, identify_box_jenkins
 from .interpretation import interpret_correlogram
 from .auto_arima import AutoARIMAResult, autoarma
-from .models import TSResult, estimate, fit_ar, fit_arima, fit_arma, fit_ma, fit_sarima
+from .models import TSResult, estimate, fit_ar, fit_arma, fit_arima, fit_ma, fit_sarima
 from .plotting import plot_correlogram, plot_decomposition, plot_eviews_correlogram, plot_forecast, plot_series
 from .regression import RegressionResult, ols, trend_terms
 from .results import ResultTable, UnifiedResult
@@ -57,25 +57,18 @@ from .statespace_workflow import StateSpaceWorkflowResult, run_local_level_workf
 
 class _CallableNamesView:
     """Live, iterable view that preserves the historical ``wf.names()`` call."""
-
     def __init__(self, workfile: Workfile) -> None:
         self._workfile = workfile
-
     def __iter__(self):
         return iter(self._workfile.series)
-
     def __len__(self) -> int:
         return len(self._workfile.series)
-
     def __contains__(self, item: object) -> bool:
         return item in self._workfile.series
-
     def __getitem__(self, index):
         return list(self._workfile.series)[index]
-
     def __call__(self) -> list[str]:
         return list(self._workfile.series)
-
     def __repr__(self) -> str:
         return repr(list(self._workfile.series))
 
@@ -87,13 +80,7 @@ class _NamesDescriptor:
         return _CallableNamesView(instance)
 
 
-# Workfile historically exposed ``names()`` while the canonical public API
-# expects ``names`` to be iterable. This descriptor supports both forms.
 Workfile.names = _NamesDescriptor()
-
-
-# EquationResult stores the equation identifier as ``title`` internally.
-# Expose the canonical ``name`` attribute without changing the result model.
 EquationResult.name = property(lambda self: self.title)
 
 
@@ -102,6 +89,14 @@ _original_equation_forecast = EquationResult.forecast
 
 def _compat_equation_forecast(self, *args, **kwargs):
     """Bridge statsmodels OLS prediction to the EViews-style forecast API."""
+    if args:
+        if len(args) == 1 and isinstance(args[0], (int, __import__("numpy").integer)) and not any(k in kwargs for k in ("steps", "start", "end")):
+            kwargs = dict(kwargs)
+            kwargs["steps"] = int(args[0])
+            args = ()
+        else:
+            return _original_equation_forecast(self, *args, **kwargs)
+
     structural = bool(kwargs.get("structural", False))
     process = self.error_process
     has_arma = bool(process.p or process.q or process.sar or process.sma)
@@ -118,8 +113,6 @@ def _compat_equation_forecast(self, *args, **kwargs):
     start = kwargs.get("start")
     end = kwargs.get("end")
     future_exog = kwargs.get("future_exog")
-    if args:
-        return _original_equation_forecast(self, *args, **kwargs)
     if steps is not None and (start is not None or end is not None):
         return _original_equation_forecast(self, *args, **kwargs)
     if steps is not None:
@@ -136,17 +129,13 @@ def _compat_equation_forecast(self, *args, **kwargs):
     class _OLSForecastProxy:
         def __init__(self, wrapped):
             self._wrapped = wrapped
-
         def __getattr__(self, name):
             return getattr(self._wrapped, name)
-
         def get_prediction(self, start=None, end=None, dynamic=False, **prediction_kwargs):
-            model_exog = __import__("numpy").asarray(
-                getattr(getattr(self._wrapped, "model", None), "exog", __import__("numpy").empty((0, 0))),
-                dtype=float,
-            )
+            np = __import__("numpy")
+            model_exog = np.asarray(getattr(getattr(self._wrapped, "model", None), "exog", np.empty((0, 0))), dtype=float)
             if "exog" in prediction_kwargs:
-                exog = __import__("numpy").asarray(prediction_kwargs["exog"], dtype=float)
+                exog = np.asarray(prediction_kwargs["exog"], dtype=float)
                 if exog.ndim == 1:
                     exog = exog.reshape(1, -1)
             elif start is not None and int(start) < model_exog.shape[0]:
@@ -156,7 +145,7 @@ def _compat_equation_forecast(self, *args, **kwargs):
                 params = getattr(self._wrapped, "params", None)
                 names = list(getattr(params, "index", []))
                 if names == ["C"]:
-                    exog = __import__("numpy").ones((int(end) - int(start) + 1, 1))
+                    exog = np.ones((int(end) - int(start) + 1, 1))
                 else:
                     raise ValueError("future_exog is required for out-of-sample forecasts")
             if exog.shape[0] != int(end) - int(start) + 1:
