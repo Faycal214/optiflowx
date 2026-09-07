@@ -166,6 +166,51 @@ def _compat_equation_forecast(self, *args, **kwargs):
 EquationResult.forecast = _compat_equation_forecast
 
 
+def _populate_public_docstrings():
+    """Populate concise docs for exported helpers that currently lack them."""
+    import importlib
+    docs = {
+        "stochx.timeseries.arma_estimation": {
+            "fit_cls": "Fit an ARMA error model by conditional least squares.",
+            "fit_gls": "Fit an ARMA error model by feasible generalized least squares.",
+        },
+        "stochx.timeseries.auto_arima": {
+            "autoarma": "Search a bounded ARIMA/SARIMA candidate set and return the best model.",
+        },
+        "stochx.timeseries.cointegration": {
+            "engle_granger": "Test for cointegration using the Engle-Granger residual-based procedure.",
+            "johansen": "Run the Johansen system cointegration rank test.",
+            "phillips_ouliaris": "Test for cointegration using the Phillips-Ouliaris residual-based procedure.",
+            "vecm": "Estimate a vector error-correction model for a multivariate time series.",
+        },
+        "stochx.timeseries.identification": {
+            "grid_search": "Evaluate a bounded grid of ARIMA orders and return model comparison results.",
+            "identify": "Compute ACF/PACF-based AR and MA order clues for a univariate series.",
+            "identify_box_jenkins": "Run the auditable Box-Jenkins identification workflow.",
+        },
+        "stochx.timeseries.parity": {
+            "compare_array": "Compare two numeric sequences element by element and record parity checks.",
+            "compare_mapping": "Compare expected mapping fields recursively and append parity checks to a report.",
+            "compare_number": "Compare numeric values using absolute and relative tolerances.",
+            "compare_text": "Compare text values with optional whitespace normalization.",
+            "validate_cointegration_reference": "Validate the required structure of a cointegration reference fixture.",
+            "validate_diagnostics_reference": "Validate the required structure of a diagnostics reference fixture.",
+        },
+        "stochx.timeseries.reporting": {
+            "render_eviews": "Render an estimation result as deterministic EViews-style text.",
+        },
+    }
+    for module_name, module_docs in docs.items():
+        module = importlib.import_module(module_name)
+        for name, doc in module_docs.items():
+            obj = getattr(module, name, None)
+            if obj is not None and not getattr(obj, "__doc__", None):
+                obj.__doc__ = doc
+
+
+_populate_public_docstrings()
+
+
 __all__ = [
     "TimeSeries", "Workfile", "Expression", "ExpressionError", "evaluate", "Equation", "EquationResult", "UnifiedResult", "ResultTable",
     "ErrorProcess", "parse_error_terms",
